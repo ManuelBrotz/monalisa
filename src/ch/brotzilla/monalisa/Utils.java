@@ -118,15 +118,29 @@ public class Utils {
 		Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
 		Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
 		final Gene result = new Gene(input);
-		if (rng.nextInt(5) == 0) {
+		switch (rng.nextInt(10)) {
+		case 0: {
 			final int channel = rng.nextInt(4);
-			result.color[channel] = rng.nextInt(256);
-		} else {
+			final int delta = rng.nextInt(51) - 25;
+			result.color[channel] = Math.abs((result.color[channel] + delta) % 256);
+			break;
+		}
+		case 1: {
+			final Color c = (new Color(encodeColor(result.color))).brighter();
+			decodeColor(c.getRGB(), result.color);
+			break;
+		}
+		case 2: {
+			final Color c = (new Color(encodeColor(result.color))).darker();
+			decodeColor(c.getRGB(), result.color);
+			break;
+		}
+		default: {
 			final int coord = rng.nextInt(3);
-			final int dx = rng.nextInt(101) - 50, dy = rng.nextInt(101) - 50;
+			final int dx = rng.nextInt(21) - 10, dy = rng.nextInt(21) - 10;
 			result.x[coord] += dx;
 			result.y[coord] += dy;
-		}
+		}}
 		return result;
 	}
 	
@@ -137,7 +151,8 @@ public class Utils {
 		final Gene[] genes = result.genes;
 		final int count = rng.nextInt(6)+1;
 		for (int i = 0; i < count; i++) {
-			if (rng.nextInt(20) == 0) {
+			switch (rng.nextInt(20)) {
+			case 0: {
 				final int index1 = rng.nextInt(genes.length);
 				final int index2 = rng.nextInt(genes.length);
 				if (index1 == index2) {
@@ -147,12 +162,72 @@ public class Utils {
 				Gene tmp = genes[index1];
 				genes[index1] = genes[index2];
 				genes[index2] = tmp;
-			} else {
+				break;
+			}
+			case 1: {
+				 final int index = rng.nextInt(genes.length);
+				 genes[index] = addRandomPoint(rng, genes[index]);
+			}
+			case 2: {
+				 final int index = rng.nextInt(genes.length);
+				 if (genes[index].x.length <= 3) {
+					 --i;
+					 continue;
+				 }
+				 genes[index] = removeRandomPoint(rng, genes[index]);
+			}
+			default: {
 				final int index = rng.nextInt(genes.length);
 				genes[index] = mutateGene(rng, genes[index]);
-			}
+			}}
 		}
 		return result;
+	}
+	
+	public static Gene addRandomPoint(MersenneTwister rng, Gene input) {
+		Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+		Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
+		final int len = input.x.length + 1;
+		final int index = rng.nextInt(len);
+		final int other = index == 0 ? 1 : index == len-1 ? len-2 : index;
+		final int[] x = new int[len], y = new int[len];
+		if (index == 0) {
+			System.arraycopy(input.x, 0, x, 1, len-1);
+			System.arraycopy(input.y, 0, y, 1, len-1);
+		} else if (index == len-1) {
+			System.arraycopy(input.x, 0, x, 0, len-1);
+			System.arraycopy(input.y, 0, y, 0, len-1);
+		} else {
+			System.arraycopy(input.x, 0, x, 0, index);
+			System.arraycopy(input.y, 0, y, 0, index);
+			System.arraycopy(input.x, index, x, index+1, len - index - 1);
+			System.arraycopy(input.y, index, y, index+1, len - index - 1);
+		}
+		x[index] = input.x[other] + (rng.nextInt(101) - 50);
+		y[index] = input.y[other] + (rng.nextInt(101) - 50);
+		return new Gene(x, y, input.color);
+	}
+	
+	public static Gene removeRandomPoint(MersenneTwister rng, Gene input) {
+		Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+		Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
+		Preconditions.checkArgument(input.x.length > 3, "The parameter 'input' must contain more than 3 points");
+		final int length = input.x.length;
+		final int index = rng.nextInt(length);
+		final int[] x = new int[length-1], y = new int[length-1];
+		if (index == 0) {
+			System.arraycopy(input.x, 1, x, 0, length-1);
+			System.arraycopy(input.y, 1, y, 0, length-1);
+		} else if (index == length-1) {
+			System.arraycopy(input.x, 0, x, 0, length-1);
+			System.arraycopy(input.y, 0, y, 0, length-1);
+		} else {
+			System.arraycopy(input.x, 0, x, 0, index);
+			System.arraycopy(input.x, index+1, x, index, length - index - 1);
+			System.arraycopy(input.y, 0, y, 0, index);
+			System.arraycopy(input.y, index+1, y, index, length - index - 1);
+		}
+		return new Gene(x, y, input.color);
 	}
 	
 	public static Genome addRandomGene(MersenneTwister rng, Genome input, int width, int height, int xborder, int yborder, int[] inputData) {
@@ -209,7 +284,7 @@ public class Utils {
 			final int db = ib - tb;
 			sum += Math.sqrt((da * da) + (dr * dr) + (dg * dg) + (db * db));
 		}
-		sum = sum + (sum / 10000f) * genome.genes.length;
+		sum = sum + (sum / 10000f) * genome.genes.length + (sum / 100000f) * genome.countPoints();
 		return sum;
 	}
 	
@@ -270,5 +345,40 @@ public class Utils {
 	
 	public static int encodeColor(byte[] color) {
 		return (color[0] << 24) | (color[1] << 16) | (color[2] << 8) | color[3];
+	}
+	
+	public static Color decodeColor(String value) {
+		if (value == null || value.trim().isEmpty()) {
+			throw new IllegalArgumentException("Invalid color value. (" + value + ")");
+		} else {
+			value = value.trim();
+			if (value.startsWith("#")) {
+				final String tmp = value.substring(1);
+				final int len = tmp.length();
+				if (len == 8) {
+					final int a = Integer.parseInt(tmp.substring(0, 1), 16); 
+					final int r = Integer.parseInt(tmp.substring(2, 3), 16); 
+					final int g = Integer.parseInt(tmp.substring(4, 5), 16); 
+					final int b = Integer.parseInt(tmp.substring(6, 7), 16); 
+					return new Color(r, g, b, a);
+				} else if (len == 6) {
+					final int r = Integer.parseInt(tmp.substring(0, 1), 16); 
+					final int g = Integer.parseInt(tmp.substring(2, 3), 16); 
+					final int b = Integer.parseInt(tmp.substring(4, 5), 16);
+					return new Color(r, g, b);
+				} else if (len == 4) {
+					final int a = Integer.parseInt(tmp.substring(0, 1), 16); 
+					final int v = Integer.parseInt(tmp.substring(2, 3), 16); 
+					return new Color(v, v, v, a);
+				} else if (len == 2) {
+					final int v = Integer.parseInt(tmp, 16);
+					return new Color(v, v, v);
+				} else {
+					throw new IllegalArgumentException("Invalid color value, must be of length 8, 4, 6 or 2. (" + len + ")");
+				}
+			} else {
+				throw new IllegalArgumentException("Invalid color value. (" + value + ")");
+			}
+		}
 	}
 }

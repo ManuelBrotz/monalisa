@@ -9,6 +9,8 @@ public class Genome {
 
 	public final Color background;
 	public final Gene[] genes;
+	public double fitness;
+	public long generated, selected;
 	
 	public Genome(Color background, Gene[] genes) {
 		Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
@@ -30,6 +32,13 @@ public class Genome {
 		}
 	}
 	
+	public int countPoints() {
+		int result = 0;
+		for (final Gene gene : genes) {
+			result += gene.x.length;
+		}
+		return result;
+	}
 	
 	@Override
 	public String toString() {
