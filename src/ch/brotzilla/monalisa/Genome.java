@@ -1,0 +1,50 @@
+package ch.brotzilla.monalisa;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+
+import com.google.common.base.Preconditions;
+
+public class Genome {
+
+	public final Color background;
+	public final Gene[] genes;
+	
+	public Genome(Color background, Gene[] genes) {
+		Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
+		this.background = background;
+		this.genes = new Gene[genes.length];
+		System.arraycopy(genes, 0, this.genes, 0, genes.length);
+	}
+	
+	public Genome(Genome source) {
+		this(Preconditions.checkNotNull(source, "The parameter 'source' must not be null").background, source.genes);
+	}
+
+	public void renderGenes(Graphics2D graphics) {
+		Preconditions.checkNotNull(graphics, "The parameter 'graphics' must not be null");
+		for (final Gene gene : genes) {
+			if (gene != null) {
+				gene.render(graphics);
+			}
+		}
+	}
+	
+	
+	@Override
+	public String toString() {
+		final StringBuilder b = new StringBuilder();
+		b.append('[');
+		if (background == null) {
+			b.append("TRANSPARENT, ");
+		} else {
+			b.append(background.getAlpha()+":"+background.getRed()+":"+background.getGreen()+":"+background.getBlue()+", ");
+		}
+		for (final Gene gene : genes) {
+			b.append(gene);
+		}
+		b.append(']');
+		return b.toString();
+	}
+	
+}
