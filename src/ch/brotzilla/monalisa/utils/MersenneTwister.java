@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa;
+package ch.brotzilla.monalisa.utils;
 
 /**
  * <h3>Mersenne Twister and MersenneTwisterFast</h3>

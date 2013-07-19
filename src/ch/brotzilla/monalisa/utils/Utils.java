@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa;
+package ch.brotzilla.monalisa.utils;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -9,6 +9,9 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+
+import ch.brotzilla.monalisa.genes.Gene;
+import ch.brotzilla.monalisa.genes.Genome;
 
 import com.google.common.base.Preconditions;
 

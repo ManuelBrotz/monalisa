@@ -6,6 +6,8 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 
+import ch.brotzilla.monalisa.genes.Genome;
+
 import com.google.common.base.Preconditions;
 
 public class Renderer {

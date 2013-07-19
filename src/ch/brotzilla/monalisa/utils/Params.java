@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa;
+package ch.brotzilla.monalisa.utils;
 
 import java.awt.Color;
 import java.io.File;
@@ -8,7 +8,7 @@ import java.util.Random;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
-class Params {
+public class Params {
 
     @Option(name = "-i", aliases = { "--input" }, metaVar = "File", usage = "the input image")
     private File inputFile;

@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa;
+package ch.brotzilla.monalisa.utils;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -10,6 +10,8 @@ import java.io.PrintWriter;
 import java.io.Reader;
 
 import javax.imageio.ImageIO;
+
+import ch.brotzilla.monalisa.genes.Genome;
 
 import com.google.common.base.Preconditions;
 

@@ -7,6 +7,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.utils.MersenneTwister;
+import ch.brotzilla.monalisa.utils.Params;
+import ch.brotzilla.monalisa.utils.SessionManager;
+import ch.brotzilla.monalisa.utils.Utils;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Queues;
 
