@@ -30,23 +30,6 @@ public class Utils {
         return (int[]) raster.getDataElements(0, 0, image.getWidth(), image.getHeight(), null);
     }
 
-    // Does not work!!!
-    public static byte[] decodePixelData(int[] pixelData, byte[] output) {
-        Preconditions.checkNotNull(pixelData, "The parameter 'pixelData' must not be null");
-        final int length = pixelData.length;
-        if (output == null || output.length != length * 4) {
-            output = new byte[length * 4];
-        }
-        for (int i = 0, j = -1; i < length; i++) {
-            final int argb = pixelData[i];
-            output[++j] = ((argb >> 24) & 0xFF);
-            output[++j] = (byte) ((argb >> 16) & 0x000000FF);
-            output[++j] = (byte) ((argb >> 8) & 0x000000FF);
-            output[++j] = (byte) (argb & 0x000000FF);
-        }
-        return output;
-    }
-
     public static Point computeCentroid(Gene gene, Point output) {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         return computeCentroid(gene.x, gene.y, output);
