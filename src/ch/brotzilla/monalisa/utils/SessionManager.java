@@ -1,6 +1,7 @@
 package ch.brotzilla.monalisa.utils;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -17,51 +18,121 @@ import com.google.common.base.Preconditions;
 
 public class SessionManager {
 
+    protected final Params params;
+    
+    protected final boolean isSessionResumed;
     protected final String sessionName;
+
     protected final File sessionDirectory;
     protected final File imagesDirectory;
     protected final File genomesDirectory;
     protected final File inputImageFile;
-    protected final BufferedImage inputImage;
-    protected final boolean isSessionResumed;
+    protected final File importanceMapFile;
 
-    protected BufferedImage importImageFile(File inputImageFile, File outputImageFile) throws IOException {
-        final BufferedImage img = Utils.readImage(inputImageFile);
-        ImageIO.write(img, "PNG", outputImageFile);
+    protected final Constraints constraints;
+    protected final int[] inputPixelData;
+    protected final int[] importanceMap;
+
+    protected BufferedImage importInputImage(File input, File output) throws IOException {
+        final BufferedImage img = Utils.readImage(input);
+        ImageIO.write(img, "PNG", output);
         return img;
     }
-
-    public SessionManager(File sessionsRoot, File inputImageFile) throws IOException {
-        Preconditions.checkNotNull(sessionsRoot, "The parameter 'sessionsRoot' must not be null");
-        Preconditions.checkNotNull(inputImageFile, "The parameter 'inputImageFile' must not be null");
-        Preconditions.checkArgument(inputImageFile.isFile(), "The parameter 'inputImageFile' has to be a valid file");
-        final String inputName = inputImageFile.getName();
-        this.sessionDirectory = checkDir(uniqueDir(sessionsRoot, inputName), true);
-        this.sessionName = sessionDirectory.getName();
-        this.imagesDirectory = checkDir(new File(sessionDirectory, "images"), true);
-        this.genomesDirectory = checkDir(new File(sessionDirectory, "genomes"), true);
-        this.inputImageFile = new File(sessionDirectory, "input.png");
-        this.inputImage = importImageFile(inputImageFile, this.inputImageFile);
-        this.isSessionResumed = false;
+    
+    protected int[] extractInputPixelData(BufferedImage input) {
+        final WritableRaster raster = input.getRaster();
+        return (int[]) raster.getDataElements(0, 0, input.getWidth(), input.getHeight(), null);
+    }
+    
+    protected BufferedImage importImportanceMap(File input, File output, Constraints c) throws IOException {
+        if (input != null) {
+            final BufferedImage img = ImageIO.read(input);
+            if (img.getType() != BufferedImage.TYPE_BYTE_GRAY)
+                throw new IllegalArgumentException("Importance map has to be a grayscale image: " + input);
+            if (img.getWidth() != c.getWidth())
+                throw new IllegalArgumentException("The width of the importance map has to be equal to the width of the input image");
+            if (img.getHeight() != c.getHeight())
+                throw new IllegalArgumentException("The height of the importance map has to be equal to the height of the input image");
+            ImageIO.write(img, "PNG", output);
+            return img;
+        }
+        return null;
+    }
+    
+    protected BufferedImage loadImportanceMap(File input, Constraints c) throws IOException {
+        if (input != null && input.exists()) {
+            final BufferedImage img = ImageIO.read(input);
+            if (img.getType() != BufferedImage.TYPE_BYTE_GRAY)
+                throw new IllegalArgumentException("Importance map has to be a grayscale image: " + input);
+            if (img.getWidth() != c.getWidth())
+                throw new IllegalArgumentException("The width of the importance map has to be equal to the width of the input image");
+            if (img.getHeight() != c.getHeight())
+                throw new IllegalArgumentException("The height of the importance map has to be equal to the height of the input image");
+            return img;
+        }
+        return null;
+    }
+    
+    protected int[] extractImportanceMap(BufferedImage input, Constraints c) {
+        if (input != null) {
+            final WritableRaster raster = input.getRaster();
+            final byte[] raw = (byte[]) raster.getDataElements(0, 0, input.getWidth(), input.getHeight(), null);
+            final int[] map = new int[raw.length];
+            for (int i = 0; i < raw.length; i++) {
+                map[i] = raw[i] & 0xFF;
+            }
+            return map;
+        } else {
+            final int[] map = new int[c.getWidth() * c.getHeight()];
+            for (int i = 0; i < map.length; i++) {
+                map[i] = 0xFF;
+            }
+            return map;
+        }
     }
 
-    public SessionManager(File sessionToResume) throws IOException {
-        Preconditions.checkNotNull(sessionToResume, "The parameter 'sessionToResume' must not be null");
-        this.sessionDirectory = checkDir(sessionToResume, false);
-        this.imagesDirectory = checkDir(new File(sessionDirectory, "images"), false);
-        this.genomesDirectory = checkDir(new File(sessionDirectory, "genomes"), false);
-        this.sessionName = this.sessionDirectory.getName();
-        this.inputImageFile = new File(sessionDirectory, "input.png");
-        this.inputImage = Utils.readImage(inputImageFile);
-        this.isSessionResumed = true;
+    public SessionManager(Params params) throws IOException {
+        Preconditions.checkNotNull(params, "The parameter 'params' must not be null");
+        this.params = params;
+        final BufferedImage inputImage, importanceMap;
+        if (params.getSessionToResume() == null) {
+            final String inputName = params.getInputFile().getName();
+            this.sessionDirectory = checkDir(uniqueDir(params.getOutputFolder(), inputName), true).getAbsoluteFile();
+            this.sessionName = this.sessionDirectory.getName();
+            this.imagesDirectory = checkDir(new File(this.sessionDirectory, "images"), true).getAbsoluteFile();
+            this.genomesDirectory = checkDir(new File(this.sessionDirectory, "genomes"), true).getAbsoluteFile();
+            this.inputImageFile = new File(this.sessionDirectory, "input.png").getAbsoluteFile();
+            this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
+            this.isSessionResumed = false;
+            inputImage = importInputImage(params.getInputFile(), this.inputImageFile);
+            this.constraints = new Constraints(inputImage.getWidth(), inputImage.getHeight());
+            importanceMap = importImportanceMap(params.getImportanceMap(), this.importanceMapFile, this.constraints);
+        } else {
+            this.sessionDirectory = checkDir(params.getSessionToResume(), false).getAbsoluteFile();
+            this.sessionName = this.sessionDirectory.getName();
+            this.imagesDirectory = checkDir(new File(this.sessionDirectory, "images"), false).getAbsoluteFile();
+            this.genomesDirectory = checkDir(new File(this.sessionDirectory, "genomes"), false).getAbsoluteFile();
+            this.inputImageFile = new File(this.sessionDirectory, "input.png").getAbsoluteFile();
+            this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
+            this.isSessionResumed = true;
+            inputImage = Utils.readImage(this.inputImageFile);
+            this.constraints = new Constraints(inputImage.getWidth(), inputImage.getHeight());
+            importanceMap = loadImportanceMap(this.importanceMapFile, this.constraints);
+        }
+        this.inputPixelData = extractInputPixelData(inputImage);
+        this.importanceMap = extractImportanceMap(importanceMap, this.constraints);
     }
-
+    
     public boolean isSessionReady() {
         return (sessionDirectory != null && imagesDirectory != null && genomesDirectory != null) && (sessionDirectory.isDirectory() && imagesDirectory.isDirectory() && genomesDirectory.isDirectory());
     }
     
     public boolean isSessionResumed() {
         return isSessionResumed;
+    }
+    
+    public Params getParams() {
+        return params;
     }
 
     public String getSessionName() {
@@ -83,9 +154,29 @@ public class SessionManager {
     public File getInputImageFile() {
         return inputImageFile;
     }
+    
+    public File getImportanceMapFile() {
+        return importanceMapFile;
+    }
 
-    public BufferedImage getInputImage() {
-        return inputImage;
+    public int getWidth() {
+        return constraints.getWidth();
+    }
+    
+    public int getHeight() {
+        return constraints.getHeight();
+    }
+    
+    public Constraints getConstraints() {
+        return constraints;
+    }
+    
+    public int[] getInputPixelData() {
+        return inputPixelData;
+    }
+    
+    public int[] getImportanceMap() {
+        return importanceMap;
     }
     
     public Genome loadLatestGenome() throws IOException {
@@ -171,9 +262,8 @@ public class SessionManager {
         Preconditions.checkNotNull(name, "The parameter 'name' must not be null");
         Preconditions.checkArgument(!name.isEmpty(), "The parameter 'name' must not be empty");
         if (directory.exists()) {
-            if (!directory.isDirectory()) {
+            if (!directory.isDirectory())
                 throw new IOException("Not a directory: " + directory);
-            }
             final File[] dirs = directory.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {

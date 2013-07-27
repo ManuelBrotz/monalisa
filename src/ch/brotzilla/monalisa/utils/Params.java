@@ -19,6 +19,9 @@ public class Params {
     @Option(name = "-r", aliases = { "--resume" }, metaVar = "Folder", usage = "the folder of the session to resume")
     private File sessionToResume;
 
+    @Option(name = "--importance-map", metaVar = "File", usage = "the importance map")
+    private File importanceMap;
+    
     @Option(name = "-s", aliases = { "--seed" }, metaVar = "Number", usage = "the seed for the random number generator")
     private int seed = 0;
 
@@ -50,6 +53,14 @@ public class Params {
     public File getOutputFolder() {
         return outputFolder;
     }
+    
+    public File getSessionToResume() {
+        return sessionToResume;
+    }
+    
+    public File getImportanceMap() {
+        return importanceMap;
+    }
 
     public int getSeed() {
         return seed;
@@ -61,14 +72,6 @@ public class Params {
 
     public Color getBackgroundColor() {
         return backgroundColor;
-    }
-
-    public SessionManager createSessionManager() throws IOException {
-        if (sessionToResume != null) {
-            return new SessionManager(sessionToResume);
-        } else {
-            return new SessionManager(outputFolder, inputFile);
-        }
     }
 
     public void validate() {
@@ -87,6 +90,8 @@ public class Params {
             if (!outputFolder.exists() && !outputFolder.mkdirs())
                 throw new IllegalArgumentException("--output-folder cannot be created");
         }
+        if (importanceMap != null && !importanceMap.isFile())
+            throw new IllegalArgumentException("--importance-map has to be a file");
     }
 
     public void init() throws IOException {

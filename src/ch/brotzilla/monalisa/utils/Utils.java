@@ -4,12 +4,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import ch.brotzilla.monalisa.Renderer;
 import ch.brotzilla.monalisa.genes.Gene;
 import ch.brotzilla.monalisa.genes.Genome;
 
@@ -26,11 +26,6 @@ public class Utils {
             return image2;
         }
         return image;
-    }
-
-    public static int[] extractPixelData(BufferedImage image) {
-        final WritableRaster raster = image.getRaster();
-        return (int[]) raster.getDataElements(0, 0, image.getWidth(), image.getHeight(), null);
     }
 
     public static Point computeCentroid(Gene gene, Point output) {
@@ -51,7 +46,10 @@ public class Utils {
         return new Point(cx, cy);
     }
 
-    public static Gene createRandomGene(MersenneTwister rng, int width, int height, int xborder, int yborder, int[] inputData) {
+    public static Gene createRandomGene(MersenneTwister rng, Constraints constraints, int[] inputData) {
+        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");
+        final int width = constraints.getWidth(), height = constraints.getHeight(), xborder = constraints.getBorderX(), yborder = constraints.getBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
         final int[] x = new int[3], y = new int[3];
         final Point c = new Point();
@@ -73,14 +71,11 @@ public class Utils {
         return new Gene(x, y, new Color(r, g, b, a));
     }
 
-    public static Gene[] createRandomGenes(MersenneTwister rng, int minGenes, int maxGenes, int width, int height, int xborder, int yborder, int[] inputData) {
+    public static Gene[] createRandomGenes(MersenneTwister rng, Constraints constraints, int minGenes, int maxGenes, int[] inputData) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");
         Preconditions.checkArgument(maxGenes >= minGenes, "The parameter 'maxGenes' must be greater than or equal to 'minGenes'");
-        Preconditions.checkArgument(width > 0, "The parameter 'width' must be greater than zero");
-        Preconditions.checkArgument(height > 0, "The parameter 'height' must be greater than zero");
-        Preconditions.checkArgument(xborder >= 0, "The parameter 'xborder' must be greater than or equal to zero");
-        Preconditions.checkArgument(yborder >= 0, "The parameter 'yborder' must be greater than or equal to zero");
         final int length;
         if (minGenes == maxGenes) {
             length = minGenes;
@@ -91,7 +86,7 @@ public class Utils {
         Preconditions.checkState(length <= maxGenes);
         final Gene[] genes = new Gene[length];
         for (int i = 0; i < length; i++) {
-            genes[i] = createRandomGene(rng, width, height, xborder, yborder, inputData);
+            genes[i] = createRandomGene(rng, constraints, inputData);
         }
         return genes;
     }
@@ -100,29 +95,40 @@ public class Utils {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final Gene result = new Gene(input);
-        switch (rng.nextInt(10)) {
-        case 0: {
-            final int channel = rng.nextInt(4);
-            final int delta = rng.nextInt(51) - 25;
-            result.color[channel] = Math.abs((result.color[channel] + delta) % 256);
-            break;
-        }
-        case 1: {
-            final Color c = (new Color(encodeColor(result.color))).brighter();
-            decodeColor(c.getRGB(), result.color);
-            break;
-        }
-        case 2: {
-            final Color c = (new Color(encodeColor(result.color))).darker();
-            decodeColor(c.getRGB(), result.color);
-            break;
-        }
-        default: {
-            final int coord = rng.nextInt(3);
+        if (rng.nextBoolean(0.9d)) {
+            final int coord = rng.nextInt(result.x.length);
             final int dx = rng.nextInt(21) - 10, dy = rng.nextInt(21) - 10;
             result.x[coord] += dx;
             result.y[coord] += dy;
-        }
+        } else {
+            switch (rng.nextInt(4)) {
+            case 0: {
+                final int channel = rng.nextInt(4);
+                final int delta = rng.nextInt(51) - 25;
+                result.color[channel] = Math.abs((result.color[channel] + delta) % 256);
+                break;
+            }
+            case 1: {
+                final float factor = 1.01f + (0.49f * rng.nextFloat());
+                float r = (result.color[1] + 1) * factor;
+                float g = (result.color[2] + 1) * factor;
+                float b = (result.color[3] + 1) * factor;
+                if (r > 255) result.color[1] = 255; else result.color[1] = Math.round(r);
+                if (g > 255) result.color[2] = 255; else result.color[2] = Math.round(g);
+                if (b > 255) result.color[3] = 255; else result.color[3] = Math.round(b);
+                break;
+            }
+            case 2: {
+                final float factor = 0.5f + (0.49f * rng.nextFloat());
+                float r = (result.color[1] + 1) * factor;
+                float g = (result.color[2] + 1) * factor;
+                float b = (result.color[3] + 1) * factor;
+                if (r > 255) result.color[1] = 255; else result.color[1] = Math.round(r);
+                if (g > 255) result.color[2] = 255; else result.color[2] = Math.round(g);
+                if (b > 255) result.color[3] = 255; else result.color[3] = Math.round(b);
+                break;
+            }
+            }
         }
         return result;
     }
@@ -134,37 +140,38 @@ public class Utils {
         final Gene[] genes = result.genes;
         final int count = rng.nextInt(6) + 1;
         for (int i = 0; i < count; i++) {
-            switch (rng.nextInt(20)) {
-            case 0: {
-                final int index1 = rng.nextInt(genes.length);
-                final int index2 = rng.nextInt(genes.length);
-                if (index1 == index2) {
-                    --i;
-                    continue;
-                }
-                Gene tmp = genes[index1];
-                genes[index1] = genes[index2];
-                genes[index2] = tmp;
-                break;
-            }
-            case 1: {
-                final int index = rng.nextInt(genes.length);
-                genes[index] = addRandomPoint(rng, genes[index]);
-            }
-            case 2: {
-                final int index = rng.nextInt(genes.length);
-                if (genes[index].x.length <= 3) {
-                    --i;
-                    continue;
-                }
-                genes[index] = removeRandomPoint(rng, genes[index]);
-            }
-            default: {
-                final int index = rng.nextInt(genes.length);
-                genes[index] = mutateGene(rng, genes[index]);
-            }
-            }
+            final int index = rng.nextInt(genes.length);
+            genes[index] = mutateGene(rng, genes[index]);
         }
+        return result;
+    }
+    
+    public static Genome swapRandomGenes(MersenneTwister rng, Genome input) {
+        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
+        if (input.genes.length > 2) {
+            final Genome result = new Genome(input);
+            final Gene[] genes = result.genes;
+            final int index1 = rng.nextInt(genes.length);
+            int index2 = rng.nextInt(genes.length);
+            while (index1 == index2) {
+                index2 = rng.nextInt(genes.length);
+            }
+            Gene tmp = genes[index1];
+            genes[index1] = genes[index2];
+            genes[index2] = tmp;
+            return result;
+        }
+        return input;
+    }
+    
+    public static Genome addRandomPoint(MersenneTwister rng, Genome input) {
+        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
+        final Genome result = new Genome(input);
+        final Gene[] genes = result.genes;
+        final int index = rng.nextInt(genes.length);
+        genes[index] = addRandomPoint(rng, genes[index]);
         return result;
     }
 
@@ -192,6 +199,19 @@ public class Utils {
         return new Gene(x, y, input.color);
     }
 
+    public static Genome removeRandomPoint(MersenneTwister rng, Genome input) {
+        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
+        int index = rng.nextInt(input.genes.length);
+        if (input.genes[index].x.length > 3) {
+            final Genome result = new Genome(input);
+            final Gene[] genes = result.genes;
+            genes[index] = removeRandomPoint(rng, genes[index]);
+            return result;
+        }
+        return input;
+    }
+    
     public static Gene removeRandomPoint(MersenneTwister rng, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
@@ -214,14 +234,11 @@ public class Utils {
         return new Gene(x, y, input.color);
     }
 
-    public static Genome addRandomGene(MersenneTwister rng, Genome input, int width, int height, int xborder, int yborder, int[] inputData) {
+    public static Genome addRandomGene(MersenneTwister rng, Genome input, Constraints constraints, int[] inputData) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
-        Preconditions.checkArgument(width > 0, "The parameter 'width' must be greater than zero");
-        Preconditions.checkArgument(height > 0, "The parameter 'height' must be greater than zero");
-        Preconditions.checkArgument(xborder >= 0, "The parameter 'xborder' must be greater than or equal to zero");
-        Preconditions.checkArgument(yborder >= 0, "The parameter 'yborder' must be greater than or equal to zero");
-        final Gene gene = createRandomGene(rng, width, height, xborder, yborder, inputData);
+        Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");
+        final Gene gene = createRandomGene(rng, constraints, inputData);
         final Gene[] genes = new Gene[input.genes.length + 1];
         System.arraycopy(input.genes, 0, genes, 0, input.genes.length);
         genes[genes.length - 1] = gene;
@@ -232,23 +249,28 @@ public class Utils {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final int length = input.genes.length;
-        final int index = rng.nextInt(length);
-        final Gene[] genes = new Gene[length - 1];
-        if (index == 0) {
-            System.arraycopy(input.genes, 1, genes, 0, length - 1);
-        } else if (index == length - 1) {
-            System.arraycopy(input.genes, 0, genes, 0, length - 1);
-        } else {
-            System.arraycopy(input.genes, 0, genes, 0, index);
-            System.arraycopy(input.genes, index + 1, genes, index, length - index - 1);
+        if (length > 1) {
+            final int index = rng.nextInt(length);
+            final Gene[] genes = new Gene[length - 1];
+            if (index == 0) {
+                System.arraycopy(input.genes, 1, genes, 0, length - 1);
+            } else if (index == length - 1) {
+                System.arraycopy(input.genes, 0, genes, 0, length - 1);
+            } else {
+                System.arraycopy(input.genes, 0, genes, 0, index);
+                System.arraycopy(input.genes, index + 1, genes, index, length - index - 1);
+            }
+            return new Genome(input.background, genes);
         }
-        return new Genome(input.background, genes);
+        return input;
     }
 
-    public static double computeSimpleFitness(Genome genome, int[] inputData, int[] targetData) {
+    public static double computeSimpleFitness(Genome genome, int[] inputData, int[] importanceMap, int[] targetData) {
         Preconditions.checkNotNull(inputData, "The parameter 'inputData' must not be null");
+        Preconditions.checkNotNull(importanceMap, "The parameter 'importanceMap' must not be null");
         Preconditions.checkNotNull(targetData, "The parameter 'targetData' must not be null");
-        Preconditions.checkArgument(inputData.length == targetData.length);
+        Preconditions.checkArgument(inputData.length == importanceMap.length, "The parameters 'inputData' and 'importanceMap' must be of equal length");
+        Preconditions.checkArgument(inputData.length == targetData.length, "The parameters 'inputData' and 'targetData' must be of equal length");
         double sum = 0;
         final int length = targetData.length;
         for (int i = 0; i < length; i++) {
@@ -266,31 +288,16 @@ public class Utils {
             final int dr = ir - tr;
             final int dg = ig - tg;
             final int db = ib - tb;
-            sum += Math.sqrt((da * da) + (dr * dr) + (dg * dg) + (db * db));
+            sum += ((da * da) + (dr * dr) + (dg * dg) + (db * db)) * (256 - importanceMap[i]);
         }
         sum = sum + (sum / 20000f) * genome.genes.length + (sum / 200000f) * genome.countPoints();
         return sum;
     }
-
-    public static double computeSimpleFitness(byte[] inputData, int[] targetData) {
-        Preconditions.checkNotNull(inputData, "The parameter 'inputData' must not be null");
-        Preconditions.checkNotNull(targetData, "The parameter 'targetData' must not be null");
-        Preconditions.checkArgument(inputData.length == targetData.length * 4);
-        double sum = 0;
-        final int length = targetData.length;
-        for (int i = 0, j = -1; i < length; i++) {
-            final int tc = targetData[i];
-            final int ta = (tc >> 24) & 0x000000FF;
-            final int tr = (tc >> 16) & 0x000000FF;
-            final int tg = (tc >> 8) & 0x000000FF;
-            final int tb = tc & 0x000000FF;
-            final int da = inputData[++j] - ta;
-            final int dr = inputData[++j] - tr;
-            final int dg = inputData[++j] - tg;
-            final int db = inputData[++j] - tb;
-            sum += Math.sqrt((da * da) + (dr * dr) + (dg * dg) + (db * db));
-        }
-        return sum;
+    
+    public static double computeSimpleFitness(Genome genome, int[] inputData, int[] importanceMap, int width, int height) {
+        final Renderer renderer = new Renderer(width, height, true);
+        renderer.render(genome);
+        return computeSimpleFitness(genome, inputData, importanceMap, renderer.getData());
     }
 
     public static int[] decodeColor(int argb, int[] output) {
