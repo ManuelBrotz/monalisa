@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project MonaLisa">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="/home/mbrotz/Entwicklung/workspace/MonaLisa/build/monalisa.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="ch.brotzilla.monalisa.MonaLisa"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="/home/mbrotz/Entwicklung/workspace/MonaLisa/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/mbrotz/Entwicklung/workspace/MonaLisa/lib/args4j-2.0.21.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/mbrotz/Entwicklung/workspace/MonaLisa/lib/guava-13.0.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/mbrotz/Entwicklung/workspace/MonaLisa/lib/gson-2.2.2.jar"/>
+        </jar>
+    </target>
+</project>
