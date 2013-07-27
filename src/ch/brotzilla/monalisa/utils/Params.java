@@ -83,9 +83,9 @@ public class Params {
             if (!sessionToResume.isDirectory())
                 throw new IllegalArgumentException("--resume has to be a directory");
         } else {
-            if (!inputFile.isFile())
+            if (inputFile == null || !inputFile.isFile())
                 throw new IllegalArgumentException("--input has to be a file");
-            if (outputFolder.exists() && !outputFolder.isDirectory())
+            if (outputFolder == null || (outputFolder.exists() && !outputFolder.isDirectory()))
                 throw new IllegalArgumentException("--output-folder has to be a directory");
             if (!outputFolder.exists() && !outputFolder.mkdirs())
                 throw new IllegalArgumentException("--output-folder cannot be created");
