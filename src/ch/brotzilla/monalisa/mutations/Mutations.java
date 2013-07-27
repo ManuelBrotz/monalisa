@@ -18,6 +18,8 @@ public final class Mutations {
     protected LinkedList<GeneMutation> geneMutations = Lists.newLinkedList();
     protected LinkedList<GenomeMutation> genomeMutations = Lists.newLinkedList();
     
+    protected int maxMutations = -1;
+    
     public Mutations() {}
 
     public Iterable<GeneMutation> getGeneMutations() {
@@ -26,6 +28,16 @@ public final class Mutations {
     
     public Iterable<GenomeMutation> getGenomeMutations() {
         return genomeMutations;
+    }
+    
+    public int getMaxMutations() {
+        return maxMutations;
+    }
+    
+    public Mutations setMaxMutations(int value) {
+        Preconditions.checkArgument(value >= -1, "The parameter 'value' has to be greater than or equal to -1");
+        this.maxMutations = value;
+        return this;
     }
     
     public Mutations add(Mutation mutation) {
@@ -57,6 +69,10 @@ public final class Mutations {
                     if (mutated != gene) {
                         result.genes[index] = mutated;
                         count++;
+                        if (maxMutations > 0 && count >= maxMutations) {
+                            result.mutations = count;
+                            return result;
+                        }
                     }
                 }
             }
@@ -67,6 +83,10 @@ public final class Mutations {
                     if (mutated != result) {
                         result = mutated;
                         count++;
+                        if (maxMutations > 0 && count >= maxMutations) {
+                            result.mutations = count;
+                            return result;
+                        }
                     }
                 }
             }

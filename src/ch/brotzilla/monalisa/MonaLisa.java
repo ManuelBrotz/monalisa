@@ -53,40 +53,69 @@ public class MonaLisa {
     
     protected final DecimalFormat ff = new DecimalFormat( "#,###,###,###,##0.######" );
     
-    protected Mutations createMutations() {
+    protected Mutations setupMutations() {
         final Mutations m = new Mutations();
+        m.setMaxMutations(3);
         
-        m.add(new GeneAddPointMutation(0.05d));
-        m.add(new GeneRemovePointMutation(0.05d));
-        m.add(new GeneSwapPointsMutation(0.05d));
-        
-        m.add(new GeneAlphaChannelMutation(0.2d));
         m.add(new GeneAlphaChannelMutation(0.1d));
-        m.add(new GeneAlphaChannelMutation(0.05d));
+        m.add(new GeneAlphaChannelMutation(0.01d));
+        m.add(new GeneAlphaChannelMutation(0.005d));
         
-        m.add(new GeneColorChannelMutation(0.2d));
         m.add(new GeneColorChannelMutation(0.1d));
-        m.add(new GeneColorChannelMutation(0.05d));
+        m.add(new GeneColorChannelMutation(0.01d));
+        m.add(new GeneColorChannelMutation(0.005d));
         
-        m.add(new GeneColorBrighterMutation(0.2d));
         m.add(new GeneColorBrighterMutation(0.1d));
-        m.add(new GeneColorBrighterMutation(0.05d));
+        m.add(new GeneColorBrighterMutation(0.01d));
+        m.add(new GeneColorBrighterMutation(0.005d));
         
-        m.add(new GeneColorDarkerMutation(0.2d));
         m.add(new GeneColorDarkerMutation(0.1d));
-        m.add(new GeneColorDarkerMutation(0.05d));
+        m.add(new GeneColorDarkerMutation(0.01d));
+        m.add(new GeneColorDarkerMutation(0.005d));
         
         m.add(new GenePointMutation(0.9d));
-        m.add(new GenePointMutation(0.8d));
-        m.add(new GenePointMutation(0.6d));
-        m.add(new GenePointMutation(0.3d));
+        m.add(new GenePointMutation(0.5d));
         m.add(new GenePointMutation(0.1d));
+        m.add(new GenePointMutation(0.01d));
+        m.add(new GenePointMutation(0.001d));
         
-        m.add(new GenomeAddGeneMutation(inputPixelData, 0.02d));
-        m.add(new GenomeRemoveGeneMutation(0.02d));
-        m.add(new GenomeSwapGenesMutation(0.05d));
+        m.add(new GeneAddPointMutation(0.1d));
+        m.add(new GeneRemovePointMutation(0.1d));
+        m.add(new GeneSwapPointsMutation(0.1d));
+
+        m.add(new GenomeAddGeneMutation(inputPixelData, 0.1d));
+        m.add(new GenomeRemoveGeneMutation(0.1d));
+        m.add(new GenomeSwapGenesMutation(0.1d));
 
         return m;
+    }
+    
+    protected Genome oldMutationProcedure(MersenneTwister rng, Constraints constraints, Genome genome) {
+        if (rng.nextBoolean(0.95d)) {
+            genome = Utils.mutateGenome(rng, genome);
+        } else {
+            final Genome orig = genome;
+            while (orig == genome) {
+                switch (rng.nextInt(5)) {
+                case 0:
+                    genome = Utils.addRandomGene(rng, genome, constraints, inputPixelData);
+                    break;
+                case 1:
+                    genome = Utils.addRandomPoint(rng, genome);
+                    break;
+                case 2:
+                    genome = Utils.removeRandomGene(rng, genome);
+                    break;
+                case 3:
+                    genome = Utils.removeRandomPoint(rng, genome);
+                    break;
+                case 4:
+                    genome = Utils.swapRandomGenes(rng, genome);
+                    break;
+                }
+            }
+        }
+        return genome;
     }
     
     public MonaLisa(String[] args) {
@@ -187,7 +216,7 @@ public class MonaLisa {
                 private final Color backgroundColor = params.getBackgroundColor();
                 private final long seed = random.nextLong();
                 private final Constraints constraints = session.getConstraints();
-                private final Mutations mutations = createMutations();
+                private final Mutations mutations = setupMutations();
 
                 @Override
                 public void run() {
@@ -202,30 +231,7 @@ public class MonaLisa {
                                 genome = new Genome(backgroundColor, Utils.createRandomGenes(rng, constraints, 10, 20, inputPixelData));
                             } else {
                                 genome = mutations.apply(rng, constraints, genome);
-//                                if (rng.nextBoolean(0.95d)) {
-//                                    genome = Utils.mutateGenome(rng, genome);
-//                                } else {
-//                                    final Genome orig = genome;
-//                                    while (orig == genome) {
-//                                        switch (rng.nextInt(5)) {
-//                                        case 0:
-//                                            genome = Utils.addRandomGene(rng, genome, constraints, inputPixelData);
-//                                            break;
-//                                        case 1:
-//                                            genome = Utils.addRandomPoint(rng, genome);
-//                                            break;
-//                                        case 2:
-//                                            genome = Utils.removeRandomGene(rng, genome);
-//                                            break;
-//                                        case 3:
-//                                            genome = Utils.removeRandomPoint(rng, genome);
-//                                            break;
-//                                        case 4:
-//                                            genome = Utils.swapRandomGenes(rng, genome);
-//                                            break;
-//                                        }
-//                                    }
-//                                }
+//                                 genome = oldMutationProcedure(rng, constraints, genome);
                             }
                             renderer.render(genome);
                             genome.fitness = Utils.computeSimpleFitness(genome, inputPixelData, importanceMap, renderer.getData());
