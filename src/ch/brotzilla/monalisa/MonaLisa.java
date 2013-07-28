@@ -32,8 +32,6 @@ import com.google.common.collect.Queues;
 
 public class MonaLisa {
 
-    public static final int NUM_THREADS = 16;
-
     protected Params params;
     protected SessionManager session;
 
@@ -118,8 +116,21 @@ public class MonaLisa {
         return genome;
     }
     
+    protected void printError() {
+        System.out.println("Usage:");
+        params.getParser().printUsage(System.out);
+        System.out.println();
+        if (params.getError() != null) {
+            System.out.println("Error: " + params.getError().getMessage());
+            System.out.println();
+            params.getError().printStackTrace();
+        } else {
+            System.out.println("Unknown error");
+        }
+    }
+    
     public MonaLisa(String[] args) {
-        this(new Params(Preconditions.checkNotNull(args, "The parameter 'args' must not be null")));
+        this(new Params(args));
     }
 
     public MonaLisa(Params params) {
@@ -143,6 +154,9 @@ public class MonaLisa {
     }
 
     public void setup() throws IOException {
+        if (!params.isReady()) 
+            throw new IllegalStateException("Not ready");
+        
         session = new SessionManager(params);
         inputPixelData = session.getInputPixelData();
         importanceMap = session.getImportanceMap();
@@ -207,10 +221,13 @@ public class MonaLisa {
     }
 
     public void start() {
+        if (!params.isReady()) 
+            throw new IllegalStateException("Not ready");
         if (processingThreads != null)
             throw new IllegalStateException("Already running");
-        processingThreads = Executors.newFixedThreadPool(NUM_THREADS);
-        for (int i = 0; i < NUM_THREADS; i++) {
+        final int numThreads = params.getNumThreads();
+        processingThreads = Executors.newFixedThreadPool(numThreads);
+        for (int i = 0; i < numThreads; i++) {
             processingThreads.submit(new Runnable() {
 
                 private final Color backgroundColor = params.getBackgroundColor();
@@ -259,9 +276,13 @@ public class MonaLisa {
     public static void main(String[] args) {
         final MonaLisa ml = new MonaLisa(args);
         try {
-            ml.setup();
-            ml.start();
-            ml.processingThreads.awaitTermination(100, TimeUnit.DAYS);
+            if (ml.params.isReady()) {
+                ml.setup();
+                ml.start();
+                ml.processingThreads.awaitTermination(100, TimeUnit.DAYS);
+            } else {
+                ml.printError();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

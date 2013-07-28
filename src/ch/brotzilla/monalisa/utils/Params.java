@@ -8,8 +8,15 @@ import java.util.Random;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
+import com.google.common.base.Preconditions;
+
 public class Params {
 
+    private final CmdLineParser parser;
+    private boolean isValid = false, isInitialized = false;
+    private Exception error = null;
+    
+    
     @Option(name = "-i", aliases = { "--input" }, metaVar = "File", usage = "the input image")
     private File inputFile;
 
@@ -19,33 +26,52 @@ public class Params {
     @Option(name = "-r", aliases = { "--resume" }, metaVar = "Folder", usage = "the folder of the session to resume")
     private File sessionToResume;
 
-    @Option(name = "--importance-map", metaVar = "File", usage = "the importance map")
+    @Option(name = "-m", aliases = { "--importance-map" }, metaVar = "File", usage = "the importance map")
     private File importanceMap;
     
     @Option(name = "-s", aliases = { "--seed" }, metaVar = "Number", usage = "the seed for the random number generator")
     private int seed = 0;
 
-    @Option(name = "-b", aliases = { "--background-color" }, metaVar = "Color", usage = "The background color for the image")
+    @Option(name = "-t", aliases = { "--num-threads" }, metaVar = "Number", usage = "the number of threads to use")
+    private int numThreads = 4;
+
+    @Option(name = "-b", aliases = { "--background-color" }, metaVar = "Color", usage = "the background color for the image")
     private String backgroundColorName;
     private Color backgroundColor;
-
+    
     public Params(String[] args) {
-        final CmdLineParser parser = new CmdLineParser(this);
+        Preconditions.checkNotNull(args, "The parameter 'args' must not be null");
+        parser = new CmdLineParser(this);
         parser.setUsageWidth(80);
         try {
             parser.parseArgument(args);
             validate();
             init();
         } catch (Exception e) {
-            System.out.println("Usage:");
-            parser.printUsage(System.out);
-            System.out.println();
-            System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
+            error = e;
         }
     }
 
+    public CmdLineParser getParser() {
+        return parser;
+    }
+    
+    public boolean isValid() {
+        return isValid;
+    }
+    
+    public boolean isInitialized() {
+        return isInitialized;
+    }
+    
+    public boolean isReady() {
+        return isValid && isInitialized && error == null;
+    }
+    
+    public Exception getError() {
+        return error;
+    }
+    
     public File getInputFile() {
         return inputFile;
     }
@@ -64,6 +90,10 @@ public class Params {
 
     public int getSeed() {
         return seed;
+    }
+    
+    public int getNumThreads() {
+        return numThreads;
     }
 
     public String getBackgroundColorName() {
@@ -92,6 +122,9 @@ public class Params {
         }
         if (importanceMap != null && !importanceMap.isFile())
             throw new IllegalArgumentException("--importance-map has to be a file");
+        if (numThreads < 1) 
+            throw new IllegalArgumentException("--num-threads must be greater than or equal to 1");
+        isValid = true;
     }
 
     public void init() throws IOException {
@@ -105,5 +138,6 @@ public class Params {
                 throw new IllegalArgumentException("--background-color is not a valid color (" + backgroundColorName + ")");
             }
         }
+        isInitialized = true;
     }
 }
