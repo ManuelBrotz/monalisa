@@ -65,12 +65,7 @@ public class Gene {
     }
 
     public void render(Graphics2D graphics) {
-        try {
-            graphics.setColor(new Color(color[1], color[2], color[3], color[0]));
-        } catch (Exception e) {
-            System.out.println(this);
-            System.exit(1);
-        }
+        graphics.setColor(new Color(color[1], color[2], color[3], color[0]));
         graphics.fillPolygon(x, y, x.length);
     }
 

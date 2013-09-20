@@ -1,14 +1,18 @@
 package ch.brotzilla.monalisa;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.mutations.GeneAddPointMutation;
 import ch.brotzilla.monalisa.mutations.GeneAlphaChannelMutation;
 import ch.brotzilla.monalisa.mutations.GeneColorBrighterMutation;
@@ -35,6 +39,8 @@ public class MonaLisa {
     protected Params params;
     protected SessionManager session;
 
+    protected MainWindow mainWindow;
+    
     protected int[] inputPixelData;
     protected int[] importanceMap;
 
@@ -120,12 +126,13 @@ public class MonaLisa {
         System.out.println("Usage:");
         params.getParser().printUsage(System.out);
         System.out.println();
+        System.out.println("Parameters:");
+        System.out.println(params.getArguments());
         if (params.getError() != null) {
+            System.out.println();
             System.out.println("Error: " + params.getError().getMessage());
             System.out.println();
             params.getError().printStackTrace();
-        } else {
-            System.out.println("Unknown error");
         }
     }
     
@@ -147,7 +154,9 @@ public class MonaLisa {
                 genome.selected = selected;
                 currentGenome = genome;
                 storageQueue.offer(genome);
-                System.out.println("Generated: " + generated + ", Selected: " + selected + ", Mutations: " + genome.mutations + ", Polygons: " + genome.genes.length + ", Points: " + genome.countPoints() + ", Fitness: " + ff.format(genome.fitness));
+                if (mainWindow != null) {
+                    mainWindow.submit(genome);
+                }
             }
         }
         return currentGenome;
@@ -191,7 +200,7 @@ public class MonaLisa {
             generated = currentGenome.generated;
             selected = currentGenome.selected;
         }
-
+        
         storageQueue = Queues.newLinkedBlockingQueue();
         storageThread = Executors.newFixedThreadPool(1);
         storageThread.submit(new Runnable() {
@@ -206,10 +215,11 @@ public class MonaLisa {
                 final Renderer renderer = new Renderer(width, height, false);
                 while (!storageThread.isShutdown()) {
                     try {
-                        final Genome genome = storageQueue.take();
-                        if (System.currentTimeMillis() - timeLastStored >= 10000) {
+                        final Genome genome = storageQueue.poll(250, TimeUnit.MILLISECONDS);
+                        if (genome != null && System.currentTimeMillis() - timeLastStored >= 10000) {
+                            System.out.println("Generated: " + generated + ", Selected: " + selected + ", Mutations: " + genome.mutations + ", Polygons: " + genome.genes.length + ", Points: " + genome.countPoints() + ", Fitness: " + ff.format(genome.fitness));
                             renderer.render(genome);
-                            session.storeGenome(genome, renderer.getImage());
+                            session.storeGenome(genome, renderer.getImage().image);
                             timeLastStored = System.currentTimeMillis();
                         }
                     } catch (Exception e) {
@@ -225,8 +235,17 @@ public class MonaLisa {
             throw new IllegalStateException("Not ready");
         if (processingThreads != null)
             throw new IllegalStateException("Already running");
+        
+        if (params.getShowGui()) {
+            showGui();
+            if (currentGenome != null) {
+                mainWindow.submit(currentGenome);
+            }
+        }
+        
         final int numThreads = params.getNumThreads();
         processingThreads = Executors.newFixedThreadPool(numThreads);
+        
         for (int i = 0; i < numThreads; i++) {
             processingThreads.submit(new Runnable() {
 
@@ -248,7 +267,6 @@ public class MonaLisa {
                                 genome = new Genome(backgroundColor, Utils.createRandomGenes(rng, constraints, 10, 20, inputPixelData));
                             } else {
                                 genome = mutations.apply(rng, constraints, genome);
-//                                 genome = oldMutationProcedure(rng, constraints, genome);
                             }
                             renderer.render(genome);
                             genome.fitness = Utils.computeSimpleFitness(genome, inputPixelData, importanceMap, renderer.getData());
@@ -261,15 +279,51 @@ public class MonaLisa {
         }
     }
 
-    public void stop() {
+    public void shutdown() {
         if (processingThreads != null) {
+            storageThread.shutdown();
             processingThreads.shutdown();
+            try {
+                storageThread.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             try {
                 processingThreads.awaitTermination(10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            processingThreads = null;
+        }
+    }
+    
+    public void showGui() {
+        if (mainWindow == null) {
+            mainWindow = new MainWindow(session.getConstraints());
+            final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+            final int width = 640, height = 480;
+            mainWindow.setBounds(screen.width / 2 - width / 2, screen.height / 2 - height / 2, width, height);
+        }
+        mainWindow.setVisible(true);
+    }
+    
+    public void initCommandLine() {
+        @SuppressWarnings("resource")
+        final Scanner cmd = new Scanner(System.in);
+        while (true) {
+            final String input = cmd.nextLine();
+            if (input == null || input.trim().isEmpty()) {
+                continue;
+            }
+            if (input.equals("shutdown") || input.equals("exit")) {
+                System.out.println("Shutting down...");
+                shutdown();
+                System.out.println("Goodbye");
+                System.exit(0);
+            } if (input.equals("show-gui")) {
+                showGui();
+            } else {
+                System.out.println("Unknown command: " + input);
+            }
         }
     }
 
@@ -279,7 +333,7 @@ public class MonaLisa {
             if (ml.params.isReady()) {
                 ml.setup();
                 ml.start();
-                ml.processingThreads.awaitTermination(100, TimeUnit.DAYS);
+                ml.initCommandLine();
             } else {
                 ml.printError();
             }

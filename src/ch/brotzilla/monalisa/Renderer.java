@@ -1,12 +1,10 @@
 package ch.brotzilla.monalisa;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
+//import java.awt.image.BufferedImage;
 
 import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.images.ImageARGB;
 
 import com.google.common.base.Preconditions;
 
@@ -14,57 +12,63 @@ public class Renderer {
 
     public static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
-    protected final int width, height;
-    protected final BufferedImage image;
-    protected final Graphics2D graphics;
-    protected final boolean readData;
-    protected final WritableRaster raster;
-    protected final int[] data;
-
+    public final int width, height;
+    public final boolean readData;
+    
+    protected ImageARGB image;
+    
     public Renderer(int width, int height, boolean readData) {
+        Preconditions.checkArgument(width > 0, "The parameter 'width' has to be greater than zero");
+        Preconditions.checkArgument(height > 0, "The parameter 'height' has to be greater than zero");
         this.width = width;
         this.height = height;
-        this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        this.graphics = image.createGraphics();
         this.readData = readData;
-        if (readData) {
-            this.raster = image.getRaster();
-            this.data = new int[width * height];
-        } else {
-            this.raster = null;
-            this.data = null;
-        }
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        this.image = new ImageARGB(width, height, readData);
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public BufferedImage getImage() {
+    public ImageARGB getImage() {
         return image;
     }
 
     public int[] getData() {
-        return data;
+        return image.data;
     }
+    
+//    public ImageARGB swapImage(BufferedImage image) {
+//        final ImageARGB result = this.image;
+//        if (image != null) {
+//            Preconditions.checkArgument(image.getWidth() == width && image.getHeight() == height, "The size of the parameter 'image' has to be " + width + "x" + height);
+//            this.image = new ImageARGB(image, readData);
+//        } else {
+//            this.image = new ImageARGB(width, height, readData);
+//        }
+//        return result;
+//    }
+//    
+//    public ImageARGB swapImage(ImageARGB image) {
+//        final ImageARGB result = this.image;
+//        if (image != null) {
+//            Preconditions.checkArgument(image.width == width && image.height == height, "The size of the parameter 'image' has to be " + width + "x" + height);
+//            if (readData) 
+//                Preconditions.checkArgument(image.readData, "The parameter 'image.readData' must be true");
+//            this.image = image;
+//        } else {
+//            this.image = new ImageARGB(width, height, readData);
+//        }
+//        return result;
+//    }
 
     public void render(Genome genome) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         if (genome.background == null) {
-            graphics.setBackground(TRANSPARENT);
+            image.graphics.setBackground(TRANSPARENT);
         } else {
-            graphics.setBackground(genome.background);
+            image.graphics.setBackground(genome.background);
         }
-        graphics.clearRect(0, 0, width, height);
-        genome.renderGenes(graphics);
+        image.graphics.clearRect(0, 0, width, height);
+        genome.renderGenes(image.graphics);
         if (readData) {
-            raster.getDataElements(0, 0, width, height, data);
+            image.readData();
         }
     }
 

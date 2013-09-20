@@ -8,11 +8,14 @@ import java.util.Random;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
 public class Params {
 
     private final CmdLineParser parser;
+    private final String arguments;
+    private int numArguments = 0;
     private boolean isValid = false, isInitialized = false;
     private Exception error = null;
     
@@ -29,22 +32,27 @@ public class Params {
     @Option(name = "-m", aliases = { "--importance-map" }, metaVar = "File", usage = "the importance map")
     private File importanceMap;
     
+    @Option(name = "-b", aliases = { "--background-color" }, metaVar = "Color", usage = "the background color for the image")
+    private String backgroundColorName;
+    private Color backgroundColor;
+    
     @Option(name = "-s", aliases = { "--seed" }, metaVar = "Number", usage = "the seed for the random number generator")
     private int seed = 0;
 
     @Option(name = "-t", aliases = { "--num-threads" }, metaVar = "Number", usage = "the number of threads to use")
     private int numThreads = 4;
-
-    @Option(name = "-b", aliases = { "--background-color" }, metaVar = "Color", usage = "the background color for the image")
-    private String backgroundColorName;
-    private Color backgroundColor;
     
+    @Option(name = "-g", aliases = { "--show-gui" }, metaVar = "Yes/No", usage = "displays a simple graphical user interface")
+    private boolean showGui = false;
+
     public Params(String[] args) {
         Preconditions.checkNotNull(args, "The parameter 'args' must not be null");
         parser = new CmdLineParser(this);
         parser.setUsageWidth(80);
+        arguments = Joiner.on(" ").join(args);
         try {
             parser.parseArgument(args);
+            numArguments = parser.getArguments().size();
             validate();
             init();
         } catch (Exception e) {
@@ -54,6 +62,14 @@ public class Params {
 
     public CmdLineParser getParser() {
         return parser;
+    }
+    
+    public String getArguments() {
+        return arguments;
+    }
+    
+    public int getNumArguments() {
+        return numArguments;
     }
     
     public boolean isValid() {
@@ -94,6 +110,10 @@ public class Params {
     
     public int getNumThreads() {
         return numThreads;
+    }
+    
+    public boolean getShowGui() {
+        return showGui;
     }
 
     public String getBackgroundColorName() {
