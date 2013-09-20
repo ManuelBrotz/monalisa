@@ -298,10 +298,16 @@ public class MonaLisa {
     
     public void showGui() {
         if (mainWindow == null) {
-            mainWindow = new MainWindow(session.getConstraints());
-            final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-            final int width = 640, height = 480;
-            mainWindow.setBounds(screen.width / 2 - width / 2, screen.height / 2 - height / 2, width, height);
+            try {
+                mainWindow = new MainWindow(session, currentGenome);
+                final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+                final int width = 640, height = 480;
+                mainWindow.setBounds(screen.width / 2 - width / 2, screen.height / 2 - height / 2, width, height);
+            } catch (Exception e) {
+                System.out.println("Unable to instanciate the gui");
+                e.printStackTrace();
+                return;
+            }
         }
         mainWindow.setVisible(true);
     }

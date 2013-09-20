@@ -3,6 +3,8 @@ package ch.brotzilla.monalisa;
 import java.awt.Color;
 //import java.awt.image.BufferedImage;
 
+import java.awt.image.BufferedImage;
+
 import ch.brotzilla.monalisa.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageARGB;
 
@@ -25,39 +27,26 @@ public class Renderer {
         this.readData = readData;
         this.image = new ImageARGB(width, height, readData);
     }
+    
+    public Renderer(ImageARGB image) {
+        this.image = Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
+        this.width = image.width;
+        this.height = image.height;
+        this.readData = image.readData;
+    }
 
     public ImageARGB getImage() {
         return image;
+    }
+    
+    public BufferedImage getBufferedImage() {
+        return image.image;
     }
 
     public int[] getData() {
         return image.data;
     }
     
-//    public ImageARGB swapImage(BufferedImage image) {
-//        final ImageARGB result = this.image;
-//        if (image != null) {
-//            Preconditions.checkArgument(image.getWidth() == width && image.getHeight() == height, "The size of the parameter 'image' has to be " + width + "x" + height);
-//            this.image = new ImageARGB(image, readData);
-//        } else {
-//            this.image = new ImageARGB(width, height, readData);
-//        }
-//        return result;
-//    }
-//    
-//    public ImageARGB swapImage(ImageARGB image) {
-//        final ImageARGB result = this.image;
-//        if (image != null) {
-//            Preconditions.checkArgument(image.width == width && image.height == height, "The size of the parameter 'image' has to be " + width + "x" + height);
-//            if (readData) 
-//                Preconditions.checkArgument(image.readData, "The parameter 'image.readData' must be true");
-//            this.image = image;
-//        } else {
-//            this.image = new ImageARGB(width, height, readData);
-//        }
-//        return result;
-//    }
-
     public void render(Genome genome) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         if (genome.background == null) {
