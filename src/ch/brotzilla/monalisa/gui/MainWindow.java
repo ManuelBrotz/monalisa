@@ -33,6 +33,8 @@ public class MainWindow extends JFrame {
     protected final JScrollPane inputImageScrollPane, currentImageScrollPane, importanceMapScrollPane;
     protected final ImageDisplay inputImageDisplay, currentImageDisplay, importanceMapDisplay;
 
+    protected final StatusDisplay statusDisplay;
+    
     protected Genome currentGenome;
     protected long lastRenderTime = 0;
     
@@ -92,6 +94,7 @@ public class MainWindow extends JFrame {
     }
     
     public MainWindow(SessionManager sessionManager, Genome currentGenome) throws IOException { 
+        super();
         
         this.sessionManager = Preconditions.checkNotNull(sessionManager, "The parameter 'sessionManager' must not be null");
         this.currentGenome = currentGenome;
@@ -132,6 +135,10 @@ public class MainWindow extends JFrame {
         
         add(tabbedPane, BorderLayout.CENTER);
         
+        this.statusDisplay = new StatusDisplay();
+        
+        add(statusDisplay, BorderLayout.PAGE_END);
+        
         final Listener listener = new Listener(this);
         addComponentListener(listener);
         addWindowListener(listener);
@@ -139,10 +146,13 @@ public class MainWindow extends JFrame {
     
     public void submit(Genome genome) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
+        
         currentGenome = genome;
+        
         final long time = System.currentTimeMillis();
         if (time - lastRenderTime >= 1000) {
             lastRenderTime = time;
+            statusDisplay.submit(genome);
             renderer.render(genome);
             currentImageDisplay.repaint();
         }

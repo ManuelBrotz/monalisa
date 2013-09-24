@@ -39,6 +39,7 @@ public class ImageDisplay extends JPanel {
     protected Image image;
     
     public ImageDisplay(Image image) {
+        super();
         this.image = Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
         setPreferredSize(new Dimension(image.width, image.height));
     }

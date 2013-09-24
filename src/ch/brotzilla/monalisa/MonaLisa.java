@@ -217,7 +217,6 @@ public class MonaLisa {
                     try {
                         final Genome genome = storageQueue.poll(250, TimeUnit.MILLISECONDS);
                         if (genome != null && System.currentTimeMillis() - timeLastStored >= 10000) {
-                            System.out.println("Generated: " + generated + ", Selected: " + selected + ", Mutations: " + genome.mutations + ", Polygons: " + genome.genes.length + ", Points: " + genome.countPoints() + ", Fitness: " + ff.format(genome.fitness));
                             renderer.render(genome);
                             session.storeGenome(genome, renderer.getImage().image);
                             timeLastStored = System.currentTimeMillis();
@@ -316,6 +315,7 @@ public class MonaLisa {
         @SuppressWarnings("resource")
         final Scanner cmd = new Scanner(System.in);
         while (true) {
+            System.out.print("> ");
             final String input = cmd.nextLine();
             if (input == null || input.trim().isEmpty()) {
                 continue;
@@ -327,6 +327,9 @@ public class MonaLisa {
                 System.exit(0);
             } if (input.equals("show-gui")) {
                 showGui();
+            } if (input.equals("status")) {
+                final Genome genome = currentGenome;
+                System.out.println("Generated: " + generated + ", Selected: " + selected + ", Mutations: " + genome.mutations + ", Polygons: " + genome.genes.length + ", Points: " + genome.countPoints() + ", Fitness: " + ff.format(genome.fitness));
             } else {
                 System.out.println("Unknown command: " + input);
             }
