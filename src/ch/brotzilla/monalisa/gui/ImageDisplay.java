@@ -48,12 +48,25 @@ public class ImageDisplay extends JPanel {
     public void paint(Graphics g) {
         final Graphics2D g2 = (Graphics2D) g;
         final Paint p = g2.getPaint();
+        
         try {
             g2.setPaint(BACKGROUND_PAINT);
             g2.fillRect(0, 0, getWidth(), getHeight());
         } finally {
             g2.setPaint(p);
         }
-        g2.drawImage(image.image, 0, 0, null);
+        
+        final int ww = getWidth(), wh = getHeight();
+        final int iw = image.width, ih = image.height;
+        
+        int x = 0, y = 0;
+        if (ww > iw) {
+            x = (ww - iw) / 2;
+        }
+        if (wh > ih) {
+            y = (wh - ih) / 2;
+        }
+        
+        g2.drawImage(image.image, x, y, null);
     }
 }
