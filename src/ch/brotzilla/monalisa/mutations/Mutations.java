@@ -95,7 +95,7 @@ public final class Mutations {
             for (final GenomeMutation m : genomeMutations) {
                 final double p = m.getProbability();
                 if (p > 0 && rng.nextBoolean(p)) {
-                    final Genome mutated = m.apply(rng, constraints, result);
+                    final Genome mutated = m.apply(rng, selector, constraints, result);
                     if (mutated != result) {
                         result = mutated;
                         count++;

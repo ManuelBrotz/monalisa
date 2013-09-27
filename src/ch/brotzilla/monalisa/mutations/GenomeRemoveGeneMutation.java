@@ -2,6 +2,7 @@ package ch.brotzilla.monalisa.mutations;
 
 import ch.brotzilla.monalisa.genes.Gene;
 import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.mutations.intf.GeneSelector;
 import ch.brotzilla.monalisa.mutations.intf.GenomeMutation;
 import ch.brotzilla.monalisa.utils.Constraints;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
@@ -13,10 +14,10 @@ public class GenomeRemoveGeneMutation extends BasicMutation implements GenomeMut
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, Constraints constraints, Genome input) {
+    public Genome apply(MersenneTwister rng, GeneSelector selector, Constraints constraints, Genome input) {
         final int length = input.genes.length;
         if (length > 1) {
-            final int index = rng.nextInt(length);
+            final int index = selector.select(rng, length);
             final Gene[] genes = new Gene[length - 1];
             if (index == 0) {
                 System.arraycopy(input.genes, 1, genes, 0, length - 1);
