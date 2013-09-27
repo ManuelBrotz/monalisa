@@ -3,6 +3,7 @@ package ch.brotzilla.monalisa;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import ch.brotzilla.monalisa.genes.Genome;
 import ch.brotzilla.monalisa.gui.MainWindow;
+import ch.brotzilla.monalisa.mutations.BiasedGeneSelector;
 import ch.brotzilla.monalisa.mutations.GeneAddPointMutation;
 import ch.brotzilla.monalisa.mutations.GeneAlphaChannelMutation;
 import ch.brotzilla.monalisa.mutations.GeneColorBrighterMutation;
@@ -60,6 +62,7 @@ public class MonaLisa {
     protected Mutations setupMutations() {
         final Mutations m = new Mutations();
         m.setMaxMutations(3);
+        m.setGeneSelector(new BiasedGeneSelector(3));
         
         m.add(new GeneAlphaChannelMutation(0.1d));
         m.add(new GeneAlphaChannelMutation(0.01d));
@@ -180,8 +183,10 @@ public class MonaLisa {
             System.out.println("Using image file: " + params.getInputFile().getAbsolutePath());
         }
         System.out.println("Image size: " + imageWidth + "x" + imageHeight + ", " + inputPixelData.length + " pixels, " + (inputPixelData.length * 4) + " bytes");
-        if (importanceMap != null) {
-            System.out.println("Using importance map of length: " + importanceMap.length + " bytes");
+        
+        if (session.isSessionResumed()) {
+            int genomes = session.countGenomeFiles();
+            System.out.println("Counted " + genomes + " genome files.");
         }
 
         random = new MersenneTwister(params.getSeed());
@@ -205,20 +210,19 @@ public class MonaLisa {
         storageThread = Executors.newFixedThreadPool(1);
         storageThread.submit(new Runnable() {
 
-            private final int width = imageWidth;
-            private final int height = imageHeight;
             private long timeLastStored = 0;
 
             @Override
             public void run() {
                 Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-                final Renderer renderer = new Renderer(width, height, false);
                 while (!storageThread.isShutdown()) {
                     try {
                         final Genome genome = storageQueue.poll(250, TimeUnit.MILLISECONDS);
                         if (genome != null && System.currentTimeMillis() - timeLastStored >= 10000) {
-                            renderer.render(genome);
-                            session.storeGenome(genome, renderer.getImage().image);
+                            final File genomeFile = session.storeGenome(genome);
+                            if (mainWindow != null) {
+                                mainWindow.stored(genomeFile);
+                            }
                             timeLastStored = System.currentTimeMillis();
                         }
                     } catch (Exception e) {

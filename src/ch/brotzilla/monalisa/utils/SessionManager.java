@@ -2,13 +2,11 @@ package ch.brotzilla.monalisa.utils;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Reader;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -200,36 +198,32 @@ public class SessionManager {
             }
         }
         if (latestGenome != null) {
-            final Reader br = new BufferedReader(new FileReader(latestGenome));
-            try {
-                final char[] buf = new char[1024*4];
-                final StringBuffer result = new StringBuffer();
-                while (true) {
-                    final int len = br.read(buf);
-                    if (len < 0)
-                        break;
-                    result.append(buf, 0, len);
-                }
-                return Genome.fromJson(result.toString());
-            } finally {
-                br.close();
-            }
+            return Genome.fromJson(Utils.readTextFile(latestGenome));
         }
         return null;
     }
     
-    public void storeGenome(Genome genome, BufferedImage image) throws IOException {
+    public int listGenomeFiles(final List<File> output) {
+        Preconditions.checkNotNull(output, "The parameter 'output' must not be null");
+        final GenomesLister lister = new GenomesLister(output);
+        genomesDirectory.listFiles(lister);
+        return lister.getCount();
+    }
+    
+    public int countGenomeFiles() {
+        final GenomesCounter counter = new GenomesCounter();
+        genomesDirectory.listFiles(counter);
+        return counter.getCount();
+    }
+    
+    public File storeGenome(Genome genome) throws IOException {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
-        Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
         
         final String number = pad(genome.selected, 6);
         final File genomeFile = new File(genomesDirectory, number + ".genome");
-        final File imageFile = new File(imagesDirectory, number + ".png");
         
         if (genomeFile.exists())
             throw new IllegalArgumentException("File already exists: " + genomeFile);
-        if (imageFile.exists())
-            throw new IllegalArgumentException("File already exists: " + imageFile);
         
         final PrintWriter writer = new PrintWriter(genomeFile);
         try {
@@ -237,8 +231,8 @@ public class SessionManager {
         } finally {
             writer.close();
         }
-        
-        ImageIO.write(image, "PNG", imageFile);
+
+        return genomeFile;
     }
     
     public static File checkDir(File directory, boolean canCreate) throws IOException {
@@ -301,5 +295,46 @@ public class SessionManager {
             result = "0" + result;
         }
         return result;
+    }
+    
+    private static class GenomesCounter implements FileFilter {
+        
+        private int count = 0;
+
+        public int getCount() {
+            return count;
+        }
+        
+        @Override
+        public boolean accept(File pathname) {
+            if (pathname.isFile() && pathname.getName().endsWith(".genome")) {
+                ++count;
+            }
+            return false;
+        }
+    }
+    
+    private static class GenomesLister implements FileFilter {
+        
+        private int count = 0;
+        private final List<File> list;
+
+        public GenomesLister(List<File> list) {
+            Preconditions.checkNotNull(list, "The parameter 'list' must not be null");
+            this.list = list;
+        }
+        
+        public int getCount() {
+            return count;
+        }
+
+        @Override
+        public boolean accept(File pathname) {
+            if (pathname.isFile() && pathname.getName().endsWith(".genome")) {
+                ++count;
+                list.add(pathname);
+            }
+            return false;
+        }
     }
 }

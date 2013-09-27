@@ -5,7 +5,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -34,6 +36,8 @@ public class MainWindow extends JFrame {
     protected final ImageDisplay inputImageDisplay, currentImageDisplay, importanceMapDisplay;
 
     protected final StatusDisplay statusDisplay;
+    
+    protected final LinkedList<File> genomes = new LinkedList<File>();
     
     protected Genome currentGenome;
     protected long lastRenderTime = 0;
@@ -99,6 +103,8 @@ public class MainWindow extends JFrame {
         this.sessionManager = Preconditions.checkNotNull(sessionManager, "The parameter 'sessionManager' must not be null");
         this.currentGenome = currentGenome;
         
+        sessionManager.listGenomeFiles(genomes);
+        
         this.inputImage = new ImageARGB(Utils.readImage(sessionManager.getInputImageFile()), false);
         this.currentImage = new ImageARGB(sessionManager.getWidth(), sessionManager.getHeight(), false);
         if (sessionManager.getImportanceMapFile().isFile()) {
@@ -144,7 +150,7 @@ public class MainWindow extends JFrame {
         addWindowListener(listener);
     }
     
-    public void submit(Genome genome) {
+    public synchronized void submit(Genome genome) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         
         currentGenome = genome;
@@ -156,5 +162,12 @@ public class MainWindow extends JFrame {
             renderer.render(genome);
             currentImageDisplay.repaint();
         }
+    }
+    
+    public synchronized void stored(File genomeFile) {
+        Preconditions.checkNotNull(genomeFile, "The parameter 'genomeFile' must not be null");
+        Preconditions.checkArgument(genomeFile.isFile(), "The parameter 'genomeFile' has to be a regular file");
+        Preconditions.checkArgument(genomeFile.getName().endsWith(".genome"), "The parameter 'genomeFile' has to end with the suffix '.genome'");
+        genomes.add(genomeFile);
     }
 }

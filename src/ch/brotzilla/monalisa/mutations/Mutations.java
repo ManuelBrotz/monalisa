@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import ch.brotzilla.monalisa.genes.Gene;
 import ch.brotzilla.monalisa.genes.Genome;
 import ch.brotzilla.monalisa.mutations.intf.GeneMutation;
+import ch.brotzilla.monalisa.mutations.intf.GeneSelector;
 import ch.brotzilla.monalisa.mutations.intf.GenomeMutation;
 import ch.brotzilla.monalisa.mutations.intf.Mutation;
 import ch.brotzilla.monalisa.utils.Constraints;
@@ -15,12 +16,28 @@ import com.google.common.collect.Lists;
 
 public final class Mutations {
 
+    public static final GeneSelector DEFAULT_GENE_SELECTOR = new BasicGeneSelector();
+    
+    protected GeneSelector selector = DEFAULT_GENE_SELECTOR;
     protected LinkedList<GeneMutation> geneMutations = Lists.newLinkedList();
     protected LinkedList<GenomeMutation> genomeMutations = Lists.newLinkedList();
     
     protected int maxMutations = -1;
     
     public Mutations() {}
+    
+    public GeneSelector getGeneSelector() {
+        return selector;
+    }
+    
+    public Mutations setGeneSelector(GeneSelector value) {
+        if (value == null) {
+            this.selector = DEFAULT_GENE_SELECTOR;
+        } else {
+            this.selector = value;
+        }
+        return this;
+    }
 
     public Iterable<GeneMutation> getGeneMutations() {
         return geneMutations;
@@ -58,12 +75,11 @@ public final class Mutations {
         Preconditions.checkArgument(geneMutations.size() > 0 && genomeMutations.size() > 0);
         Genome result = new Genome(input);
         int count = 0;
-        final int length = input.genes.length;
         while (count == 0) {
             for (final GeneMutation m : geneMutations) {
                 final double p = m.getProbability();
                 if (p > 0 && rng.nextBoolean(p)) {
-                    final int index = rng.nextInt(length);
+                    final int index = selector.select(rng, result.genes.length);
                     final Gene gene = result.genes[index];
                     final Gene mutated = m.apply(rng, constraints, gene);
                     if (mutated != gene) {

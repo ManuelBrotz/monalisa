@@ -27,6 +27,11 @@ public class Utils {
         }
         return image;
     }
+    
+    public static String readTextFile(File file) throws IOException {
+        final TextReader reader = new TextReader(1024 * 10);
+        return reader.readTextFile(file);
+    }
 
     public static Point computeCentroid(Gene gene, Point output) {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
