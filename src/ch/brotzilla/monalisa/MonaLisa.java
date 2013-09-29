@@ -91,7 +91,8 @@ public class MonaLisa {
         m.add(new GeneSwapPointsMutation(0.1d));
 
         m.add(new GenomeAddGeneMutation(inputPixelData, 0.1d));
-        m.add(new GenomeRemoveGeneMutation(0.1d));
+        m.add(new GenomeRemoveGeneMutation(0.4d));
+        m.add(new GenomeRemoveGeneMutation(0.4d));
         m.add(new GenomeSwapGenesMutation(0.1d));
 
         return m;

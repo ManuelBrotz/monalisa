@@ -45,6 +45,9 @@ public class Params {
     @Option(name = "-g", aliases = { "--show-gui" }, metaVar = "Yes/No", usage = "displays a simple graphical user interface")
     private boolean showGui = false;
 
+    @Option(name = "--export-latest", metaVar = "File", usage = "exports the latest genome file as svg to the specified file")
+    private File exportLatest;
+    
     public Params(String[] args) {
         Preconditions.checkNotNull(args, "The parameter 'args' must not be null");
         parser = new CmdLineParser(this);
@@ -142,6 +145,8 @@ public class Params {
         }
         if (importanceMap != null && !importanceMap.isFile())
             throw new IllegalArgumentException("--importance-map has to be a file");
+        if (exportLatest != null && exportLatest.exists()) 
+            throw new IllegalArgumentException("--export-latest must not exist");
         if (numThreads < 1) 
             throw new IllegalArgumentException("--num-threads must be greater than or equal to 1");
         isValid = true;

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -22,7 +23,6 @@ public class SessionManager {
     protected final String sessionName;
 
     protected final File sessionDirectory;
-    protected final File imagesDirectory;
     protected final File genomesDirectory;
     protected final File inputImageFile;
     protected final File importanceMapFile;
@@ -97,7 +97,6 @@ public class SessionManager {
             final String inputName = params.getInputFile().getName();
             this.sessionDirectory = checkDir(uniqueDir(params.getOutputFolder(), inputName), true).getAbsoluteFile();
             this.sessionName = this.sessionDirectory.getName();
-            this.imagesDirectory = checkDir(new File(this.sessionDirectory, "images"), true).getAbsoluteFile();
             this.genomesDirectory = checkDir(new File(this.sessionDirectory, "genomes"), true).getAbsoluteFile();
             this.inputImageFile = new File(this.sessionDirectory, "input.png").getAbsoluteFile();
             this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
@@ -108,7 +107,6 @@ public class SessionManager {
         } else {
             this.sessionDirectory = checkDir(params.getSessionToResume(), false).getAbsoluteFile();
             this.sessionName = this.sessionDirectory.getName();
-            this.imagesDirectory = checkDir(new File(this.sessionDirectory, "images"), false).getAbsoluteFile();
             this.genomesDirectory = checkDir(new File(this.sessionDirectory, "genomes"), false).getAbsoluteFile();
             this.inputImageFile = new File(this.sessionDirectory, "input.png").getAbsoluteFile();
             this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
@@ -122,7 +120,7 @@ public class SessionManager {
     }
     
     public boolean isSessionReady() {
-        return (sessionDirectory != null && imagesDirectory != null && genomesDirectory != null) && (sessionDirectory.isDirectory() && imagesDirectory.isDirectory() && genomesDirectory.isDirectory());
+        return (sessionDirectory != null && genomesDirectory != null) && (sessionDirectory.isDirectory() && genomesDirectory.isDirectory());
     }
     
     public boolean isSessionResumed() {
@@ -139,10 +137,6 @@ public class SessionManager {
 
     public File getSessionDirectory() {
         return sessionDirectory;
-    }
-
-    public File getImagesDirectory() {
-        return imagesDirectory;
     }
 
     public File getGenomesDirectory() {
@@ -208,6 +202,26 @@ public class SessionManager {
         final GenomesLister lister = new GenomesLister(output);
         genomesDirectory.listFiles(lister);
         return lister.getCount();
+    }
+    
+    public int loadGenomes(final List<Genome> output) {
+        Preconditions.checkNotNull(output, "The parameter 'output' must not be null");
+        final LinkedList<File> files = new LinkedList<File>();
+        final GenomesLister lister = new GenomesLister(files);
+        genomesDirectory.listFiles(lister);
+        final TextReader reader = new TextReader(1024 * 100);
+        int count = 0;
+        for (final File file : files) {
+            try {
+                final Genome genome = Genome.fromJson(reader.readTextFile(file));
+                output.add(genome);
+                count++;
+            } catch (IOException e) {
+                System.out.println("Error loading genome: " + file);
+                e.printStackTrace();
+            }
+        }
+        return count;
     }
     
     public int countGenomeFiles() {

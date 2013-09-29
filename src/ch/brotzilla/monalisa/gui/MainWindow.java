@@ -37,6 +37,8 @@ public class MainWindow extends JFrame {
 
     protected final StatusDisplay statusDisplay;
     
+    protected final StatisticsPanel statisticsPanel;
+    
     protected final LinkedList<File> genomes = new LinkedList<File>();
     
     protected Genome currentGenome;
@@ -138,6 +140,9 @@ public class MainWindow extends JFrame {
             this.importanceMapDisplay = null;
             this.importanceMapScrollPane = null;
         }
+
+        this.statisticsPanel = new StatisticsPanel(sessionManager);
+        tabbedPane.addTab("Statistics", statisticsPanel);
         
         add(tabbedPane, BorderLayout.CENTER);
         
@@ -145,6 +150,7 @@ public class MainWindow extends JFrame {
         
         add(statusDisplay, BorderLayout.PAGE_END);
         
+                
         final Listener listener = new Listener(this);
         addComponentListener(listener);
         addWindowListener(listener);
