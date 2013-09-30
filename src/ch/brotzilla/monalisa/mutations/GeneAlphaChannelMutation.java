@@ -12,7 +12,7 @@ public class GeneAlphaChannelMutation extends BasicMutation implements GeneMutat
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, Context constraints, Gene input) {
+    public Gene apply(MersenneTwister rng, Context context, Gene input) {
         final Gene result = new Gene(input);
         int value = result.color[0] + (rng.nextInt(51) - 25);
         if (value < 0) value = 0;

@@ -15,8 +15,8 @@ public class GenomeAddGeneMutation extends BasicMutation implements GenomeMutati
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, GeneSelector selector, Context constraints, Genome input) {
-        final Gene gene = Utils.createRandomGene(rng, constraints);
+    public Genome apply(MersenneTwister rng, GeneSelector selector, Context context, Genome input) {
+        final Gene gene = Utils.createRandomGene(rng, context);
         final Gene[] genes = new Gene[input.genes.length + 1];
         System.arraycopy(input.genes, 0, genes, 0, input.genes.length);
         genes[genes.length - 1] = gene;

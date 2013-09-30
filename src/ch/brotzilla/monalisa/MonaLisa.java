@@ -190,22 +190,22 @@ public class MonaLisa {
 
                 private final Color backgroundColor = params.getBackgroundColor();
                 private final long seed = random.nextLong();
-                private final Context constraints = session.getConstraints();
+                private final Context context = session.getContext();
                 private final MutationStrategy strategy = setupMutationStrategy();
 
                 @Override
                 public void run() {
                     final MersenneTwister rng = new MersenneTwister(seed);
-                    final Renderer renderer = new Renderer(constraints.getWidth(), constraints.getHeight(), true);
+                    final Renderer renderer = new Renderer(context.getWidth(), context.getHeight(), true);
 
                     Genome genome = currentGenome;
                     while (!processingThreads.isShutdown()) {
                         try {
                             genome = submit(genome);
                             if (genome == null) {
-                                genome = new Genome(backgroundColor, Utils.createRandomGenes(rng, constraints, 10, 20));
+                                genome = new Genome(backgroundColor, Utils.createRandomGenes(rng, context, 10, 20));
                             } else {
-                                genome = strategy.apply(rng, constraints, genome);
+                                genome = strategy.apply(rng, context, genome);
                             }
                             renderer.render(genome);
                             genome.fitness = Utils.computeSimpleFitness(genome, inputPixelData, importanceMap, renderer.getData());

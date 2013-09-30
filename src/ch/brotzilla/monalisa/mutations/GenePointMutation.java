@@ -14,7 +14,7 @@ public class GenePointMutation extends BasicMutation implements GeneMutation {
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, Context constraints, Gene input) {
+    public Gene apply(MersenneTwister rng, Context context, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final Gene result = new Gene(input);

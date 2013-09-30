@@ -12,7 +12,7 @@ public class GeneSwapPointsMutation extends BasicMutation implements GeneMutatio
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, Context constraints, Gene input) {
+    public Gene apply(MersenneTwister rng, Context context, Gene input) {
         final Gene result = new Gene(input);
         final int len = input.x.length;
         final int index1 = rng.nextInt(len);

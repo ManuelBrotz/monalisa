@@ -22,7 +22,7 @@ public class GenomeSwapGenesMutation extends BasicMutation implements GenomeMuta
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, GeneSelector selector, Context constraints, Genome input) {
+    public Genome apply(MersenneTwister rng, GeneSelector selector, Context context, Genome input) {
         final int length = input.genes.length;
         if (length > 1) {
             final int index1 = selector.select(rng, length);

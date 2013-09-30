@@ -41,32 +41,32 @@ public class SimpleMutationStrategy implements MutationStrategy {
     
     protected GeneSelector selector;
     
-    protected Gene mutateGene(MersenneTwister rng, Context constraints, Gene input) {
+    protected Gene mutateGene(MersenneTwister rng, Context context, Gene input) {
         if (rng.nextBoolean(0.75f)) {
-            return geneImportantMutations.select(rng).apply(rng, constraints, input);
+            return geneImportantMutations.select(rng).apply(rng, context, input);
         }
         if (rng.nextBoolean(0.75f)) {
-            return geneColorMutations.select(rng).apply(rng, constraints, input);
+            return geneColorMutations.select(rng).apply(rng, context, input);
         }
-        return geneDefaultMutations.select(rng).apply(rng, constraints, input);
+        return geneDefaultMutations.select(rng).apply(rng, context, input);
     }
     
-    protected Genome mutateGene(MersenneTwister rng, Context constraints, Genome input) {
+    protected Genome mutateGene(MersenneTwister rng, Context context, Genome input) {
         final int index = selector.select(rng, input.genes.length);
         final Gene selected = input.genes[index];
         Gene mutated = selected;
         while (mutated == selected) {
-            mutated = mutateGene(rng, constraints, selected);
+            mutated = mutateGene(rng, context, selected);
         }
         final Genome result = new Genome(input);
         result.genes[index] = mutated; 
         return result;
     }
     
-    protected Genome mutateGenome(MersenneTwister rng, Context constraints, final Genome input) {
+    protected Genome mutateGenome(MersenneTwister rng, Context context, final Genome input) {
         Genome mutated = input;
         while (mutated == input) {
-            mutated = genomeMutations.select(rng).apply(rng, selector, constraints, input);
+            mutated = genomeMutations.select(rng).apply(rng, selector, context, input);
         }
         return mutated;
     }
@@ -88,14 +88,14 @@ public class SimpleMutationStrategy implements MutationStrategy {
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, Context constraints, final Genome input) {
+    public Genome apply(MersenneTwister rng, Context context, final Genome input) {
         final int count = 1 + rng.nextInt(2);
         Genome result = input;
         for (int i = 0; i < count; i++) {
             if (rng.nextBoolean(0.95f)) {
-                result = mutateGene(rng, constraints, result);
+                result = mutateGene(rng, context, result);
             } else {
-                result = mutateGenome(rng, constraints, result);
+                result = mutateGenome(rng, context, result);
             }
         }
         result.mutations = count;

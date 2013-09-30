@@ -6,6 +6,6 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public interface MutationStrategy {
 
-    Genome apply(MersenneTwister rng, Context constraints, Genome input);
+    Genome apply(MersenneTwister rng, Context context, Genome input);
     
 }

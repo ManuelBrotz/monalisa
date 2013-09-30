@@ -51,11 +51,11 @@ public class Utils {
         return new Point(cx, cy);
     }
 
-    public static Gene createRandomGene(MersenneTwister rng, Context constraints) {
+    public static Gene createRandomGene(MersenneTwister rng, Context context) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        final int width = constraints.getWidth(), height = constraints.getHeight(), xborder = constraints.getBorderX(), yborder = constraints.getBorderY();
+        final int width = context.getWidth(), height = context.getHeight(), xborder = context.getBorderX(), yborder = context.getBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
-        final int[] inputData = constraints.getInputData(), x = new int[3], y = new int[3];
+        final int[] inputData = context.getInputData(), x = new int[3], y = new int[3];
         final Point c = new Point();
         x[0] = rng.nextInt(bwidth) - xborder;
         x[1] = rng.nextInt(bwidth) - xborder;
@@ -73,9 +73,9 @@ public class Utils {
         return new Gene(x, y, new Color(r, g, b, a));
     }
 
-    public static Gene[] createRandomGenes(MersenneTwister rng, Context constraints, int minGenes, int maxGenes) {
+    public static Gene[] createRandomGenes(MersenneTwister rng, Context context, int minGenes, int maxGenes) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");
+        Preconditions.checkNotNull(context, "The parameter 'context' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");
         Preconditions.checkArgument(maxGenes >= minGenes, "The parameter 'maxGenes' must be greater than or equal to 'minGenes'");
         final int length;
@@ -88,7 +88,7 @@ public class Utils {
         Preconditions.checkState(length <= maxGenes);
         final Gene[] genes = new Gene[length];
         for (int i = 0; i < length; i++) {
-            genes[i] = createRandomGene(rng, constraints);
+            genes[i] = createRandomGene(rng, context);
         }
         return genes;
     }
@@ -236,11 +236,11 @@ public class Utils {
         return new Gene(x, y, input.color);
     }
 
-    public static Genome addRandomGene(MersenneTwister rng, Genome input, Context constraints) {
+    public static Genome addRandomGene(MersenneTwister rng, Genome input, Context context) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
-        Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");
-        final Gene gene = createRandomGene(rng, constraints);
+        Preconditions.checkNotNull(context, "The parameter 'context' must not be null");
+        final Gene gene = createRandomGene(rng, context);
         final Gene[] genes = new Gene[input.genes.length + 1];
         System.arraycopy(input.genes, 0, genes, 0, input.genes.length);
         genes[genes.length - 1] = gene;

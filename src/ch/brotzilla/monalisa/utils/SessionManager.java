@@ -32,7 +32,7 @@ public class SessionManager {
     protected final File inputImageFile;
     protected final File importanceMapFile;
 
-    protected final Context constraints;
+    protected final Context context;
     protected final int[] inputPixelData;
     protected final int[] importanceMap;
 
@@ -109,7 +109,7 @@ public class SessionManager {
             this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
             this.isSessionResumed = false;
             inputImage = importInputImage(params.getInputFile(), this.inputImageFile);
-            importanceMap = importImportanceMap(params.getImportanceMap(), this.importanceMapFile, this.constraints);
+            importanceMap = importImportanceMap(params.getImportanceMap(), this.importanceMapFile, this.context);
         } else {
             this.sessionDirectory = checkDir(params.getSessionToResume(), false).getAbsoluteFile();
             this.sessionName = this.sessionDirectory.getName();
@@ -118,11 +118,11 @@ public class SessionManager {
             this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
             this.isSessionResumed = true;
             inputImage = Utils.readImage(this.inputImageFile);
-            importanceMap = loadImportanceMap(this.importanceMapFile, this.constraints);
+            importanceMap = loadImportanceMap(this.importanceMapFile, this.context);
         }
         this.inputPixelData = extractInputPixelData(inputImage);
         this.importanceMap = extractImportanceMap(importanceMap, inputImage.getWidth(), inputImage.getHeight());
-        this.constraints = new Context(inputImage.getWidth(), inputImage.getHeight(), this.inputPixelData, this.importanceMap);
+        this.context = new Context(inputImage.getWidth(), inputImage.getHeight(), this.inputPixelData, this.importanceMap);
     }
     
     public boolean isSessionReady() {
@@ -158,15 +158,15 @@ public class SessionManager {
     }
 
     public int getWidth() {
-        return constraints.getWidth();
+        return context.getWidth();
     }
     
     public int getHeight() {
-        return constraints.getHeight();
+        return context.getHeight();
     }
     
-    public Context getConstraints() {
-        return constraints;
+    public Context getContext() {
+        return context;
     }
     
     public int[] getInputPixelData() {
