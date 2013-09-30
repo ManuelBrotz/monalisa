@@ -86,13 +86,13 @@ public class MonaLisa {
         m.add(new GenePointMutation(0.01d));
         m.add(new GenePointMutation(0.001d));
         
-        m.add(new GeneAddPointMutation(0.1d));
-        m.add(new GeneRemovePointMutation(0.1d));
-        m.add(new GeneSwapPointsMutation(0.1d));
+//        m.add(new GeneAddPointMutation(0.1d));
+//        m.add(new GeneRemovePointMutation(0.1d));
+//        m.add(new GeneSwapPointsMutation(0.1d));
 
         m.add(new GenomeAddGeneMutation(inputPixelData, 0.1d));
-        m.add(new GenomeRemoveGeneMutation(0.4d));
-        m.add(new GenomeRemoveGeneMutation(0.4d));
+//        m.add(new GenomeRemoveGeneMutation(0.4d));
+        m.add(new GenomeRemoveGeneMutation(0.2d));
         m.add(new GenomeSwapGenesMutation(0.1d));
 
         return m;
@@ -205,6 +205,15 @@ public class MonaLisa {
             }
             generated = currentGenome.generated;
             selected = currentGenome.selected;
+        }
+        
+        if (params.getExportLatest() != null) {
+            try {
+                session.exportSVG(currentGenome, params.getExportLatest());
+            } catch (Exception e) {
+                System.out.println("Failed exporting latest genome as svg document.");
+                e.printStackTrace();
+            }
         }
         
         storageQueue = Queues.newLinkedBlockingQueue();

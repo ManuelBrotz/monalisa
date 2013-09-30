@@ -45,7 +45,7 @@ public class Params {
     @Option(name = "-g", aliases = { "--show-gui" }, metaVar = "Yes/No", usage = "displays a simple graphical user interface")
     private boolean showGui = false;
 
-    @Option(name = "--export-latest", metaVar = "File", usage = "exports the latest genome file as svg to the specified file")
+    @Option(name = "--export-latest", metaVar = "File", usage = "exports the latest genome file as an svg document to the specified directory")
     private File exportLatest;
     
     public Params(String[] args) {
@@ -126,6 +126,10 @@ public class Params {
     public Color getBackgroundColor() {
         return backgroundColor;
     }
+    
+    public File getExportLatest() {
+        return exportLatest;
+    }
 
     public void validate() {
         if (sessionToResume != null) {
@@ -145,8 +149,8 @@ public class Params {
         }
         if (importanceMap != null && !importanceMap.isFile())
             throw new IllegalArgumentException("--importance-map has to be a file");
-        if (exportLatest != null && exportLatest.exists()) 
-            throw new IllegalArgumentException("--export-latest must not exist");
+        if (exportLatest != null && !exportLatest.isDirectory()) 
+            throw new IllegalArgumentException("--export-latest has to be a directory");
         if (numThreads < 1) 
             throw new IllegalArgumentException("--num-threads must be greater than or equal to 1");
         isValid = true;

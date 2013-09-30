@@ -11,6 +11,11 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.apache.batik.dom.svg.SVGDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.svg.SVGDocument;
+
 import ch.brotzilla.monalisa.genes.Genome;
 
 import com.google.common.base.Preconditions;
@@ -240,13 +245,31 @@ public class SessionManager {
             throw new IllegalArgumentException("File already exists: " + genomeFile);
         
         final PrintWriter writer = new PrintWriter(genomeFile);
-        try {
-            writer.print(Genome.toJson(genome));
-        } finally {
-            writer.close();
-        }
+        writer.print(Genome.toJson(genome));
+        writer.close();
 
         return genomeFile;
+    }
+    
+    public File exportSVG(Genome genome, File folder) throws IOException {
+        Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
+        Preconditions.checkNotNull(folder, "The parameter 'folder' must not be null");
+        Preconditions.checkArgument(folder.isDirectory(), "The parameter 'folder' has to be a directory");
+        
+        final File exportFile = new File(folder, sessionName + '-' + pad(genome.selected, 6) + ".svg");
+        
+        if (exportFile.exists())
+            throw new IllegalArgumentException("File already exists: " + exportFile);
+        
+        final DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
+        final SVGDocument doc = (SVGDocument) impl.createDocument(SVGDOMImplementation.SVG_NAMESPACE_URI, "svg", null);
+        final SVGGraphics2D svg = new SVGGraphics2D(doc);
+
+        genome.renderGenes(svg);
+
+        svg.stream(exportFile.toString());
+        
+        return exportFile;
     }
     
     public static File checkDir(File directory, boolean canCreate) throws IOException {
