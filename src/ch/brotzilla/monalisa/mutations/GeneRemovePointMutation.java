@@ -7,8 +7,8 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GeneRemovePointMutation extends BasicMutation implements GeneMutation {
 
-    public GeneRemovePointMutation(double probability) {
-        super(probability);
+    public GeneRemovePointMutation() {
+        super("remove-point", "Remove Point", "Removes a randomly chosen point of the passed gene");
     }
 
     @Override

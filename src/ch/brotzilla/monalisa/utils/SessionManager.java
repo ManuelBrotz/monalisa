@@ -76,17 +76,19 @@ public class SessionManager {
         return null;
     }
     
-    protected int[] extractImportanceMap(BufferedImage input, Constraints c) {
+    protected int[] extractImportanceMap(BufferedImage input, int width, int height) {
         if (input != null) {
+            Preconditions.checkArgument(input.getWidth() == width, "The width of the parameter 'input' does not match");
+            Preconditions.checkArgument(input.getHeight() == height, "The height of the parameter 'input' does not match");
             final WritableRaster raster = input.getRaster();
-            final byte[] raw = (byte[]) raster.getDataElements(0, 0, input.getWidth(), input.getHeight(), null);
+            final byte[] raw = (byte[]) raster.getDataElements(0, 0, width, height, null);
             final int[] map = new int[raw.length];
             for (int i = 0; i < raw.length; i++) {
                 map[i] = raw[i] & 0xFF;
             }
             return map;
         } else {
-            final int[] map = new int[c.getWidth() * c.getHeight()];
+            final int[] map = new int[width * height];
             for (int i = 0; i < map.length; i++) {
                 map[i] = 0xFF;
             }
@@ -107,7 +109,6 @@ public class SessionManager {
             this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
             this.isSessionResumed = false;
             inputImage = importInputImage(params.getInputFile(), this.inputImageFile);
-            this.constraints = new Constraints(inputImage.getWidth(), inputImage.getHeight());
             importanceMap = importImportanceMap(params.getImportanceMap(), this.importanceMapFile, this.constraints);
         } else {
             this.sessionDirectory = checkDir(params.getSessionToResume(), false).getAbsoluteFile();
@@ -117,11 +118,11 @@ public class SessionManager {
             this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
             this.isSessionResumed = true;
             inputImage = Utils.readImage(this.inputImageFile);
-            this.constraints = new Constraints(inputImage.getWidth(), inputImage.getHeight());
             importanceMap = loadImportanceMap(this.importanceMapFile, this.constraints);
         }
         this.inputPixelData = extractInputPixelData(inputImage);
-        this.importanceMap = extractImportanceMap(importanceMap, this.constraints);
+        this.importanceMap = extractImportanceMap(importanceMap, inputImage.getWidth(), inputImage.getHeight());
+        this.constraints = new Constraints(inputImage.getWidth(), inputImage.getHeight(), this.inputPixelData, this.importanceMap);
     }
     
     public boolean isSessionReady() {

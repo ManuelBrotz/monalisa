@@ -3,14 +3,18 @@ package ch.brotzilla.monalisa.utils;
 import com.google.common.base.Preconditions;
 
 public class Constraints {
-
+    
     protected final int width, height;
+    protected final int[] inputData, importanceMap;
+
     protected int borderX = 50, borderY = 50;
     
-    public Constraints(int width, int height) {
+    public Constraints(int width, int height, int[] inputData, int[] importanceMap) {
         Preconditions.checkArgument(width > 0 && height > 0, "The parameters 'width' and 'height' have to be greater than zero");
         this.width = width;
         this.height = height;
+        this.inputData = Preconditions.checkNotNull(inputData, "The parameter 'inputData' must not be null");
+        this.importanceMap = importanceMap;
     }
     
     public int getWidth() {
@@ -21,6 +25,14 @@ public class Constraints {
         return height;
     }
     
+    public int[] getInputData() {
+        return inputData;
+    }
+    
+    public int[] getImportanceMap() {
+        return importanceMap;
+    }
+
     public int getBorderX() {
         return borderX;
     }

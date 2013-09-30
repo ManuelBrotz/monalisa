@@ -1,29 +1,36 @@
 package ch.brotzilla.monalisa.mutations;
 
-import ch.brotzilla.monalisa.mutations.intf.Mutation;
-
 import com.google.common.base.Preconditions;
+
+import ch.brotzilla.monalisa.mutations.intf.Mutation;
 
 public abstract class BasicMutation implements Mutation {
 
-    protected double probability;
+    private final String id, name, description;
     
-    public BasicMutation() {}
-    
-    public BasicMutation(double probability) {
-        Preconditions.checkArgument(probability >= 0, "The parameter 'probability' has to be in the range 0.0 - 1.0 inclusive");
-        this.probability = probability;
-    }
-    
-    @Override
-    public double getProbability() {
-        return probability;
+    public BasicMutation(String id, String name, String description) {
+        Preconditions.checkNotNull(id, "The parameter 'id' must not be null");
+        Preconditions.checkArgument(!id.trim().isEmpty(), "The parameter 'id' must not be empty");
+        this.id = id;
+        this.name = (name == null) ? "" : name;
+        this.description = (description == null) ? "" : description;
     }
 
     @Override
-    public void setProbability(double value) {
-        Preconditions.checkArgument(value >= 0, "The parameter 'probability' has to be in the range 0.0 - 1.0 inclusive");
-        this.probability = value;
+    public String getID() {
+        return id;
     }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    
     
 }

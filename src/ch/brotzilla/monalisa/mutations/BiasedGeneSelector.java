@@ -21,6 +21,9 @@ public class BiasedGeneSelector implements GeneSelector {
     @Override
     public int select(MersenneTwister rng, int length) {
         final int top = length / bias;
+        if (top == 0) {
+            return rng.nextInt(length);
+        }
         final int bottom = length - top;
         if (rng.nextInt(bias) == 0) {
             return rng.nextInt(bottom);

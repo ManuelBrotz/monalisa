@@ -51,12 +51,11 @@ public class Utils {
         return new Point(cx, cy);
     }
 
-    public static Gene createRandomGene(MersenneTwister rng, Constraints constraints, int[] inputData) {
+    public static Gene createRandomGene(MersenneTwister rng, Constraints constraints) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");
         final int width = constraints.getWidth(), height = constraints.getHeight(), xborder = constraints.getBorderX(), yborder = constraints.getBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
-        final int[] x = new int[3], y = new int[3];
+        final int[] inputData = constraints.getInputData(), x = new int[3], y = new int[3];
         final Point c = new Point();
         x[0] = rng.nextInt(bwidth) - xborder;
         x[1] = rng.nextInt(bwidth) - xborder;
@@ -64,19 +63,17 @@ public class Utils {
         y[0] = rng.nextInt(bheight) - yborder;
         y[1] = rng.nextInt(bheight) - yborder;
         y[2] = rng.nextInt(bheight) - yborder;
-        if (inputData != null) {
-            Utils.computeCentroid(x, y, c);
-            if (c.x >= 0 && c.x < width && c.y >= 0 && c.y < height) {
-                final int color = inputData[c.y * width + c.x];
-                final int alpha = rng.nextInt(256) << 24;
-                return new Gene(x, y, (color & 0x00FFFFFF) | alpha);
-            }
+        Utils.computeCentroid(x, y, c);
+        if (c.x >= 0 && c.x < width && c.y >= 0 && c.y < height) {
+            final int color = inputData[c.y * width + c.x];
+            final int alpha = rng.nextInt(256) << 24;
+            return new Gene(x, y, (color & 0x00FFFFFF) | alpha);
         }
         final int a = rng.nextInt(256), r = rng.nextInt(256), g = rng.nextInt(256), b = rng.nextInt(256);
         return new Gene(x, y, new Color(r, g, b, a));
     }
 
-    public static Gene[] createRandomGenes(MersenneTwister rng, Constraints constraints, int minGenes, int maxGenes, int[] inputData) {
+    public static Gene[] createRandomGenes(MersenneTwister rng, Constraints constraints, int minGenes, int maxGenes) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");
@@ -91,7 +88,7 @@ public class Utils {
         Preconditions.checkState(length <= maxGenes);
         final Gene[] genes = new Gene[length];
         for (int i = 0; i < length; i++) {
-            genes[i] = createRandomGene(rng, constraints, inputData);
+            genes[i] = createRandomGene(rng, constraints);
         }
         return genes;
     }
@@ -239,11 +236,11 @@ public class Utils {
         return new Gene(x, y, input.color);
     }
 
-    public static Genome addRandomGene(MersenneTwister rng, Genome input, Constraints constraints, int[] inputData) {
+    public static Genome addRandomGene(MersenneTwister rng, Genome input, Constraints constraints) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");
-        final Gene gene = createRandomGene(rng, constraints, inputData);
+        final Gene gene = createRandomGene(rng, constraints);
         final Gene[] genes = new Gene[input.genes.length + 1];
         System.arraycopy(input.genes, 0, genes, 0, input.genes.length);
         genes[genes.length - 1] = gene;

@@ -7,8 +7,8 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GeneSwapPointsMutation extends BasicMutation implements GeneMutation {
 
-    public GeneSwapPointsMutation(double probability) {
-        super(probability);
+    public GeneSwapPointsMutation() {
+        super("swap-points", "Swap Points", "Swaps two randomly chosen points of the passed gene");
     }
 
     @Override

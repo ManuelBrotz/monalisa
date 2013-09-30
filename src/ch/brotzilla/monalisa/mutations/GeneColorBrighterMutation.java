@@ -7,8 +7,8 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GeneColorBrighterMutation extends BasicMutation implements GeneMutation {
 
-    public GeneColorBrighterMutation(double probability) {
-        super(probability);
+    public GeneColorBrighterMutation() {
+        super("brighter-color", "Brighter Color", "Brightens the color of the passed gene");
     }
 
     @Override

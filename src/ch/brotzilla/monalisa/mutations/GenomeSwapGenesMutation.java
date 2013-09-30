@@ -17,8 +17,8 @@ public class GenomeSwapGenesMutation extends BasicMutation implements GenomeMuta
         return result;
     }
     
-    public GenomeSwapGenesMutation(double probability) {
-        super(probability);
+    public GenomeSwapGenesMutation() {
+        super("swap-genes", "Swap Genes", "Swaps two randomly chosen genes of the passed genome");
     }
 
     @Override

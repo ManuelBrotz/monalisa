@@ -1,9 +1,11 @@
 package ch.brotzilla.monalisa.mutations.intf;
 
 public interface Mutation {
+
+    String getID();
     
-    public double getProbability();
+    String getName();
     
-    public void setProbability(double value);
+    String getDescription();
     
 }

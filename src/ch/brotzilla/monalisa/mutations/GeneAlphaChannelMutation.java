@@ -7,8 +7,8 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GeneAlphaChannelMutation extends BasicMutation implements GeneMutation {
 
-    public GeneAlphaChannelMutation(double probability) {
-        super(probability);
+    public GeneAlphaChannelMutation() {
+        super("alpha-channel", "Alpha Channel", "Mutates the alpha channel of the passed gene");
     }
 
     @Override

@@ -7,18 +7,20 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GeneAddPointMutation extends BasicMutation implements GeneMutation {
 
-    public GeneAddPointMutation(double probability) {
-        super(probability);
+    public GeneAddPointMutation() {
+        super("add-point", "Add Point", "Adds a random point to the passed gene");
     }
 
     @Override
     public Gene apply(MersenneTwister rng, Constraints constraints, Gene input) {
-        final Gene result = new Gene(input);
-        final int coord = rng.nextInt(result.x.length);
-        final int dx = rng.nextInt(21) - 10, dy = rng.nextInt(21) - 10;
-        result.x[coord] += dx;
-        result.y[coord] += dy;
-        return result;
+        final int len = input.x.length;
+        final int[] x = new int[len + 1];
+        final int[] y = new int[len + 1];
+        System.arraycopy(input.x, 0, x, 0, len);
+        System.arraycopy(input.y, 0, y, 0, len);
+        x[len] = Math.round((x[0] + x[len-1]) / 2.0f) + (rng.nextInt(51) - 25);
+        y[len] = Math.round((y[0] + y[len-1]) / 2.0f) + (rng.nextInt(51) - 25);
+        return new Gene(x, y, input.color);
     }
     
 }

@@ -7,8 +7,8 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GeneColorChannelMutation extends BasicMutation implements GeneMutation {
 
-    public GeneColorChannelMutation(double probability) {
-        super(probability);
+    public GeneColorChannelMutation() {
+        super("color-channel", "Color Channel", "Mutates a randomly chosen color component of the passed gene");
     }
 
     @Override

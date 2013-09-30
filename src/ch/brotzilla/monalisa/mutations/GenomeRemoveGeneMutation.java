@@ -9,8 +9,8 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GenomeRemoveGeneMutation extends BasicMutation implements GenomeMutation {
 
-    public GenomeRemoveGeneMutation(double probability) {
-        super(probability);
+    public GenomeRemoveGeneMutation() {
+        super("remove-gene", "Remove Gene", "Removes a randomly chosen gene from the passed genome");
     }
 
     @Override
