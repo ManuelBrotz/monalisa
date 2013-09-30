@@ -2,7 +2,7 @@ package ch.brotzilla.monalisa.mutations;
 
 import ch.brotzilla.monalisa.genes.Gene;
 import ch.brotzilla.monalisa.mutations.intf.GeneMutation;
-import ch.brotzilla.monalisa.utils.Constraints;
+import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GeneSwapPointsMutation extends BasicMutation implements GeneMutation {
@@ -12,7 +12,7 @@ public class GeneSwapPointsMutation extends BasicMutation implements GeneMutatio
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, Constraints constraints, Gene input) {
+    public Gene apply(MersenneTwister rng, Context constraints, Gene input) {
         final Gene result = new Gene(input);
         final int len = input.x.length;
         final int index1 = rng.nextInt(len);

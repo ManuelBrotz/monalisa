@@ -2,7 +2,7 @@ package ch.brotzilla.monalisa.mutations;
 
 import ch.brotzilla.monalisa.genes.Gene;
 import ch.brotzilla.monalisa.mutations.intf.GeneMutation;
-import ch.brotzilla.monalisa.utils.Constraints;
+import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GeneColorBrighterMutation extends BasicMutation implements GeneMutation {
@@ -12,7 +12,7 @@ public class GeneColorBrighterMutation extends BasicMutation implements GeneMuta
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, Constraints constraints, Gene input) {
+    public Gene apply(MersenneTwister rng, Context constraints, Gene input) {
         final Gene result = new Gene(input);
         final float factor = 1.01f + (0.49f * rng.nextFloat());
         float r = (result.color[1] + 1) * factor;

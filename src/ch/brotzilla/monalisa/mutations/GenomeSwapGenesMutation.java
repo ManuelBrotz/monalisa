@@ -4,7 +4,7 @@ import ch.brotzilla.monalisa.genes.Gene;
 import ch.brotzilla.monalisa.genes.Genome;
 import ch.brotzilla.monalisa.mutations.intf.GeneSelector;
 import ch.brotzilla.monalisa.mutations.intf.GenomeMutation;
-import ch.brotzilla.monalisa.utils.Constraints;
+import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GenomeSwapGenesMutation extends BasicMutation implements GenomeMutation {
@@ -22,7 +22,7 @@ public class GenomeSwapGenesMutation extends BasicMutation implements GenomeMuta
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, GeneSelector selector, Constraints constraints, Genome input) {
+    public Genome apply(MersenneTwister rng, GeneSelector selector, Context constraints, Genome input) {
         final int length = input.genes.length;
         if (length > 1) {
             final int index1 = selector.select(rng, length);

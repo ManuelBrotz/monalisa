@@ -51,7 +51,7 @@ public class Utils {
         return new Point(cx, cy);
     }
 
-    public static Gene createRandomGene(MersenneTwister rng, Constraints constraints) {
+    public static Gene createRandomGene(MersenneTwister rng, Context constraints) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         final int width = constraints.getWidth(), height = constraints.getHeight(), xborder = constraints.getBorderX(), yborder = constraints.getBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
@@ -73,7 +73,7 @@ public class Utils {
         return new Gene(x, y, new Color(r, g, b, a));
     }
 
-    public static Gene[] createRandomGenes(MersenneTwister rng, Constraints constraints, int minGenes, int maxGenes) {
+    public static Gene[] createRandomGenes(MersenneTwister rng, Context constraints, int minGenes, int maxGenes) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");
@@ -236,7 +236,7 @@ public class Utils {
         return new Gene(x, y, input.color);
     }
 
-    public static Genome addRandomGene(MersenneTwister rng, Genome input, Constraints constraints) {
+    public static Genome addRandomGene(MersenneTwister rng, Genome input, Context constraints) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         Preconditions.checkNotNull(constraints, "The parameter 'constraints' must not be null");

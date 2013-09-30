@@ -32,7 +32,7 @@ public class SessionManager {
     protected final File inputImageFile;
     protected final File importanceMapFile;
 
-    protected final Constraints constraints;
+    protected final Context constraints;
     protected final int[] inputPixelData;
     protected final int[] importanceMap;
 
@@ -47,7 +47,7 @@ public class SessionManager {
         return (int[]) raster.getDataElements(0, 0, input.getWidth(), input.getHeight(), null);
     }
     
-    protected BufferedImage importImportanceMap(File input, File output, Constraints c) throws IOException {
+    protected BufferedImage importImportanceMap(File input, File output, Context c) throws IOException {
         if (input != null) {
             final BufferedImage img = ImageIO.read(input);
             if (img.getType() != BufferedImage.TYPE_BYTE_GRAY)
@@ -62,7 +62,7 @@ public class SessionManager {
         return null;
     }
     
-    protected BufferedImage loadImportanceMap(File input, Constraints c) throws IOException {
+    protected BufferedImage loadImportanceMap(File input, Context c) throws IOException {
         if (input != null && input.exists()) {
             final BufferedImage img = ImageIO.read(input);
             if (img.getType() != BufferedImage.TYPE_BYTE_GRAY)
@@ -122,7 +122,7 @@ public class SessionManager {
         }
         this.inputPixelData = extractInputPixelData(inputImage);
         this.importanceMap = extractImportanceMap(importanceMap, inputImage.getWidth(), inputImage.getHeight());
-        this.constraints = new Constraints(inputImage.getWidth(), inputImage.getHeight(), this.inputPixelData, this.importanceMap);
+        this.constraints = new Context(inputImage.getWidth(), inputImage.getHeight(), this.inputPixelData, this.importanceMap);
     }
     
     public boolean isSessionReady() {
@@ -165,7 +165,7 @@ public class SessionManager {
         return constraints.getHeight();
     }
     
-    public Constraints getConstraints() {
+    public Context getConstraints() {
         return constraints;
     }
     

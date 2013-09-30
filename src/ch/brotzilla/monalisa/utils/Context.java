@@ -2,14 +2,14 @@ package ch.brotzilla.monalisa.utils;
 
 import com.google.common.base.Preconditions;
 
-public class Constraints {
+public class Context {
     
     protected final int width, height;
     protected final int[] inputData, importanceMap;
 
     protected int borderX = 50, borderY = 50;
     
-    public Constraints(int width, int height, int[] inputData, int[] importanceMap) {
+    public Context(int width, int height, int[] inputData, int[] importanceMap) {
         Preconditions.checkArgument(width > 0 && height > 0, "The parameters 'width' and 'height' have to be greater than zero");
         this.width = width;
         this.height = height;
@@ -37,7 +37,7 @@ public class Constraints {
         return borderX;
     }
     
-    public Constraints setBorderX(int value) {
+    public Context setBorderX(int value) {
         Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
         this.borderX = value;
         return this;
@@ -47,13 +47,13 @@ public class Constraints {
         return borderY;
     }
     
-    public Constraints setBorderY(int value) {
+    public Context setBorderY(int value) {
         Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
         this.borderY = value;
         return this;
     }
     
-    public Constraints setBorder(int borderX, int borderY) {
+    public Context setBorder(int borderX, int borderY) {
         Preconditions.checkArgument(borderX >= 0 && borderY >= 0, "The parameters 'borderX' and 'borderY' have to be greater than or equal to zero");
         this.borderX = borderX;
         this.borderY = borderY;

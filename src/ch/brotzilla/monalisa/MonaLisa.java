@@ -16,7 +16,7 @@ import ch.brotzilla.monalisa.genes.Genome;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.mutations.SimpleMutationStrategy;
 import ch.brotzilla.monalisa.mutations.intf.MutationStrategy;
-import ch.brotzilla.monalisa.utils.Constraints;
+import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.utils.SessionManager;
@@ -190,7 +190,7 @@ public class MonaLisa {
 
                 private final Color backgroundColor = params.getBackgroundColor();
                 private final long seed = random.nextLong();
-                private final Constraints constraints = session.getConstraints();
+                private final Context constraints = session.getConstraints();
                 private final MutationStrategy strategy = setupMutationStrategy();
 
                 @Override

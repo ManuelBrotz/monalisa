@@ -6,7 +6,7 @@ import ch.brotzilla.monalisa.mutations.intf.GeneMutation;
 import ch.brotzilla.monalisa.mutations.intf.GeneSelector;
 import ch.brotzilla.monalisa.mutations.intf.GenomeMutation;
 import ch.brotzilla.monalisa.mutations.intf.MutationStrategy;
-import ch.brotzilla.monalisa.utils.Constraints;
+import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.TableSelect;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
@@ -41,7 +41,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
     
     protected GeneSelector selector;
     
-    protected Gene mutateGene(MersenneTwister rng, Constraints constraints, Gene input) {
+    protected Gene mutateGene(MersenneTwister rng, Context constraints, Gene input) {
         if (rng.nextBoolean(0.75f)) {
             return geneImportantMutations.select(rng).apply(rng, constraints, input);
         }
@@ -51,7 +51,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
         return geneDefaultMutations.select(rng).apply(rng, constraints, input);
     }
     
-    protected Genome mutateGene(MersenneTwister rng, Constraints constraints, Genome input) {
+    protected Genome mutateGene(MersenneTwister rng, Context constraints, Genome input) {
         final int index = selector.select(rng, input.genes.length);
         final Gene selected = input.genes[index];
         Gene mutated = selected;
@@ -63,7 +63,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
         return result;
     }
     
-    protected Genome mutateGenome(MersenneTwister rng, Constraints constraints, final Genome input) {
+    protected Genome mutateGenome(MersenneTwister rng, Context constraints, final Genome input) {
         Genome mutated = input;
         while (mutated == input) {
             mutated = genomeMutations.select(rng).apply(rng, selector, constraints, input);
@@ -88,7 +88,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, Constraints constraints, final Genome input) {
+    public Genome apply(MersenneTwister rng, Context constraints, final Genome input) {
         final int count = 1 + rng.nextInt(2);
         Genome result = input;
         for (int i = 0; i < count; i++) {

@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.genes.Gene;
 import ch.brotzilla.monalisa.mutations.intf.GeneMutation;
-import ch.brotzilla.monalisa.utils.Constraints;
+import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class GenePointMutation extends BasicMutation implements GeneMutation {
@@ -14,7 +14,7 @@ public class GenePointMutation extends BasicMutation implements GeneMutation {
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, Constraints constraints, Gene input) {
+    public Gene apply(MersenneTwister rng, Context constraints, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final Gene result = new Gene(input);
