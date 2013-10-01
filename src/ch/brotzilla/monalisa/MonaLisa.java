@@ -114,6 +114,15 @@ public class MonaLisa {
         if (session.isSessionResumed()) {
             int genomes = session.countGenomeFiles();
             System.out.println("Counted " + genomes + " genome files.");
+            
+            try {
+                System.out.print("Converting old storage format... ");
+                session.convertOldFormat();
+                System.out.println("Done!");
+            } catch (Exception e) {
+                System.out.println("Error!");
+                e.printStackTrace();
+            }
         }
 
         random = new MersenneTwister(params.getSeed());
