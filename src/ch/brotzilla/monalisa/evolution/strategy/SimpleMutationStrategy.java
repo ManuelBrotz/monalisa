@@ -19,7 +19,7 @@ import ch.brotzilla.monalisa.evolution.mutations.GenomeRemoveGeneMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
 import ch.brotzilla.monalisa.evolution.selectors.BiasedIndexSelector;
 import ch.brotzilla.monalisa.utils.Context;
-import ch.brotzilla.monalisa.utils.TableSelect;
+import ch.brotzilla.monalisa.utils.ObjectSelector;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class SimpleMutationStrategy implements MutationStrategy {
@@ -33,21 +33,21 @@ public class SimpleMutationStrategy implements MutationStrategy {
     protected static final GeneColorBrighterMutation geneBrighterColor = new GeneColorBrighterMutation();
     protected static final GeneColorDarkerMutation geneDarkerColor = new GeneColorDarkerMutation();
 
-    protected static final TableSelect<GeneMutation> geneImportantMutations = 
-            new TableSelect<GeneMutation>(geneMovePoint);
+    protected static final ObjectSelector<GeneMutation> geneImportantMutations = 
+            new ObjectSelector<GeneMutation>(geneMovePoint);
     
-    protected static final TableSelect<GeneMutation> geneColorMutations = 
-            new TableSelect<GeneMutation>(geneAlphaChannel, geneColorChannel, geneBrighterColor, geneDarkerColor);
+    protected static final ObjectSelector<GeneMutation> geneColorMutations = 
+            new ObjectSelector<GeneMutation>(geneAlphaChannel, geneColorChannel, geneBrighterColor, geneDarkerColor);
 
-    protected static final TableSelect<GeneMutation> geneDefaultMutations = 
-            new TableSelect<GeneMutation>(geneMovePoint);
+    protected static final ObjectSelector<GeneMutation> geneDefaultMutations = 
+            new ObjectSelector<GeneMutation>(geneMovePoint);
         
     protected static final GenomeAddGeneMutation genomeAddGene = new GenomeAddGeneMutation();
     protected static final GenomeRemoveGeneMutation genomeRemoveGene = new GenomeRemoveGeneMutation();
     protected static final GenomeSwapGenesMutation genomeSwapGenes = new GenomeSwapGenesMutation();
 
-    protected static final TableSelect<GenomeMutation> genomeMutations = 
-            new TableSelect<GenomeMutation>(genomeAddGene, genomeRemoveGene, genomeSwapGenes);
+    protected static final ObjectSelector<GenomeMutation> genomeMutations = 
+            new ObjectSelector<GenomeMutation>(genomeAddGene, genomeRemoveGene, genomeSwapGenes);
 
     protected static final IndexSelector defaultGeneSelector = new BiasedIndexSelector(4);
     

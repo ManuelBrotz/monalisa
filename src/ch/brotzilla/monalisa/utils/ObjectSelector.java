@@ -2,12 +2,12 @@ package ch.brotzilla.monalisa.utils;
 
 import com.google.common.base.Preconditions;
 
-public class TableSelect<T> {
+public class ObjectSelector<T> {
 
     private final T[] items;
     private final int length;
     
-    public TableSelect(@SuppressWarnings("unchecked") T... items) {
+    public ObjectSelector(@SuppressWarnings("unchecked") T... items) {
         Preconditions.checkNotNull(items, "The parameter 'items' must not be null");
         Preconditions.checkArgument(items.length > 0, "The parameter 'items' must not be empty");
         this.items = items;
