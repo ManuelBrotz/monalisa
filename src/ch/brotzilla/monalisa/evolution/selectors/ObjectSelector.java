@@ -1,4 +1,6 @@
-package ch.brotzilla.monalisa.utils;
+package ch.brotzilla.monalisa.evolution.selectors;
+
+import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 import com.google.common.base.Preconditions;
 

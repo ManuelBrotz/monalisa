@@ -18,8 +18,8 @@ import ch.brotzilla.monalisa.evolution.mutations.GenomeAddGeneMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeRemoveGeneMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
 import ch.brotzilla.monalisa.evolution.selectors.BiasedIndexSelector;
+import ch.brotzilla.monalisa.evolution.selectors.ObjectSelector;
 import ch.brotzilla.monalisa.utils.Context;
-import ch.brotzilla.monalisa.utils.ObjectSelector;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 public class SimpleMutationStrategy implements MutationStrategy {
