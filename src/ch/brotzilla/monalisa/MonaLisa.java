@@ -17,6 +17,7 @@ import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.SimpleMutationStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.utils.Context;
+import ch.brotzilla.monalisa.utils.GenomesDatabase;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.utils.SessionManager;
@@ -115,14 +116,14 @@ public class MonaLisa {
             int genomes = session.countGenomeFiles();
             System.out.println("Counted " + genomes + " genome files.");
             
-            try {
-                System.out.print("Converting old storage format... ");
-                session.convertOldFormat();
-                System.out.println("Done!");
-            } catch (Exception e) {
-                System.out.println("Error!");
-                e.printStackTrace();
-            }
+//            try {
+//                System.out.print("Converting old storage format... ");
+//                GenomesDatabase.convertOld(session.getGenomesDirectory(), new File(session.getSessionDirectory(), "genomes.db"));
+//                System.out.println("Done!");
+//            } catch (Exception e) {
+//                System.out.println("Error!");
+//                e.printStackTrace();
+//            }
         }
 
         random = new MersenneTwister(params.getSeed());
