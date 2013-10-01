@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.evolution.strategy;
+package ch.brotzilla.monalisa.evolution.strategies;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
