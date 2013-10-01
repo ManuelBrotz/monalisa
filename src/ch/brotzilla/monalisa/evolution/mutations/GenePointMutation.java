@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.mutations;
+package ch.brotzilla.monalisa.evolution.mutations;
 
 import com.google.common.base.Preconditions;
 

@@ -2,6 +2,17 @@ package ch.brotzilla.monalisa.mutations;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.evolution.mutations.GeneAddPointMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneAlphaChannelMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneColorBrighterMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneColorChannelMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneColorDarkerMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GenePointMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneRemovePointMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneSwapPointsMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GenomeAddGeneMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GenomeRemoveGeneMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
 import ch.brotzilla.monalisa.mutations.intf.GeneMutation;
 import ch.brotzilla.monalisa.mutations.intf.IndexSelector;
 import ch.brotzilla.monalisa.mutations.intf.GenomeMutation;

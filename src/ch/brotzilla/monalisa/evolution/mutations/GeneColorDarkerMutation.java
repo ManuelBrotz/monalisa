@@ -1,20 +1,20 @@
-package ch.brotzilla.monalisa.mutations;
+package ch.brotzilla.monalisa.evolution.mutations;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.mutations.intf.GeneMutation;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
-public class GeneColorBrighterMutation extends BasicMutation implements GeneMutation {
+public class GeneColorDarkerMutation extends BasicMutation implements GeneMutation {
 
-    public GeneColorBrighterMutation() {
-        super("brighter-color", "Brighter Color", "Brightens the color of the passed gene");
+    public GeneColorDarkerMutation() {
+        super("darker-color", "Darker Color", "Darkens the color of the passed gene");
     }
 
     @Override
     public Gene apply(MersenneTwister rng, Context context, Gene input) {
         final Gene result = new Gene(input);
-        final float factor = 1.01f + (0.49f * rng.nextFloat());
+        final float factor = 0.5f + (0.49f * rng.nextFloat());
         float r = (result.color[1] + 1) * factor;
         float g = (result.color[2] + 1) * factor;
         float b = (result.color[3] + 1) * factor;

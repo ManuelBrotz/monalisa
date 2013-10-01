@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.mutations;
+package ch.brotzilla.monalisa.evolution.mutations;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.mutations.intf.GeneMutation;
