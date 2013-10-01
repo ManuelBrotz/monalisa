@@ -13,9 +13,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
+import ch.brotzilla.monalisa.evolution.strategy.SimpleMutationStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
-import ch.brotzilla.monalisa.mutations.SimpleMutationStrategy;
-import ch.brotzilla.monalisa.mutations.intf.MutationStrategy;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Params;

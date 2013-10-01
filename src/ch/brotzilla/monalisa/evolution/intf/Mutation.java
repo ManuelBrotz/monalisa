@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.mutations.intf;
+package ch.brotzilla.monalisa.evolution.intf;
 
 public interface Mutation {
 

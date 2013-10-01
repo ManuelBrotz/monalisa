@@ -2,7 +2,7 @@ package ch.brotzilla.monalisa.evolution.mutations;
 
 import com.google.common.base.Preconditions;
 
-import ch.brotzilla.monalisa.mutations.intf.Mutation;
+import ch.brotzilla.monalisa.evolution.intf.Mutation;
 
 public abstract class BasicMutation implements Mutation {
 
