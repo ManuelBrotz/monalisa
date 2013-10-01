@@ -1,7 +1,7 @@
 package ch.brotzilla.monalisa.mutations;
 
-import ch.brotzilla.monalisa.genes.Gene;
-import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.evolution.genes.Gene;
+import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.mutations.intf.IndexSelector;
 import ch.brotzilla.monalisa.mutations.intf.GenomeMutation;
 import ch.brotzilla.monalisa.utils.Context;

@@ -18,7 +18,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import com.google.common.base.Preconditions;
 
-import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.utils.SessionManager;
 
 @SuppressWarnings("serial")

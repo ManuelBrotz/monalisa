@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.genes;
+package ch.brotzilla.monalisa.evolution.genes;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

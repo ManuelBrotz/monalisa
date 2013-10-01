@@ -16,7 +16,7 @@ import org.apache.batik.svggen.SVGGraphics2D;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.svg.SVGDocument;
 
-import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.evolution.genes.Genome;
 
 import com.google.common.base.Preconditions;
 

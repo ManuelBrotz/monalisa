@@ -5,7 +5,7 @@ import java.awt.Color;
 
 import java.awt.image.BufferedImage;
 
-import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageARGB;
 
 import com.google.common.base.Preconditions;

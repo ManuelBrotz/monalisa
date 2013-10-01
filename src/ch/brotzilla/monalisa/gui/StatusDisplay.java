@@ -5,7 +5,7 @@ import java.text.DecimalFormat;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.evolution.genes.Genome;
 
 @SuppressWarnings("serial")
 public class StatusDisplay extends JPanel {

@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import ch.brotzilla.monalisa.genes.Genome;
+import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.mutations.SimpleMutationStrategy;
 import ch.brotzilla.monalisa.mutations.intf.MutationStrategy;
