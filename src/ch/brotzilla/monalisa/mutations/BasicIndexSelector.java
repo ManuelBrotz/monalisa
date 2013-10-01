@@ -1,11 +1,11 @@
 package ch.brotzilla.monalisa.mutations;
 
-import ch.brotzilla.monalisa.mutations.intf.GeneSelector;
+import ch.brotzilla.monalisa.mutations.intf.IndexSelector;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
-public class BasicGeneSelector implements GeneSelector {
+public class BasicIndexSelector implements IndexSelector {
 
-    public BasicGeneSelector() {}
+    public BasicIndexSelector() {}
 
     @Override
     public int select(MersenneTwister rng, int length) {

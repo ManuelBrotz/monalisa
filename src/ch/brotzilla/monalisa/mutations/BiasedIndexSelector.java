@@ -2,14 +2,14 @@ package ch.brotzilla.monalisa.mutations;
 
 import com.google.common.base.Preconditions;
 
-import ch.brotzilla.monalisa.mutations.intf.GeneSelector;
+import ch.brotzilla.monalisa.mutations.intf.IndexSelector;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
-public class BiasedGeneSelector implements GeneSelector {
+public class BiasedIndexSelector implements IndexSelector {
 
     protected final int bias;
     
-    public BiasedGeneSelector(int bias) {
+    public BiasedIndexSelector(int bias) {
         Preconditions.checkArgument(bias > 2, "The parameter 'bias' has to be greater than 2");
         this.bias = bias;
     }

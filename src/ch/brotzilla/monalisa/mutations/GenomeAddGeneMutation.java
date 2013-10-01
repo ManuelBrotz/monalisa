@@ -2,7 +2,7 @@ package ch.brotzilla.monalisa.mutations;
 
 import ch.brotzilla.monalisa.genes.Gene;
 import ch.brotzilla.monalisa.genes.Genome;
-import ch.brotzilla.monalisa.mutations.intf.GeneSelector;
+import ch.brotzilla.monalisa.mutations.intf.IndexSelector;
 import ch.brotzilla.monalisa.mutations.intf.GenomeMutation;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
@@ -15,7 +15,7 @@ public class GenomeAddGeneMutation extends BasicMutation implements GenomeMutati
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, GeneSelector selector, Context context, Genome input) {
+    public Genome apply(MersenneTwister rng, IndexSelector selector, Context context, Genome input) {
         final Gene gene = Utils.createRandomGene(rng, context);
         final Gene[] genes = new Gene[input.genes.length + 1];
         System.arraycopy(input.genes, 0, genes, 0, input.genes.length);

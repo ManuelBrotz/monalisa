@@ -3,7 +3,7 @@ package ch.brotzilla.monalisa.mutations;
 import ch.brotzilla.monalisa.genes.Gene;
 import ch.brotzilla.monalisa.genes.Genome;
 import ch.brotzilla.monalisa.mutations.intf.GeneMutation;
-import ch.brotzilla.monalisa.mutations.intf.GeneSelector;
+import ch.brotzilla.monalisa.mutations.intf.IndexSelector;
 import ch.brotzilla.monalisa.mutations.intf.GenomeMutation;
 import ch.brotzilla.monalisa.mutations.intf.MutationStrategy;
 import ch.brotzilla.monalisa.utils.Context;
@@ -37,9 +37,9 @@ public class SimpleMutationStrategy implements MutationStrategy {
     protected static final TableSelect<GenomeMutation> genomeMutations = 
             new TableSelect<GenomeMutation>(genomeAddGene, genomeRemoveGene, genomeSwapGenes);
 
-    protected static final GeneSelector defaultGeneSelector = new BiasedGeneSelector(4);
+    protected static final IndexSelector defaultGeneSelector = new BiasedIndexSelector(4);
     
-    protected GeneSelector selector;
+    protected IndexSelector selector;
     
     protected Gene mutateGene(MersenneTwister rng, Context context, Gene input) {
         if (rng.nextBoolean(0.75f)) {
@@ -75,11 +75,11 @@ public class SimpleMutationStrategy implements MutationStrategy {
         this.selector = defaultGeneSelector;
     }
     
-    public GeneSelector getGeneSelector() {
+    public IndexSelector getGeneSelector() {
         return selector;
     }
     
-    public void setGeneSelector(GeneSelector value) {
+    public void setGeneSelector(IndexSelector value) {
         if (value == null) {
             this.selector = defaultGeneSelector;
         } else {
