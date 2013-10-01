@@ -1,17 +1,22 @@
 package ch.brotzilla.monalisa.evolution.selectors;
 
+import ch.brotzilla.monalisa.evolution.intf.IndexSelector;
+import ch.brotzilla.monalisa.evolution.intf.TableSelector;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 import com.google.common.base.Preconditions;
 
-public class ObjectSelector<T> {
+public class BasicTableSelector<T> implements TableSelector<T> {
 
+    private final IndexSelector selector;
     private final T[] items;
     private final int length;
     
-    public ObjectSelector(@SuppressWarnings("unchecked") T... items) {
+    public BasicTableSelector(IndexSelector selector, @SuppressWarnings("unchecked") T... items) {
+        Preconditions.checkNotNull(selector, "The parameter 'selector' must not be null");
         Preconditions.checkNotNull(items, "The parameter 'items' must not be null");
         Preconditions.checkArgument(items.length > 0, "The parameter 'items' must not be empty");
+        this.selector = selector;
         this.items = items;
         this.length = items.length;
     }
@@ -25,6 +30,6 @@ public class ObjectSelector<T> {
         if (length == 1) {
             return items[0];
         }
-        return items[rng.nextInt(length)];
+        return items[selector.select(rng, length)];
     }
 }
