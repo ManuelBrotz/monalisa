@@ -16,7 +16,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.SimpleMutationStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
-import ch.brotzilla.monalisa.io.GenomesDatabase;
+import ch.brotzilla.monalisa.io.MonaLisaDatabase;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;

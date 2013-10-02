@@ -16,7 +16,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 
 import com.google.common.base.Preconditions;
 
-public class GenomesDatabase {
+public class MonaLisaDatabase {
 
     protected static final String tableName = "genomes";
     protected static final String createTableQuery = "CREATE TABLE " + tableName + " (selected INTEGER NOT NULL PRIMARY KEY, fitness REAL NOT NULL, json TEXT NOT NULL)";
@@ -33,7 +33,7 @@ public class GenomesDatabase {
         }
     }
     
-    public GenomesDatabase(File dbFile) throws SqlJetException {
+    public MonaLisaDatabase(File dbFile) throws SqlJetException {
         Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
         this.dbFile = dbFile;
         if (dbFile.exists()) {
