@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.io;
+package ch.brotzilla.monalisa.db;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -13,6 +13,7 @@ import org.tmatesoft.sqljet.core.table.ISqlJetTable;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.io.TextReader;
 
 import com.google.common.base.Preconditions;
 
