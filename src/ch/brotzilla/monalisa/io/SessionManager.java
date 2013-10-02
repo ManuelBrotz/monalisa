@@ -22,7 +22,6 @@ import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.utils.Utils;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 public class SessionManager {
 
@@ -37,9 +36,6 @@ public class SessionManager {
     protected final File inputImageFile;
     protected final File importanceMapFile;
     
-    protected final File genomesDataFile;
-    protected final File genomesIndexFile;
-
     protected final Context context;
     protected final int[] inputPixelData;
     protected final int[] importanceMap;
@@ -128,8 +124,6 @@ public class SessionManager {
             inputImage = Utils.readImage(this.inputImageFile);
             importanceMap = loadImportanceMap(this.importanceMapFile, this.context);
         }
-        this.genomesDataFile = new File(this.sessionDirectory, "genomes.dat").getAbsoluteFile();
-        this.genomesIndexFile = new File(this.sessionDirectory, "genomes.idx").getAbsoluteFile();
         this.inputPixelData = extractInputPixelData(inputImage);
         this.importanceMap = extractImportanceMap(importanceMap, inputImage.getWidth(), inputImage.getHeight());
         this.context = new Context(inputImage.getWidth(), inputImage.getHeight(), this.inputPixelData, this.importanceMap);
@@ -284,34 +278,6 @@ public class SessionManager {
         svg.stream(exportFile.toString());
         
         return exportFile;
-    }
-    
-    public void convertOldFormat() throws IOException {
-        Preconditions.checkState(genomesDirectory.isDirectory(), "Genomes folder not found: " + genomesDirectory);
-        Preconditions.checkState(!genomesDataFile.exists(), "Genomes data file already exists: " + genomesDataFile);
-        Preconditions.checkState(!genomesIndexFile.exists(), "Genomes index file already exists: " + genomesIndexFile);
-        
-        final LinkedList<File> genomeFiles = new LinkedList<File>(); 
-        genomesDirectory.listFiles(new GenomesLister(genomeFiles));
-
-        final StringBuilder data = new StringBuilder(), index = new StringBuilder();
-        final TextReader reader = new TextReader(1024 * 100);
-        int position = 0;
-        for (final File file : genomeFiles) {
-            final String genome = reader.readTextFile(file).trim();
-            final String idx = Strings.padStart(Integer.toHexString(position), 8, '0') + Strings.padStart(Integer.toHexString(genome.length()), 8, '0');
-            data.append(genome).append('\n');
-            index.append(idx).append('\n');
-            position += genome.length() + 1;
-        }
-        
-        final PrintWriter dataWriter = new PrintWriter(genomesDataFile);
-        dataWriter.print(data.toString());
-        dataWriter.close();
-        
-        final PrintWriter indexWriter = new PrintWriter(genomesIndexFile);
-        indexWriter.print(index.toString());
-        indexWriter.close();
     }
     
     public static File checkDir(File directory, boolean canCreate) throws IOException {
