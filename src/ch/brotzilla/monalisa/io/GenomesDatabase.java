@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.utils;
+package ch.brotzilla.monalisa.io;
 
 import java.io.File;
 import java.io.FileFilter;

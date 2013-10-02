@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.utils;
+package ch.brotzilla.monalisa.io;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -17,6 +17,9 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.svg.SVGDocument;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.utils.Context;
+import ch.brotzilla.monalisa.utils.Params;
+import ch.brotzilla.monalisa.utils.Utils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;

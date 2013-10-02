@@ -20,7 +20,7 @@ import ch.brotzilla.monalisa.Renderer;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageARGB;
 import ch.brotzilla.monalisa.images.ImageGray;
-import ch.brotzilla.monalisa.utils.SessionManager;
+import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.utils.Utils;
 
 @SuppressWarnings("serial")

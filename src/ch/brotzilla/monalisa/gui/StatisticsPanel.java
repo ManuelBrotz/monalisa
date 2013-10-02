@@ -19,7 +19,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.utils.SessionManager;
+import ch.brotzilla.monalisa.io.SessionManager;
 
 @SuppressWarnings("serial")
 public class StatisticsPanel extends JPanel {
