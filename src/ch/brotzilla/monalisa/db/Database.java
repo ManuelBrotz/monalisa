@@ -12,11 +12,13 @@ import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTable;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
+import ch.brotzilla.monalisa.db.schema.DataType;
+import ch.brotzilla.monalisa.db.schema.Field;
+import ch.brotzilla.monalisa.db.schema.Index;
+import ch.brotzilla.monalisa.db.schema.Indexes;
 import ch.brotzilla.monalisa.db.schema.Schema;
-import ch.brotzilla.monalisa.db.schema.Schema.DataType;
-import ch.brotzilla.monalisa.db.schema.Schema.Field;
-import ch.brotzilla.monalisa.db.schema.Schema.Index;
-import ch.brotzilla.monalisa.db.schema.Schema.Table;
+import ch.brotzilla.monalisa.db.schema.Table;
+import ch.brotzilla.monalisa.db.schema.Tables;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.io.TextReader;
 
