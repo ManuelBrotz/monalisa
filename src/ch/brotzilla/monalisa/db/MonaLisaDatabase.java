@@ -12,6 +12,10 @@ import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTable;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
+import ch.brotzilla.monalisa.db.Schema.DataType;
+import ch.brotzilla.monalisa.db.Schema.Field;
+import ch.brotzilla.monalisa.db.Schema.Index;
+import ch.brotzilla.monalisa.db.Schema.Table;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.io.TextReader;
 
@@ -19,13 +23,41 @@ import com.google.common.base.Preconditions;
 
 public class MonaLisaDatabase {
 
-    protected static final String tableName = "genomes";
-    protected static final String createTableQuery = "CREATE TABLE " + tableName + " (selected INTEGER NOT NULL PRIMARY KEY, fitness REAL NOT NULL, json TEXT NOT NULL)";
-    protected static final String createFitnessIndexQuery = "CREATE INDEX fitness_index ON " + tableName + "(fitness)";
+    public static class TblGenomes extends Table {
+
+        public static final Field fFitness = new Field("fitness", DataType.Real, false, false);
+        public static final Field fSelected = new Field("selected", DataType.Integer, false, true);
+        public static final Field fPolygons = new Field("polygons", DataType.Integer, false, false);
+        public static final Field fJson = new Field("json", DataType.Text, false, false);
+
+        public TblGenomes() {
+            super("genomes", fFitness, fSelected, fPolygons, fJson);
+        }
+    }
     
-    protected final File dbFile;
-    protected final SqlJetDb database;
-    protected final ISqlJetTable table;
+    public static class TblFiles extends Table {
+        
+        public static final Field fName = new Field("name", DataType.Text, false, true);
+        public static final Field fOriginalName = new Field("originalName", DataType.Text, true, false);
+        public static final Field fData = new Field("data", DataType.Blob, true, false);
+        
+        public TblFiles() {
+            super("files", fName, fOriginalName, fData);
+        }
+    }
+    
+    public static class DBSchema extends Schema {
+
+        public static final TblGenomes tblGenomes = new TblGenomes();
+        public static final TblFiles tblFiles = new TblFiles();
+        
+        public static final Index idxGenomesFitness = new Index("index_genomes_fitness", tblGenomes, TblGenomes.fFitness);
+        public static final Index idxFilesName = new Index("index_files_name", tblFiles, TblFiles.fName);
+        
+        public DBSchema() {
+            super(new Tables(tblGenomes, tblFiles), new Indexes(idxGenomesFitness, idxFilesName));
+        }
+    }
     
     @SuppressWarnings("serial")
     public static class DatabaseException extends RuntimeException  {
@@ -34,6 +66,12 @@ public class MonaLisaDatabase {
         }
     }
     
+    public static final DBSchema dbSchema = new DBSchema();
+    
+    protected final File dbFile;
+    protected final SqlJetDb database;
+    protected final ISqlJetTable table;
+
     public MonaLisaDatabase(File dbFile) throws SqlJetException {
         Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
         this.dbFile = dbFile;
@@ -42,7 +80,7 @@ public class MonaLisaDatabase {
         } else {
             this.database = createDatabase(dbFile);
         }
-        this.table = database.getTable(tableName);
+        this.table = database.getTable(DBSchema.tblGenomes.name);
     }
     
     public File getDatabaseFile() {
@@ -61,7 +99,7 @@ public class MonaLisaDatabase {
         return (new Read<Genome>() {
             @Override
             public Genome run() throws Exception {
-                final ISqlJetCursor cursor = db.getTable(tableName).open();
+                final ISqlJetCursor cursor = db.getTable(DBSchema.tblGenomes.name).open();
                 try {
                     if (cursor.eof()) {
                         return null;
@@ -88,7 +126,7 @@ public class MonaLisaDatabase {
             new Transaction<Void>(db, SqlJetTransactionMode.WRITE) {
                 @Override
                 public Void run() throws Exception {
-                    final ISqlJetTable table = db.getTable(tableName);
+                    final ISqlJetTable table = db.getTable(DBSchema.tblGenomes.name);
                     for (final File file : files) {
                         final String json = txt.readTextFile(file);
                         final Genome genome = Genome.fromJson(json);
@@ -102,7 +140,7 @@ public class MonaLisaDatabase {
         }
     }
     
-    private static SqlJetDb createDatabase(File dbFile) throws SqlJetException {
+    public static SqlJetDb createDatabase(File dbFile) throws SqlJetException {
         Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
         Preconditions.checkArgument(!dbFile.exists(), "The parameter 'dbFile' must not exist");
         
@@ -110,8 +148,12 @@ public class MonaLisaDatabase {
         new Transaction<Void>(db, SqlJetTransactionMode.WRITE) {
             @Override 
             public Void run() throws SqlJetException {
-                db.createTable(createTableQuery);
-                db.createIndex(createFitnessIndexQuery);
+                for (Table t : dbSchema.tables.getTables()) {
+                    db.createTable(t.createTableQuery);
+                }
+                for (Index i : dbSchema.indexes.getIndexes()) {
+                    db.createIndex(i.createIndexQuery);
+                }
                 return null;
             }
         };
@@ -119,49 +161,19 @@ public class MonaLisaDatabase {
         return db;
     }
     
-    private abstract class Read<T> extends Transaction<T> {
+    protected abstract class Read<T> extends Transaction<T> {
         public Read() {
             super(database, SqlJetTransactionMode.READ_ONLY);
         }
     }
     
-    private abstract class Write<T> extends Transaction<T> {
+    protected abstract class Write<T> extends Transaction<T> {
         public Write() {
             super(database, SqlJetTransactionMode.WRITE);
         }
     }
     
-    private static abstract class Transaction<T extends Object> {
-        
-        protected final SqlJetDb db;
-        
-        private T result = null;
-        
-        public Transaction(final SqlJetDb db, final SqlJetTransactionMode mode) {
-            Preconditions.checkNotNull(db, "The parameter 'db' must not be null");
-            this.db = db;
-            try {
-                db.beginTransaction(mode);
-                try {
-                    result = run();
-                } catch (Exception e) {
-                    db.rollback();
-                    throw e;
-                }
-                db.commit();
-            } catch (Exception e) {
-                throw new DatabaseException(e);
-            }
-        }
-        
-        public T getResult() {
-            return result;
-        }
-        
-        public abstract T run() throws Exception;
-    }
-    
-    private static class FileLister implements FileFilter {
+    protected static class FileLister implements FileFilter {
         
         private final List<File> list;
 
