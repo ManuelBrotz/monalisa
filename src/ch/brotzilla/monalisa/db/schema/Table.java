@@ -2,7 +2,7 @@ package ch.brotzilla.monalisa.db.schema;
 
 import com.google.common.base.Preconditions;
 
-public class Table {
+public class Table implements Item {
     
     public final Fields fields;
     public final String name, createTableQuery;
@@ -21,6 +21,11 @@ public class Table {
         this.fields = fields;
         
         this.createTableQuery = Schema.CreateTable + " " + name + " (" + fields.fieldDescriptions + ")";
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
     
     @Override

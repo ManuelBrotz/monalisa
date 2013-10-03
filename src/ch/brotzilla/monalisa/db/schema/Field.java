@@ -2,7 +2,7 @@ package ch.brotzilla.monalisa.db.schema;
 
 import com.google.common.base.Preconditions;
 
-public final class Field {
+public final class Field implements Item {
     
     public final DataType type;
     public final String name, description;
@@ -21,6 +21,11 @@ public final class Field {
         this.isPrimaryKey = isPrimaryKey;
 
         this.description = name + " " + type + (!isNullable ? " NOT NULL" : "") + (isPrimaryKey ? " PRIMARY KEY" : "");
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
     
     @Override

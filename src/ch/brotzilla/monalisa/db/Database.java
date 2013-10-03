@@ -72,10 +72,10 @@ public class Database {
         new Transaction<Void>(db, SqlJetTransactionMode.WRITE) {
             @Override 
             public Void run() throws SqlJetException {
-                for (Table t : Schema.tables.getTables()) {
+                for (Table t : Schema.tables) {
                     db.createTable(t.createTableQuery);
                 }
-                for (Index i : Schema.indexes.getIndexes()) {
+                for (Index i : Schema.indexes) {
                     db.createIndex(i.createIndexQuery);
                 }
                 return null;

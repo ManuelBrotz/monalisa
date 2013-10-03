@@ -5,7 +5,7 @@ import java.util.Arrays;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
-public final class Index {
+public final class Index implements Item {
     
     private final String[] fields;
     
@@ -43,6 +43,11 @@ public final class Index {
     
     public String[] getFields() {
         return Arrays.copyOf(fields, fields.length);
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
     
     @Override
