@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.db;
+package ch.brotzilla.monalisa.db.schema;
 
 import java.util.ArrayList;
 import java.util.Arrays;

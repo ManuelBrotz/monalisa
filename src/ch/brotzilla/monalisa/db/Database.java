@@ -12,10 +12,11 @@ import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTable;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
-import ch.brotzilla.monalisa.db.Schema.DataType;
-import ch.brotzilla.monalisa.db.Schema.Field;
-import ch.brotzilla.monalisa.db.Schema.Index;
-import ch.brotzilla.monalisa.db.Schema.Table;
+import ch.brotzilla.monalisa.db.schema.Schema;
+import ch.brotzilla.monalisa.db.schema.Schema.DataType;
+import ch.brotzilla.monalisa.db.schema.Schema.Field;
+import ch.brotzilla.monalisa.db.schema.Schema.Index;
+import ch.brotzilla.monalisa.db.schema.Schema.Table;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.io.TextReader;
 
@@ -104,7 +105,7 @@ public class Database {
                     if (cursor.eof()) {
                         return null;
                     } else {
-                        return Genome.fromJson(cursor.getString("json"));
+                        return Genome.fromJson(cursor.getString(TblGenomes.fJson.name));
                     }
                 } finally {
                     cursor.close();
