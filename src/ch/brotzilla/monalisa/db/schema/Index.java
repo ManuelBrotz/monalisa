@@ -7,10 +7,10 @@ import com.google.common.base.Preconditions;
 
 public final class Index implements Item {
     
-    private final String[] fields;
     
-    public final Table table;
-    public final String name, createIndexQuery, fieldNames;
+    private final Table table;
+    private final String[] fields;
+    private final String name, createIndexQuery, fieldNames;
     
     public Index(String name, Table table, Field... fields) {
         this(name, table, Fields.extractFieldNames(fields));
@@ -32,26 +32,38 @@ public final class Index implements Item {
         int i = 0;
         for (final String f : fields) {
             Preconditions.checkNotNull(f, "The parameter 'fields' must not contain null");
-            if (!table.fields.has(f))
-                throw new IllegalArgumentException("Field '" + f + "' not found in table '" + table.name + "'");
+            if (!table.getFields().has(f))
+                throw new IllegalArgumentException("Field '" + f + "' not found in table '" + table + "'");
             this.fields[i++] = f;
         }
         
         this.fieldNames = Joiner.on(", ").join(fields);   
-        this.createIndexQuery = Schema.CreateIndex + " " + name + " ON " + table.name + " (" + fieldNames + ")";
+        this.createIndexQuery = Schema.CreateIndex + " " + name + " ON " + table + " (" + fieldNames + ")";
     }
     
-    public String[] getFields() {
-        return Arrays.copyOf(fields, fields.length);
+    public final Table getTable() {
+        return table;
     }
-
+    
     @Override
-    public String getName() {
+    public final String getName() {
         return name;
     }
     
+    public final String[] getFields() {
+        return Arrays.copyOf(fields, fields.length);
+    }
+    
+    public final String getCreateIndexQuery() {
+        return createIndexQuery;
+    }
+    
+    public final String getFieldNames() {
+        return fieldNames;
+    }
+
     @Override
-    public String toString() {
+    public final String toString() {
         return name;
     }
 }

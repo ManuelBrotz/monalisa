@@ -4,9 +4,9 @@ import com.google.common.base.Preconditions;
 
 public final class Field implements Item {
     
-    public final DataType type;
-    public final String name, description;
-    public final boolean isNullable, isPrimaryKey;
+    private final DataType type;
+    private final String name, description;
+    private final boolean isNullable, isPrimaryKey;
     
     public Field(String name, DataType type, boolean isNullable, boolean isPrimaryKey) {
         Preconditions.checkNotNull(name, "The parameter 'name' must not be null");
@@ -23,13 +23,29 @@ public final class Field implements Item {
         this.description = name + " " + type + (!isNullable ? " NOT NULL" : "") + (isPrimaryKey ? " PRIMARY KEY" : "");
     }
 
-    @Override
-    public String getName() {
-        return name;
+    public final DataType getType() {
+        return type;
     }
     
     @Override
-    public String toString() {
+    public final String getName() {
+        return name;
+    }
+    
+    public final String getDescription() {
+        return description;
+    }
+    
+    public final boolean isNullable() {
+        return isNullable;
+    }
+    
+    public final boolean isPrimaryKey() {
+        return isPrimaryKey;
+    }
+    
+    @Override
+    public final String toString() {
         return name;
     }
 }

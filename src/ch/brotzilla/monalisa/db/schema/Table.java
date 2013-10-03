@@ -4,8 +4,8 @@ import com.google.common.base.Preconditions;
 
 public class Table implements Item {
     
-    public final Fields fields;
-    public final String name, createTableQuery;
+    private final Fields fields;
+    private final String name, createTableQuery;
     
     public Table(String name, Field... fields) {
         this(name, new Fields(fields));
@@ -20,16 +20,24 @@ public class Table implements Item {
         Preconditions.checkNotNull(fields, "The parameter 'fields' must not be null");
         this.fields = fields;
         
-        this.createTableQuery = Schema.CreateTable + " " + name + " (" + fields.fieldDescriptions + ")";
+        this.createTableQuery = Schema.CreateTable + " " + name + " (" + fields.getFieldDescriptions() + ")";
+    }
+    
+    public final Fields getFields() {
+        return fields;
     }
 
     @Override
-    public String getName() {
+    public final String getName() {
         return name;
     }
     
+    public final String getCreateTableQuery() {
+        return createTableQuery;
+    }
+    
     @Override
-    public String toString() {
+    public final String toString() {
         return name;
     }
 }

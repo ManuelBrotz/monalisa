@@ -36,7 +36,7 @@ public final class OldFormatConverter {
             new Transaction<Void>(db, SqlJetTransactionMode.WRITE) {
                 @Override
                 public Void run() throws Exception {
-                    final ISqlJetTable table = db.getTable(DatabaseSchema.tblGenomes.name);
+                    final ISqlJetTable table = db.getTable(DatabaseSchema.tblGenomes.getName());
                     for (final File file : files) {
                         final String json = txt.readTextFile(file);
                         final Genome genome = Genome.fromJson(json);

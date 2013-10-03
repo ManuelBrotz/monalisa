@@ -31,7 +31,7 @@ public class Database {
         } else {
             this.database = createDatabase(dbFile);
         }
-        this.table = database.getTable(DatabaseSchema.tblGenomes.name);
+        this.table = database.getTable(DatabaseSchema.tblGenomes.getName());
     }
     
     public File getDatabaseFile() {
@@ -50,12 +50,12 @@ public class Database {
         return (new Read<Genome>() {
             @Override
             public Genome run() throws Exception {
-                final ISqlJetCursor cursor = db.getTable(DatabaseSchema.tblGenomes.name).open();
+                final ISqlJetCursor cursor = db.getTable(DatabaseSchema.tblGenomes.getName()).open();
                 try {
                     if (cursor.eof()) {
                         return null;
                     } else {
-                        return Genome.fromJson(cursor.getString(TblGenomes.fJson.name));
+                        return Genome.fromJson(cursor.getString(TblGenomes.fJson.getName()));
                     }
                 } finally {
                     cursor.close();
@@ -72,11 +72,11 @@ public class Database {
         new Transaction<Void>(db, SqlJetTransactionMode.WRITE) {
             @Override 
             public Void run() throws SqlJetException {
-                for (Table t : Schema.tables) {
-                    db.createTable(t.createTableQuery);
+                for (Table t : Schema.getTables()) {
+                    db.createTable(t.getCreateTableQuery());
                 }
-                for (Index i : Schema.indexes) {
-                    db.createIndex(i.createIndexQuery);
+                for (Index i : Schema.getIndexes()) {
+                    db.createIndex(i.getCreateIndexQuery());
                 }
                 return null;
             }

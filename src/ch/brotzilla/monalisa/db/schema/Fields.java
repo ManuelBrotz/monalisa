@@ -5,7 +5,7 @@ import com.google.common.base.Preconditions;
 
 public final class Fields extends Items<Field> {
     
-    public final String fieldNames, fieldDescriptions;
+    private final String fieldNames, fieldDescriptions;
     
     public Fields(Field... fields) {
         super(fields);
@@ -13,10 +13,18 @@ public final class Fields extends Items<Field> {
         this.fieldDescriptions = Joiner.on(", ").join(getDescriptions());
     }
     
+    public String getFieldNames() {
+        return fieldNames;
+    }
+    
+    public String getFieldDescriptions() {
+        return fieldDescriptions;
+    }
+    
     public String[] getDescriptions() {
         final String[] descriptions = new String[size()];
         for (int i = 0; i < size(); i++) {
-            descriptions[i] = get(i).description;
+            descriptions[i] = get(i).getDescription();
         }
         return descriptions;
     }
@@ -25,7 +33,7 @@ public final class Fields extends Items<Field> {
         Preconditions.checkNotNull(fields, "The parameter 'fields' must not be null");
         final String[] result = new String[fields.length];
         for (int i = 0; i < fields.length; i++) {
-            result[i] = Preconditions.checkNotNull(fields[i], "The parameter 'fields' must not contain null").name;
+            result[i] = Preconditions.checkNotNull(fields[i], "The parameter 'fields' must not contain null").getName();
         }
         return result;
     }
@@ -34,7 +42,7 @@ public final class Fields extends Items<Field> {
         Preconditions.checkNotNull(fields, "The parameter 'fields' must not be null");
         final String[] result = new String[fields.length];
         for (int i = 0; i < fields.length; i++) {
-            result[i] = Preconditions.checkNotNull(fields[i], "The parameter 'fields' must not contain null").description;
+            result[i] = Preconditions.checkNotNull(fields[i], "The parameter 'fields' must not contain null").getDescription();
         }
         return result;
     }
