@@ -21,7 +21,7 @@ import ch.brotzilla.monalisa.io.TextReader;
 
 import com.google.common.base.Preconditions;
 
-public class MonaLisaDatabase {
+public class Database {
 
     public static class TblGenomes extends Table {
 
@@ -72,7 +72,7 @@ public class MonaLisaDatabase {
     protected final SqlJetDb database;
     protected final ISqlJetTable table;
 
-    public MonaLisaDatabase(File dbFile) throws SqlJetException {
+    public Database(File dbFile) throws SqlJetException {
         Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
         this.dbFile = dbFile;
         if (dbFile.exists()) {
