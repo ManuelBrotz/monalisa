@@ -3,8 +3,6 @@ package ch.brotzilla.monalisa.db;
 import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
-import ch.brotzilla.monalisa.db.Database.DatabaseException;
-
 import com.google.common.base.Preconditions;
 
 public abstract class Transaction<T extends Object> {
