@@ -51,14 +51,14 @@ public class SessionManager {
         return (int[]) raster.getDataElements(0, 0, input.getWidth(), input.getHeight(), null);
     }
     
-    protected BufferedImage importImportanceMap(File input, File output, Context c) throws IOException {
+    protected BufferedImage importImportanceMap(File input, File output, int width, int height) throws IOException {
         if (input != null) {
             final BufferedImage img = ImageIO.read(input);
             if (img.getType() != BufferedImage.TYPE_BYTE_GRAY)
                 throw new IllegalArgumentException("Importance map has to be a grayscale image: " + input);
-            if (img.getWidth() != c.getWidth())
+            if (img.getWidth() != width)
                 throw new IllegalArgumentException("The width of the importance map has to be equal to the width of the input image");
-            if (img.getHeight() != c.getHeight())
+            if (img.getHeight() != height)
                 throw new IllegalArgumentException("The height of the importance map has to be equal to the height of the input image");
             ImageIO.write(img, "PNG", output);
             return img;
@@ -66,14 +66,14 @@ public class SessionManager {
         return null;
     }
     
-    protected BufferedImage loadImportanceMap(File input, Context c) throws IOException {
+    protected BufferedImage loadImportanceMap(File input, int width, int height) throws IOException {
         if (input != null && input.exists()) {
             final BufferedImage img = ImageIO.read(input);
             if (img.getType() != BufferedImage.TYPE_BYTE_GRAY)
                 throw new IllegalArgumentException("Importance map has to be a grayscale image: " + input);
-            if (img.getWidth() != c.getWidth())
+            if (img.getWidth() != width)
                 throw new IllegalArgumentException("The width of the importance map has to be equal to the width of the input image");
-            if (img.getHeight() != c.getHeight())
+            if (img.getHeight() != height)
                 throw new IllegalArgumentException("The height of the importance map has to be equal to the height of the input image");
             return img;
         }
@@ -103,7 +103,7 @@ public class SessionManager {
     public SessionManager(Params params) throws IOException {
         Preconditions.checkNotNull(params, "The parameter 'params' must not be null");
         this.params = params;
-        final BufferedImage inputImage, importanceMap;
+        final BufferedImage inputImage, importanceMapImage;
         if (params.getSessionToResume() == null) {
             final String inputName = params.getInputFile().getName();
             this.sessionDirectory = checkDir(uniqueDir(params.getOutputFolder(), inputName), true).getAbsoluteFile();
@@ -113,7 +113,7 @@ public class SessionManager {
             this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
             this.isSessionResumed = false;
             inputImage = importInputImage(params.getInputFile(), this.inputImageFile);
-            importanceMap = importImportanceMap(params.getImportanceMap(), this.importanceMapFile, this.context);
+            importanceMapImage = importImportanceMap(params.getImportanceMap(), this.importanceMapFile, inputImage.getWidth(), inputImage.getHeight());
         } else {
             this.sessionDirectory = checkDir(params.getSessionToResume(), false).getAbsoluteFile();
             this.sessionName = this.sessionDirectory.getName();
@@ -122,10 +122,10 @@ public class SessionManager {
             this.importanceMapFile = new File(this.sessionDirectory, "importance-map.png").getAbsoluteFile();
             this.isSessionResumed = true;
             inputImage = Utils.readImage(this.inputImageFile);
-            importanceMap = loadImportanceMap(this.importanceMapFile, this.context);
+            importanceMapImage = loadImportanceMap(this.importanceMapFile, inputImage.getWidth(), inputImage.getHeight());
         }
         this.inputPixelData = extractInputPixelData(inputImage);
-        this.importanceMap = extractImportanceMap(importanceMap, inputImage.getWidth(), inputImage.getHeight());
+        this.importanceMap = extractImportanceMap(importanceMapImage, inputImage.getWidth(), inputImage.getHeight());
         this.context = new Context(inputImage.getWidth(), inputImage.getHeight(), this.inputPixelData, this.importanceMap);
     }
     

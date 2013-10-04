@@ -49,19 +49,19 @@ public class Database {
     public Genome queryLatestGenome() throws SqlJetException {
         return (new Read<Genome>() {
             @Override
-            public Genome run() throws Exception {
-                final ISqlJetCursor cursor = db.getTable(DatabaseSchema.tblGenomes.getName()).open();
+            public Genome transaction() throws Exception {
+                final ISqlJetCursor cursor = getDb().getTable(DatabaseSchema.tblGenomes.getName()).open();
                 try {
                     if (cursor.eof()) {
                         return null;
                     } else {
-                        return Genome.fromJson(cursor.getString(TblGenomes.fJson.getName()));
+                        return Genome.fromJson(cursor.getString(TblGenomes.fData.getName()));
                     }
                 } finally {
                     cursor.close();
                 }
             }
-        }).getResult();
+        }).execute();
     }
     
     public static SqlJetDb createDatabase(File dbFile) throws SqlJetException {
@@ -71,7 +71,7 @@ public class Database {
         final SqlJetDb db = SqlJetDb.open(dbFile, true);
         new Transaction<Void>(db, SqlJetTransactionMode.WRITE) {
             @Override 
-            public Void run() throws SqlJetException {
+            public Void transaction() throws SqlJetException {
                 for (Table t : Schema.getTables()) {
                     db.createTable(t.getCreateTableQuery());
                 }
@@ -80,7 +80,7 @@ public class Database {
                 }
                 return null;
             }
-        };
+        }.execute();
         
         return db;
     }

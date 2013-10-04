@@ -20,6 +20,7 @@ import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
+import ch.brotzilla.monalisa.utils.OldFormatConverter;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.utils.Utils;
 
@@ -115,15 +116,6 @@ public class MonaLisa {
         if (session.isSessionResumed()) {
             int genomes = session.countGenomeFiles();
             System.out.println("Counted " + genomes + " genome files.");
-            
-//            try {
-//                System.out.print("Converting old storage format... ");
-//                GenomesDatabase.convertOld(session.getGenomesDirectory(), new File(session.getSessionDirectory(), "genomes.db"));
-//                System.out.println("Done!");
-//            } catch (Exception e) {
-//                System.out.println("Error!");
-//                e.printStackTrace();
-//            }
         }
 
         random = new MersenneTwister(params.getSeed());
