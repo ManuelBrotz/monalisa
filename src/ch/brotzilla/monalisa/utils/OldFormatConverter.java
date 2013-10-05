@@ -158,6 +158,13 @@ public final class OldFormatConverter {
                 public Void transaction() throws Exception {
                     final ISqlJetTable table = getDb().getTable(DatabaseSchema.tblFiles.getName());
                     final byte[] encoded = Compression.encode(data);
+                    final ImageData decoded = Compression.decodeImageData(encoded);
+                    if (!data.equals(decoded)) {
+                        System.out.println("Error! Original and encoded/decoded image data are not identical!");
+                        System.out.println("Original image data: " + data);
+                        System.out.println("Decoded image data : " + decoded);
+                        throw new RuntimeException("Error! Original and encoded/decoded image data are not identical!");
+                    }
                     table.insert(id, imageFile.getAbsolutePath(), 1, encoded);
                     return null;
                 }
@@ -181,9 +188,17 @@ public final class OldFormatConverter {
                     int counter = 0, percentDone = 0;
                     for (final File file : files) {
                         final String json = txt.readTextFile(file);
-                        final byte[] data = Compression.encode(json);
                         final Genome genome = Genome.fromJson(json);
-                        table.insert(genome.fitness, genome.selected, genome.genes.length, data);
+                        final byte[] encoded = Compression.encode(genome);
+                        final Genome decoded = Compression.decodeGenome(encoded);
+                        if (!genome.equals(decoded)) {
+                            System.out.println("Error! Original and encoded/decoded genomes are not identical!");
+                            System.out.println("Original json  : " + json);
+                            System.out.println("Original genome: " + genome);
+                            System.out.println("Decoded genome : " + decoded);
+                            throw new RuntimeException("Error! Original and encoded/decoded genomes are not identical!");
+                        }
+                        table.insert(genome.fitness, genome.selected, genome.genes.length, encoded);
                         ++counter;
                         final int p = (int) (100d / total * counter);
                         if (p - percentDone >= 10) {

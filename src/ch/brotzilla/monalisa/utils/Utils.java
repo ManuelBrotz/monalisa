@@ -375,4 +375,31 @@ public class Utils {
             }
         }
     }
+    
+    public static boolean equals(double a, double b) {
+        return (Double.compare(a, b) == 0) || (Double.isInfinite(a) && Double.isInfinite(b)) || (Double.isNaN(a) && Double.isNaN(b));
+    }
+    
+    public static boolean equals(int[] a, int[] b) {
+        if (a == null && b == null)
+            return true;
+        if (a == null && b != null || a != null && b == null)
+            return false;
+        if (a.length != b.length)
+            return false;
+        final int length = a.length;
+        for (int i = 0; i < length; i++) {
+            if (a[i] != b[i])
+                return false;
+        }
+        return true;
+    }
+    
+    public static <T> boolean equals(T a, T b) {
+        if (a == null && b == null)
+            return true;
+        if (a == null && b != null || a != null && b == null)
+            return false;
+        return a.equals(b);
+    }
 }

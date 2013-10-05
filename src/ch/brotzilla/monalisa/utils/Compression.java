@@ -9,6 +9,9 @@ import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import com.google.common.base.Preconditions;
+
+import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
 
 public class Compression {
@@ -21,20 +24,21 @@ public class Compression {
         if (input == null || input.length == 0)
             return null;
         
-        final ByteArrayInputStream bin = new ByteArrayInputStream(input);
-        final GZIPInputStream gzin = new GZIPInputStream(bin);
-        final DataInputStream din = new DataInputStream(gzin);
+        return ImageData.read(din(input));
+    }
+    
+    public static Genome decodeGenome(byte[] input) throws IOException {
+        if (input == null || input.length == 0)
+            return null;
         
-        return ImageData.read(din);
+        return Genome.read(din(input));
     }
     
     public static String decodeString(byte[] input) throws IOException {
         if (input == null || input.length == 0)
             return null;
         
-        final ByteArrayInputStream bin = new ByteArrayInputStream(input);
-        final GZIPInputStream gzin = new GZIPInputStream(bin);
-        final DataInputStream din = new DataInputStream(gzin);
+        final DataInputStream din = din(input);
         
         final int len = din.readInt();
         final byte[] utf8 = new byte[len];
@@ -64,6 +68,20 @@ public class Compression {
         return bout.toByteArray();
     }
 
+    public static byte[] encode(Genome genome) throws IOException {
+        if (genome == null)
+            return null;
+        
+        final ByteArrayOutputStream bout = new ByteArrayOutputStream(100 * 1024);
+        final GZIPOutputStream gzout = new GZIPOutputStream(bout);
+        final DataOutputStream dout = new DataOutputStream(gzout);
+        
+        Genome.write(genome, dout);
+        dout.close();
+        
+        return bout.toByteArray();
+    }
+
     public static byte[] encode(String input) throws IOException {
         if (input == null || input.length() == 0)
             return null;
@@ -78,5 +96,12 @@ public class Compression {
         dout.close();
         
         return bout.toByteArray();
+    }
+    
+    private static DataInputStream din(byte[] input) throws IOException {
+        Preconditions.checkNotNull(input, "The parameter 'data' must not be null");
+        final ByteArrayInputStream bin = new ByteArrayInputStream(input);
+        final GZIPInputStream gzin = new GZIPInputStream(bin);
+        return new DataInputStream(gzin);
     }
 }

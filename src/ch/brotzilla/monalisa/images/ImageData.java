@@ -2,11 +2,15 @@ package ch.brotzilla.monalisa.images;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 public class ImageData {
     
@@ -84,7 +88,7 @@ public class ImageData {
     
     @Override
     public boolean equals(Object value) {
-        if (value != null && value instanceof ImageData) {
+        if (value instanceof ImageData) {
             final ImageData v = (ImageData) value;
             final int[] a = data, b = v.data;
             if (width == v.width && height == v.height && type == v.type && a.length == b.length) {
@@ -97,6 +101,28 @@ public class ImageData {
             }
         }
         return false;
+    }
+    
+    @Override
+    public String toString() {
+        byte[] digest;
+        try {
+            digest = messageDigest(ImageData.this, "MD5");
+        } catch (Exception e) {
+            digest = null;
+            e.printStackTrace();
+        }
+        final StringBuilder b = new StringBuilder();
+        b.append("{\"width\": " + width + ", \"height\": " + height + ", \"type\": \"" + type + "\", \"digest\": \"");
+        if (digest != null) {
+            for (int i = 0; i < digest.length; i++) {
+                b.append(Strings.padStart(Integer.toHexString(digest[i] & 0xFF), 2, '0'));
+            }
+        } else {
+            b.append("null");
+        }
+        b.append("\"}");
+        return b.toString();
     }
     
     public static void write(ImageData data, DataOutputStream out) throws IOException {
@@ -120,7 +146,7 @@ public class ImageData {
             }
             break;
         default:
-            throw new IllegalArgumentException("Unsupported image type: " + data.getType());
+            throw new IllegalArgumentException("Unable to serialize image data, unsupported image type: " + data.getType());
         }
     }
     
@@ -129,9 +155,9 @@ public class ImageData {
         final int width = in.readInt();
         final int height = in.readInt();
         final Type type = Type.fromBufferedImageType(in.readInt());
-        Preconditions.checkNotNull(type, "Cannot read image data due to unknown type");
+        Preconditions.checkNotNull(type, "Unable to deserialize image data, unknown type");
         final int length = in.readInt();
-        Preconditions.checkState(length == width * height, "Cannot read image data due to invalid header");
+        Preconditions.checkState(length == width * height, "Unable to deserialize image data, invalid header");
         final int[] data = new int[length];
         switch (type) {
         case ARGB: 
@@ -145,7 +171,7 @@ public class ImageData {
             }
             break;
         default:
-            throw new IllegalStateException("Unsupported image type: " + type);
+            throw new IllegalStateException("Unable to deserialize image data, unknown type: " + type);
         }
         return new ImageData(width, height, type, data);
     }
@@ -166,5 +192,33 @@ public class ImageData {
         default:
             throw new IllegalArgumentException("The parameter 'image' has to be of type BufferedImage.TYPE_INT_ARGB or BufferedImage.TYPE_BYTE_GRAY");
         }
+    }
+    
+    private static byte[] messageDigest(ImageData data, String algorithm) throws IOException, NoSuchAlgorithmException {
+        Preconditions.checkNotNull(data, "The parameter 'data' must not be null");
+        Preconditions.checkNotNull(algorithm, "The parameter 'algorithm' must not be null");
+        final int[] d = data.data;
+        final ByteArrayOutputStream bout;
+        final DataOutputStream dout;
+        switch (data.type) {
+        case ARGB:
+            bout = new ByteArrayOutputStream(d.length * 4);
+            dout = new DataOutputStream(bout);
+            for (int i = 0; i < d.length; i++) {
+                dout.writeInt(d[i]);
+            }
+            break;
+        case Gray:
+            bout = new ByteArrayOutputStream(d.length);
+            dout = new DataOutputStream(bout);
+            for (int i = 0; i < d.length; i++) {
+                dout.writeByte(d[i]);
+            }
+            break;
+        default:
+            throw new IllegalStateException("Unable to calculate md5 hash for image data, unknown type: " + data.type);
+        }
+        final MessageDigest m = MessageDigest.getInstance(algorithm);
+        return m.digest(bout.toByteArray());
     }
 }
