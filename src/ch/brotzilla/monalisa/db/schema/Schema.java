@@ -1,5 +1,9 @@
 package ch.brotzilla.monalisa.db.schema;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Preconditions;
 public abstract class Schema {
     
@@ -22,5 +26,27 @@ public abstract class Schema {
     
     public final Indexes getIndexes() {
         return indexes;
+    }
+    
+    public List<String> getCreateDatabaseQueries() {
+        final LinkedList<String> result = Lists.newLinkedList();
+        for (final Table t : tables) {
+            result.add(t.getCreateTableQuery());
+        }
+        for (final Index i : indexes) {
+            result.add(i.getCreateIndexQuery());
+        }
+        return result;
+    }
+    
+    public String getCreateDatabaseQuery() {
+        final StringBuilder b = new StringBuilder();
+        for (final Table t : tables) {
+            b.append(t.getCreateTableQuery()).append(";\n");
+        }
+        for (final Index i : indexes) {
+            b.append(i.getCreateIndexQuery()).append(";\n");
+        }
+        return b.toString();
     }
 }

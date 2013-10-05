@@ -3,20 +3,12 @@ package ch.brotzilla.monalisa.db;
 import java.io.File;
 import java.io.IOException;
 
-import org.tmatesoft.sqljet.core.SqlJetException;
-import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
-import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
-import org.tmatesoft.sqljet.core.table.ISqlJetTable;
-import org.tmatesoft.sqljet.core.table.SqlJetDb;
-
-import ch.brotzilla.monalisa.db.DatabaseSchema.TblFiles;
-import ch.brotzilla.monalisa.db.DatabaseSchema.TblGenomes;
-import ch.brotzilla.monalisa.db.schema.Index;
-import ch.brotzilla.monalisa.db.schema.Table;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.images.ImageData;
 import ch.brotzilla.monalisa.utils.Compression;
 
+import com.almworks.sqlite4java.SQLiteConnection;
+import com.almworks.sqlite4java.SQLiteException;
+import com.almworks.sqlite4java.SQLiteStatement;
 import com.google.common.base.Preconditions;
 
 public class Database implements AutoCloseable {
@@ -24,106 +16,80 @@ public class Database implements AutoCloseable {
     public static final DatabaseSchema Schema = new DatabaseSchema();
     
     protected final File dbFile;
-    protected final SqlJetDb database;
-    protected final ISqlJetTable table;
+    protected final SQLiteConnection db;
+    
+    protected final SQLiteStatement selectLatestGenomeQuery;
+    protected final SQLiteStatement insertImageQuery, insertGenomeQuery;
 
-    public Database(File dbFile) throws SqlJetException {
+    public Database(File dbFile) throws SQLiteException {
         Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
         this.dbFile = dbFile;
+        this.db = new SQLiteConnection(dbFile);
         if (dbFile.exists()) {
-            this.database = SqlJetDb.open(dbFile, true);
+            db.open(false);
         } else {
-            this.database = createDatabase(dbFile);
+            db.open(true);
+            createDatabase();
         }
-        this.table = database.getTable(DatabaseSchema.tblGenomes.getName());
+        selectLatestGenomeQuery = db.prepare("SELECT selected, data FROM genomes ORDER BY selected DESC LIMIT 1");
+        insertImageQuery = db.prepare("INSERT INTO files VALUES (?, ?, ?, ?)");
+        insertGenomeQuery = db.prepare("INSERT INTO genomes VALUES (?, ?, ?, ?)");
     }
     
-    public boolean isOpen() {
-        return database.isOpen();
+    public Genome queryLatestGenome() throws SQLiteException, IOException {
+        Genome result = null;
+        selectLatestGenomeQuery.reset();
+        if (selectLatestGenomeQuery.step()) {
+            result = Compression.decodeGenome(selectLatestGenomeQuery.columnBlob(1));
+        }
+        return result;
     }
     
-    public boolean isWritable() throws SqlJetException {
-        return database.isWritable();
+    public void insertImage(String id, String originalName, boolean compressed, byte[] data) throws SQLiteException {
+        insertImageQuery.reset();
+        insertImageQuery.bind(1, id);
+        insertImageQuery.bind(2, originalName);
+        insertImageQuery.bind(3, compressed ? 1 : 0);
+        insertImageQuery.bind(4, data);
+        insertImageQuery.step();
     }
     
-    public Genome queryLatestGenome() throws SqlJetException, IOException {
-        return (new Read<Genome>() {
-            @Override
-            public Genome transaction() throws Exception {
-                final ISqlJetCursor cursor = getDb().getTable(DatabaseSchema.tblGenomes.getName()).open().reverse();
-                try {
-                    if (cursor.eof()) {
-                        return null;
-                    } else {
-                        return Compression.decodeGenome(cursor.getBlobAsArray(TblGenomes.fData.getName()));
-                    }
-                } finally {
-                    cursor.close();
-                }
-            }
-        }).execute();
+    public void insertGenome(double fitness, int selected, int polygons, byte[] data) throws SQLiteException {
+        insertGenomeQuery.reset();
+        insertGenomeQuery.bind(1, fitness);
+        insertGenomeQuery.bind(2, selected);
+        insertGenomeQuery.bind(3, polygons);
+        insertGenomeQuery.bind(4, data);
+        insertGenomeQuery.step();
     }
     
-    public ImageData queryImage(final String id) throws SqlJetException {
-        return (new Read<ImageData>() {
-            @Override
-            public ImageData transaction() throws Exception {
-                final ISqlJetCursor cursor = getDb().getTable(DatabaseSchema.tblFiles.getName()).lookup(DatabaseSchema.idxFilesName.getName(), id);
-                try {
-                    if (cursor.eof()) {
-                        return null;
-                    } else {
-                        return Compression.decodeImageData(cursor.getBlobAsArray(TblFiles.fData.getName()));
-                    }
-                } finally {
-                    cursor.close();
-                }
-            }
-        }).execute();
+    public void transaction() throws SQLiteException {
+        db.exec("BEGIN");
+    }
+    
+    public void commit() throws SQLiteException {
+        db.exec("COMMIT"); 
     }
     
     @Override
-    public void close() throws SqlJetException {
-        database.close();
+    public void close() {
+        db.dispose();
     }
     
-    public static void main(String[] args) throws SqlJetException, IOException {
-        final Database db = new Database(new File("output/rose.mldb"));
-        System.out.println(db.queryLatestGenome());
-        System.out.println(db.queryImage("target-image"));
-        System.out.println(db.queryImage("importance-map"));
-    }
-    
-    public static SqlJetDb createDatabase(File dbFile) throws SqlJetException {
-        Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
-        Preconditions.checkArgument(!dbFile.exists(), "The parameter 'dbFile' must not exist (" + dbFile + ")");
-        
-        final SqlJetDb db = SqlJetDb.open(dbFile, true);
-        new Transaction<Void>(db, SqlJetTransactionMode.WRITE) {
-            @Override 
-            public Void transaction() throws SqlJetException {
-                for (Table t : Schema.getTables()) {
-                    db.createTable(t.getCreateTableQuery());
-                }
-                for (Index i : Schema.getIndexes()) {
-                    db.createIndex(i.getCreateIndexQuery());
-                }
-                return null;
+    protected void createDatabase() throws SQLiteException {
+        for (final String query : Schema.getCreateDatabaseQueries()) {
+            final SQLiteStatement st = db.prepare(query);
+            try {
+                st.step();
+            } finally {
+                st.dispose();
             }
-        }.execute();
-        
-        return db;
-    }
-    
-    protected abstract class Read<T> extends Transaction<T> {
-        public Read() {
-            super(database, SqlJetTransactionMode.READ_ONLY);
         }
     }
     
-    protected abstract class Write<T> extends Transaction<T> {
-        public Write() {
-            super(database, SqlJetTransactionMode.WRITE);
+    public static void main(String[] args) throws Exception {
+        try (final Database db = new Database(new File("output/test.mldb"))) {
+            System.out.println(db.queryLatestGenome());
         }
     }
 }

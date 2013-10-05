@@ -26,11 +26,11 @@ public class DatabaseSchema extends Schema {
         
         public static final Field fId = new Field("id", DataType.Text, false, true);
         public static final Field fOriginalName = new Field("originalName", DataType.Text, true, false);
-        public static final Field fCompression = new Field("compression", DataType.Integer, false, false);
+        public static final Field fCompressed = new Field("compressed", DataType.Integer, false, false);
         public static final Field fData = new Field("data", DataType.Blob, true, false);
         
         public TblFiles() {
-            super("files", fId, fOriginalName, fCompression, fData);
+            super("files", fId, fOriginalName, fCompressed, fData);
         }
     }
     

@@ -8,25 +8,19 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.tmatesoft.sqljet.core.SqlJetException;
-import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
-import org.tmatesoft.sqljet.core.table.ISqlJetTable;
-import org.tmatesoft.sqljet.core.table.SqlJetDb;
-
 import ch.brotzilla.monalisa.db.Database;
-import ch.brotzilla.monalisa.db.DatabaseSchema;
-import ch.brotzilla.monalisa.db.Transaction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
 import ch.brotzilla.monalisa.io.TextReader;
 
+import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;
 
 public final class OldFormatConverter {
 
     private OldFormatConverter() {}
 
-    public static void convertOldSessionFolder(File sessionFolder, File dbFile) throws SqlJetException, IOException {
+    public static void convertOldSessionFolder(File sessionFolder, File dbFile) throws IOException, SQLiteException {
         Preconditions.checkNotNull(sessionFolder, "The parameter 'sessionFolder' must not be null");
 
         sessionFolder = sessionFolder.getAbsoluteFile();
@@ -61,7 +55,7 @@ public final class OldFormatConverter {
         System.out.println("Database file : " + dbFile);
 
         final LinkedList<File> files = listGenomeFiles(genomesFolder);
-        final SqlJetDb db = createDatabase(dbFile);
+        final Database db = createDatabase(dbFile);
         
         try {
             importImage(db, "target-image", imageFile, ImageData.read(Utils.readImage(imageFile)));
@@ -77,7 +71,7 @@ public final class OldFormatConverter {
         System.out.println("Size of generated database: " + formatSize(dbSize));
     }
     
-    public static void convertAllSessionFolders(File root) throws IOException, SqlJetException {
+    public static void convertAllSessionFolders(File root) throws IOException, SQLiteException {
         Preconditions.checkNotNull(root, "The parameter 'root' must not be null");
         
         root = root.getAbsoluteFile();
@@ -113,7 +107,7 @@ public final class OldFormatConverter {
         }
     }
     
-    public static void main(String[] args) throws IOException, SqlJetException {
+    public static void main(String[] args) throws IOException, SQLiteException {
         convertAllSessionFolders(new File("output/"));
     }
     
@@ -138,82 +132,76 @@ public final class OldFormatConverter {
         }
     }
     
-    private static SqlJetDb createDatabase(File dbFile) throws SqlJetException {
+    private static Database createDatabase(File dbFile) throws IOException, SQLiteException {
+        if (dbFile.exists()) {
+            throw new IOException("Database already exists: " + dbFile); 
+        }
         try {
             System.out.print("Creating database... ");
-            final SqlJetDb db = Database.createDatabase(dbFile);
+            final Database db = new Database(dbFile);
             System.out.println("Done!");
             return db;
-        } catch (SqlJetException e) {
+        } catch (SQLiteException e) {
             System.out.println("Error!");
             throw e;
         }
     }
     
-    private static void importImage(SqlJetDb db, final String id, final File imageFile, final ImageData data) throws SqlJetException {
+    private static void importImage(Database db, final String id, final File imageFile, final ImageData data) throws IOException, SQLiteException {
         try {
             System.out.print("Importing image file '" + imageFile.getName() + "' with id '" + id + "'... ");
-            new Transaction<Void>(db, SqlJetTransactionMode.WRITE) {
-                @Override
-                public Void transaction() throws Exception {
-                    final ISqlJetTable table = getDb().getTable(DatabaseSchema.tblFiles.getName());
-                    final byte[] encoded = Compression.encode(data);
-                    final ImageData decoded = Compression.decodeImageData(encoded);
-                    if (!data.equals(decoded)) {
-                        System.out.println("Error! Original and encoded/decoded image data are not identical!");
-                        System.out.println("Original image data: " + data);
-                        System.out.println("Decoded image data : " + decoded);
-                        throw new RuntimeException("Error! Original and encoded/decoded image data are not identical!");
-                    }
-                    table.insert(id, imageFile.getAbsolutePath(), 1, encoded);
-                    return null;
-                }
-            }.execute();
+            final byte[] encoded = Compression.encode(data);
+            final ImageData decoded = Compression.decodeImageData(encoded);
+            if (!data.equals(decoded)) {
+                System.out.println("Error! Original and encoded/decoded image data are not identical!");
+                System.out.println("Original image data: " + data);
+                System.out.println("Decoded image data : " + decoded);
+                throw new RuntimeException("Error! Original and encoded/decoded image data are not identical!");
+            }
+            db.insertImage(id, imageFile.getAbsolutePath(), true, encoded);
             System.out.println("Done!");
-        } catch (SqlJetException e) {
+        } catch (SQLiteException e) {
             System.out.println("Error!");
             throw e;
         }
     }
     
-    private static void importGenomes(SqlJetDb db, final LinkedList<File> files) throws SqlJetException {
+    private static void importGenomes(Database db, final LinkedList<File> files) throws IOException, SQLiteException {
         try {
             System.out.print("Converting genome files... ");
             final TextReader txt = new TextReader(1024 * 100);
-            new Transaction<Void>(db, SqlJetTransactionMode.WRITE) {
-                @Override
-                public Void transaction() throws Exception {
-                    final ISqlJetTable table = getDb().getTable(DatabaseSchema.tblGenomes.getName());
-                    final int total = files.size();
-                    int counter = 0, percentDone = 0;
-                    for (final File file : files) {
-                        final String json = txt.readTextFile(file);
-                        final Genome genome = Genome.fromJson(json);
-                        final byte[] encoded = Compression.encode(genome);
-                        final Genome decoded = Compression.decodeGenome(encoded);
-                        if (!genome.equals(decoded)) {
-                            System.out.println("Error! Original and encoded/decoded genomes are not identical!");
-                            System.out.println("Original json  : " + json);
-                            System.out.println("Original genome: " + genome);
-                            System.out.println("Decoded genome : " + decoded);
-                            throw new RuntimeException("Error! Original and encoded/decoded genomes are not identical!");
-                        }
-                        table.insert(genome.fitness, genome.selected, genome.genes.length, encoded);
-                        ++counter;
-                        final int p = (int) (100d / total * counter);
-                        if (p - percentDone >= 10) {
-                            System.out.print(p + "% ");
-                            percentDone = p;
-                        }
+            final int total = files.size();
+            int counter = 0, percentDone = 0;
+            db.transaction();
+            try {
+                for (final File file : files) {
+                    final String json = txt.readTextFile(file);
+                    final Genome genome = Genome.fromJson(json);
+                    final byte[] encoded = Compression.encode(genome);
+                    final Genome decoded = Compression.decodeGenome(encoded);
+                    if (!genome.equals(decoded)) {
+                        System.out.println("Error! Original and encoded/decoded genomes are not identical!");
+                        System.out.println("Original json  : " + json);
+                        System.out.println("Original genome: " + genome);
+                        System.out.println("Decoded genome : " + decoded);
+                        throw new RuntimeException("Error! Original and encoded/decoded genomes are not identical!");
                     }
-                    if (percentDone < 100) {
-                        System.out.print("100% ");
+                    db.insertGenome(genome.fitness, genome.selected, genome.genes.length, encoded);
+                    ++counter;
+                    final int p = (int) (100d / total * counter);
+                    if (p - percentDone >= 10) {
+                        System.out.print(p + "% ");
+                        percentDone = p;
                     }
-                    return null;
                 }
-            }.execute();
+            } finally {
+                db.commit();
+            }
+            if (percentDone < 100) {
+                System.out.print("100% ");
+            }
             System.out.println("Done!");
-        } catch (SqlJetException e) {
+        } catch (SQLiteException e) {
             System.out.println("Error!");
             throw e;
         }
