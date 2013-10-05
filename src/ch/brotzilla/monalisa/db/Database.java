@@ -1,6 +1,7 @@
 package ch.brotzilla.monalisa.db;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
@@ -8,14 +9,17 @@ import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTable;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
+import ch.brotzilla.monalisa.db.DatabaseSchema.TblFiles;
 import ch.brotzilla.monalisa.db.DatabaseSchema.TblGenomes;
 import ch.brotzilla.monalisa.db.schema.Index;
 import ch.brotzilla.monalisa.db.schema.Table;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.images.ImageData;
+import ch.brotzilla.monalisa.utils.Compression;
 
 import com.google.common.base.Preconditions;
 
-public class Database {
+public class Database implements AutoCloseable {
 
     public static final DatabaseSchema Schema = new DatabaseSchema();
     
@@ -34,10 +38,6 @@ public class Database {
         this.table = database.getTable(DatabaseSchema.tblGenomes.getName());
     }
     
-    public File getDatabaseFile() {
-        return dbFile;
-    }
-    
     public boolean isOpen() {
         return database.isOpen();
     }
@@ -46,22 +46,52 @@ public class Database {
         return database.isWritable();
     }
     
-    public Genome queryLatestGenome() throws SqlJetException {
+    public Genome queryLatestGenome() throws SqlJetException, IOException {
         return (new Read<Genome>() {
             @Override
             public Genome transaction() throws Exception {
-                final ISqlJetCursor cursor = getDb().getTable(DatabaseSchema.tblGenomes.getName()).open();
+                final ISqlJetCursor cursor = getDb().getTable(DatabaseSchema.tblGenomes.getName()).open().reverse();
                 try {
                     if (cursor.eof()) {
                         return null;
                     } else {
-                        return Genome.fromJson(cursor.getString(TblGenomes.fData.getName()));
+                        return Compression.decodeGenome(cursor.getBlobAsArray(TblGenomes.fData.getName()));
                     }
                 } finally {
                     cursor.close();
                 }
             }
         }).execute();
+    }
+    
+    public ImageData queryImage(final String id) throws SqlJetException {
+        return (new Read<ImageData>() {
+            @Override
+            public ImageData transaction() throws Exception {
+                final ISqlJetCursor cursor = getDb().getTable(DatabaseSchema.tblFiles.getName()).lookup(DatabaseSchema.idxFilesName.getName(), id);
+                try {
+                    if (cursor.eof()) {
+                        return null;
+                    } else {
+                        return Compression.decodeImageData(cursor.getBlobAsArray(TblFiles.fData.getName()));
+                    }
+                } finally {
+                    cursor.close();
+                }
+            }
+        }).execute();
+    }
+    
+    @Override
+    public void close() throws SqlJetException {
+        database.close();
+    }
+    
+    public static void main(String[] args) throws SqlJetException, IOException {
+        final Database db = new Database(new File("output/rose.mldb"));
+        System.out.println(db.queryLatestGenome());
+        System.out.println(db.queryImage("target-image"));
+        System.out.println(db.queryImage("importance-map"));
     }
     
     public static SqlJetDb createDatabase(File dbFile) throws SqlJetException {
