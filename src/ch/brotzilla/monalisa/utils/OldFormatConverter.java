@@ -158,7 +158,7 @@ public final class OldFormatConverter {
                 System.out.println("Decoded image data : " + decoded);
                 throw new RuntimeException("Error! Original and encoded/decoded image data are not identical!");
             }
-            db.insertImage(id, imageFile.getAbsolutePath(), true, encoded);
+            db.insertFile(id, imageFile.getAbsolutePath(), true, encoded);
             System.out.println("Done!");
         } catch (SQLiteException e) {
             System.out.println("Error!");
@@ -172,7 +172,7 @@ public final class OldFormatConverter {
             final TextReader txt = new TextReader(1024 * 100);
             final int total = files.size();
             int counter = 0, percentDone = 0;
-            db.transaction();
+            db.begin();
             try {
                 for (final File file : files) {
                     final String json = txt.readTextFile(file);
