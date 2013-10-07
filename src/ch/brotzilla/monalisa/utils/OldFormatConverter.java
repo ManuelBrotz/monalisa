@@ -138,7 +138,7 @@ public final class OldFormatConverter {
         }
         try {
             System.out.print("Creating database... ");
-            final Database db = new Database(dbFile);
+            final Database db = Database.createDatabase(dbFile);
             System.out.println("Done!");
             return db;
         } catch (SQLiteException e) {

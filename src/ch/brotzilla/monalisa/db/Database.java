@@ -15,26 +15,26 @@ import com.google.common.base.Preconditions;
 public class Database implements AutoCloseable {
 
     public static final DatabaseSchema Schema = new DatabaseSchema();
+    public static final String SelectLatestGenomeQuery = "SELECT selected, data FROM genomes ORDER BY selected DESC LIMIT 1";
+    public static final String InsertFileQuery = "INSERT INTO files VALUES (?1, ?2, ?3, ?4)";
+    public static final String InsertGenomeQuery = "INSERT INTO genomes VALUES (?1, ?2, ?3, ?4)";
     
-    protected final File dbFile;
     protected final SQLiteConnection db;
     
     protected final SQLiteStatement selectLatestGenomeQuery;
     protected final SQLiteStatement insertFileQuery, insertGenomeQuery;
-
-    public Database(File dbFile) throws SQLiteException {
-        Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
-        this.dbFile = dbFile;
-        this.db = new SQLiteConnection(dbFile);
-        if (dbFile.exists()) {
-            db.open(false);
-        } else {
-            db.open(true);
-            createDatabase();
-        }
-        selectLatestGenomeQuery = db.prepare("SELECT selected, data FROM genomes ORDER BY selected DESC LIMIT 1");
-        insertFileQuery = db.prepare("INSERT INTO files VALUES (?1, ?2, ?3, ?4)");
-        insertGenomeQuery = db.prepare("INSERT INTO genomes VALUES (?1, ?2, ?3, ?4)");
+    
+    private Database(SQLiteConnection db) throws SQLiteException {
+        Preconditions.checkNotNull(db, "The parameter 'db' must not be null");
+        Preconditions.checkState(db.isOpen(), "The connection to the database has to be open");
+        this.db = db;
+        selectLatestGenomeQuery = db.prepare(SelectLatestGenomeQuery);
+        insertFileQuery = db.prepare(InsertFileQuery);
+        insertGenomeQuery = db.prepare(InsertGenomeQuery);
+    }
+    
+    public File getDatabaseFile() {
+        return db.getDatabaseFile();
     }
     
     public Genome queryLatestGenome() throws SQLiteException, IOException {
@@ -78,6 +78,10 @@ public class Database implements AutoCloseable {
         insertGenomeQuery.step();
     }
     
+    public void execute(String sql) throws SQLiteException {
+        db.exec(sql);
+    }
+    
     public void begin() throws SQLiteException {
         db.exec("BEGIN");
     }
@@ -91,22 +95,30 @@ public class Database implements AutoCloseable {
         db.dispose();
     }
     
-    protected void createDatabase() throws SQLiteException {
-        begin();
+    public static Database createDatabase(File dbFile) throws SQLiteException, IOException {
+        Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
+        if (dbFile.exists()) {
+            throw new IOException("Database already exists (" + dbFile + ")");
+        }
+        final SQLiteConnection conn = new SQLiteConnection(dbFile);
+        conn.open(true);
+        final Database db = new Database(conn);
+        db.begin();
         try {
             for (final String query : Schema.getCreateDatabaseQueries()) {
-                db.exec(query);
+                db.execute(query);
             }
-            db.exec("PRAGMA count_changes=OFF");
-            db.exec("PRAGMA journal_mode=MEMORY");
-            db.exec("PRAGMA temp_store=MEMORY");
+            db.execute("PRAGMA count_changes=OFF");
+            db.execute("PRAGMA journal_mode=MEMORY");
+            db.execute("PRAGMA temp_store=MEMORY");
         } finally {
-            commit();
+            db.commit();
         }
+        return db;
     }
     
     public static void main(String[] args) throws Exception {
-        try (final Database db = new Database(new File("output/test.mldb"))) {
+        try (final Database db = createDatabase(new File("output/test.mldb"))) {
             System.out.println(db.queryLatestGenome());
         }
     }
