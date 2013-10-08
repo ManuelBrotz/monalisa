@@ -103,7 +103,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
 
     @Override
     public Genome apply(MersenneTwister rng, Context context, final Genome input) {
-        final int count = 1 + rng.nextInt(2);
+        final int count = 1 + rng.nextInt(4);
         Genome result = input;
         for (int i = 0; i < count; i++) {
             if (rng.nextBoolean(0.95f)) {
