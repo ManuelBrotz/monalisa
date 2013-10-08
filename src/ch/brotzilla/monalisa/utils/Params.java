@@ -19,30 +19,29 @@ public class Params {
     private boolean isValid = false, isInitialized = false;
     private Exception error = null;
     
-    
-    @Option(name = "-i", aliases = { "--input" }, metaVar = "File", usage = "the input image")
-    private File inputFile;
+    @Option(name = "--image", metaVar = "File", usage = "the input image file")
+    private File targetImageFile;
 
-    @Option(name = "-o", aliases = { "--output-folder" }, metaVar = "Folder", usage = "the output folder")
-    private File outputFolder;
-
-    @Option(name = "-r", aliases = { "--resume" }, metaVar = "Folder", usage = "the folder of the session to resume")
-    private File sessionToResume;
-
-    @Option(name = "-m", aliases = { "--importance-map" }, metaVar = "File", usage = "the importance map")
+    @Option(name = "--map", metaVar = "File", usage = "the importance map file")
     private File importanceMap;
     
-    @Option(name = "-b", aliases = { "--background-color" }, metaVar = "Color", usage = "the background color for the image")
+    @Option(name = "--root", metaVar = "Folder", usage = "the session root folder where the new session file will be created")
+    private File sessionRoot;
+
+    @Option(name = "--resume", metaVar = "Session", usage = "the *.mldb file to resume")
+    private File sessionToResume;
+
+    @Option(name = "--background-color", metaVar = "Color", usage = "the background color to use")
     private String backgroundColorName;
     private Color backgroundColor;
     
-    @Option(name = "-s", aliases = { "--seed" }, metaVar = "Number", usage = "the seed for the random number generator")
+    @Option(name = "--seed", metaVar = "Number", usage = "the seed for the random number generator")
     private int seed = 0;
 
-    @Option(name = "-t", aliases = { "--num-threads" }, metaVar = "Number", usage = "the number of threads to use")
+    @Option(name = "--num-threads", metaVar = "Number", usage = "the number of threads to use")
     private int numThreads = 4;
     
-    @Option(name = "-g", aliases = { "--show-gui" }, metaVar = "Yes/No", usage = "displays a simple graphical user interface")
+    @Option(name = "--show-gui", metaVar = "Switch", usage = "displays a simple graphical user interface")
     private boolean showGui = false;
 
     @Option(name = "--export-latest", metaVar = "File", usage = "exports the latest genome file as an svg document to the specified directory")
@@ -91,22 +90,22 @@ public class Params {
         return error;
     }
     
-    public File getInputFile() {
-        return inputFile;
+    public File getTargetImageFile() {
+        return targetImageFile;
     }
 
-    public File getOutputFolder() {
-        return outputFolder;
+    public File getImportanceMapFile() {
+        return importanceMap;
+    }
+
+    public File getSessionRootFolder() {
+        return sessionRoot;
     }
     
     public File getSessionToResume() {
         return sessionToResume;
     }
     
-    public File getImportanceMap() {
-        return importanceMap;
-    }
-
     public int getSeed() {
         return seed;
     }
@@ -133,22 +132,20 @@ public class Params {
 
     public void validate() {
         if (sessionToResume != null) {
-            if (inputFile != null)
-                throw new IllegalArgumentException("--input cannot be used with --resume");
-            if (outputFolder != null)
-                throw new IllegalArgumentException("--output-folder cannot be used width --resume");
-            if (!sessionToResume.isDirectory())
-                throw new IllegalArgumentException("--resume has to be a directory");
+            if (targetImageFile != null)
+                throw new IllegalArgumentException("--image cannot be used with --resume");
+            if (sessionRoot != null)
+                throw new IllegalArgumentException("--root cannot be used width --resume");
+            if (!sessionToResume.isFile())
+                throw new IllegalArgumentException("--resume has to be a file");
         } else {
-            if (inputFile == null || !inputFile.isFile())
-                throw new IllegalArgumentException("--input has to be a file");
-            if (outputFolder == null || (outputFolder.exists() && !outputFolder.isDirectory()))
-                throw new IllegalArgumentException("--output-folder has to be a directory");
-            if (!outputFolder.exists() && !outputFolder.mkdirs())
-                throw new IllegalArgumentException("--output-folder cannot be created");
+            if (targetImageFile == null || !targetImageFile.isFile())
+                throw new IllegalArgumentException("--image has to be a file");
+            if (sessionRoot == null || !sessionRoot.isDirectory())
+                throw new IllegalArgumentException("--root has to be a directory");
         }
         if (importanceMap != null && !importanceMap.isFile())
-            throw new IllegalArgumentException("--importance-map has to be a file");
+            throw new IllegalArgumentException("--map has to be a file");
         if (exportLatest != null && !exportLatest.isDirectory()) 
             throw new IllegalArgumentException("--export-latest has to be a directory");
         if (numThreads < 1) 

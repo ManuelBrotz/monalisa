@@ -1,5 +1,6 @@
 package ch.brotzilla.monalisa.images;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
@@ -40,7 +41,7 @@ public class ImageData {
     private Type type;
     private final int[] data;
     
-    public ImageData(int width, int height, Type type, int[] data) {
+    public ImageData(int width, int height, Type type, int[] data, boolean copy) {
         Preconditions.checkArgument(width > 0, "The parameter 'width' has to be greater than zero");
         Preconditions.checkArgument(height > 0, "The parameter 'height' has to be greater than zero");
         Preconditions.checkNotNull(type, "The parameter 'type' must not be null");
@@ -49,13 +50,17 @@ public class ImageData {
         this.width = width;
         this.height = height;
         this.type = type;
-        this.data = data;
+        if (copy) {
+            this.data = new int[data.length];
+            System.arraycopy(data, 0, this.data, 0, data.length);
+        } else {
+            this.data = data;
+        }
     }
     
     public ImageData(int width, int height, byte[] data) {
         Preconditions.checkArgument(width > 0, "The parameter 'width' has to be greater than zero");
         Preconditions.checkArgument(height > 0, "The parameter 'height' has to be greater than zero");
-        Preconditions.checkNotNull(data, "The parameter 'data' must not be null");
         Preconditions.checkArgument(data.length == width * height, "The length of the parameter 'data' must be equal to " + (width * height) + " (" + data.length + ")");
         this.width = width;
         this.height = height;
@@ -110,7 +115,6 @@ public class ImageData {
             digest = messageDigest(ImageData.this, "MD5");
         } catch (Exception e) {
             digest = null;
-            e.printStackTrace();
         }
         final StringBuilder b = new StringBuilder();
         b.append("{\"width\": " + width + ", \"height\": " + height + ", \"type\": \"" + type + "\", \"digest\": \"");
@@ -119,7 +123,7 @@ public class ImageData {
                 b.append(Strings.padStart(Integer.toHexString(digest[i] & 0xFF), 2, '0'));
             }
         } else {
-            b.append("null");
+            b.append("error");
         }
         b.append("\"}");
         return b.toString();
@@ -173,27 +177,68 @@ public class ImageData {
         default:
             throw new IllegalStateException("Unable to deserialize image data, unknown type: " + type);
         }
-        return new ImageData(width, height, type, data);
+        return new ImageData(width, height, type, data, false);
     }
     
     public static ImageData read(BufferedImage image) {
         Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
         final int width = image.getWidth(), height = image.getHeight();
-        final WritableRaster raster = image.getRaster();
         switch (image.getType()) {
-        case BufferedImage.TYPE_INT_ARGB: {
-            final int[] data = (int[]) raster.getDataElements(0, 0, width, height, null);
-            return new ImageData(width, height, Type.ARGB, data);
-        }
         case BufferedImage.TYPE_BYTE_GRAY: {
+            final WritableRaster raster = image.getRaster();
             final byte[] data = (byte[]) raster.getDataElements(0, 0, width, height, null);
             return new ImageData(width, height, data);
         }
-        default:
-            throw new IllegalArgumentException("The parameter 'image' has to be of type BufferedImage.TYPE_INT_ARGB or BufferedImage.TYPE_BYTE_GRAY");
+        case BufferedImage.TYPE_INT_ARGB: {
+            final WritableRaster raster = image.getRaster();
+            final int[] data = (int[]) raster.getDataElements(0, 0, width, height, null);
+            return new ImageData(width, height, Type.ARGB, data, false);
+        }
+        default: {
+            final BufferedImage tmp = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            final Graphics2D g = tmp.createGraphics();
+            g.drawImage(image, 0, 0, null);
+            final WritableRaster raster = tmp.getRaster();
+            final int[] data = (int[]) raster.getDataElements(0, 0, width, height, null);
+            return new ImageData(width, height, Type.ARGB, data, false);
+        }
         }
     }
     
+    public static ImageData readARGB(BufferedImage image) {
+        Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
+        final int width = image.getWidth(), height = image.getHeight();
+        switch (image.getType()) {
+        case BufferedImage.TYPE_INT_ARGB: {
+            final WritableRaster raster = image.getRaster();
+            final int[] data = (int[]) raster.getDataElements(0, 0, width, height, null);
+            return new ImageData(width, height, Type.ARGB, data, false);
+        }
+        default: {
+            final BufferedImage tmp = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            final Graphics2D g = tmp.createGraphics();
+            g.drawImage(image, 0, 0, null);
+            final WritableRaster raster = tmp.getRaster();
+            final int[] data = (int[]) raster.getDataElements(0, 0, width, height, null);
+            return new ImageData(width, height, Type.ARGB, data, false);
+        }
+        }
+    }
+
+    public static ImageData readGray(BufferedImage image) {
+        Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
+        final int width = image.getWidth(), height = image.getHeight();
+        switch (image.getType()) {
+        case BufferedImage.TYPE_BYTE_GRAY: {
+            final WritableRaster raster = image.getRaster();
+            final byte[] data = (byte[]) raster.getDataElements(0, 0, width, height, null);
+            return new ImageData(width, height, data);
+        }
+        default: 
+            throw new IllegalArgumentException("The parameter 'image' has to be of type BufferedImage.TYPE_BYTE_GRAY");
+        }
+    }
+
     private static byte[] messageDigest(ImageData data, String algorithm) throws IOException, NoSuchAlgorithmException {
         Preconditions.checkNotNull(data, "The parameter 'data' must not be null");
         Preconditions.checkNotNull(algorithm, "The parameter 'algorithm' must not be null");

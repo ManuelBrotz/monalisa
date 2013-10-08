@@ -5,11 +5,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -21,7 +18,6 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageARGB;
 import ch.brotzilla.monalisa.images.ImageGray;
 import ch.brotzilla.monalisa.io.SessionManager;
-import ch.brotzilla.monalisa.utils.Utils;
 
 @SuppressWarnings("serial")
 public class MainWindow extends JFrame {
@@ -38,8 +34,6 @@ public class MainWindow extends JFrame {
     protected final StatusDisplay statusDisplay;
     
     protected final StatisticsPanel statisticsPanel;
-    
-    protected final LinkedList<File> genomes = new LinkedList<File>();
     
     protected Genome currentGenome;
     protected long lastRenderTime = 0;
@@ -66,7 +60,6 @@ public class MainWindow extends JFrame {
 
         @Override
         public void windowIconified(WindowEvent e) {
-            System.out.println("minimized");
         }
 
         @Override
@@ -105,12 +98,10 @@ public class MainWindow extends JFrame {
         this.sessionManager = Preconditions.checkNotNull(sessionManager, "The parameter 'sessionManager' must not be null");
         this.currentGenome = currentGenome;
         
-        sessionManager.listGenomeFiles(genomes);
-        
-        this.inputImage = new ImageARGB(Utils.readImage(sessionManager.getInputImageFile()), false);
+        this.inputImage = new ImageARGB(sessionManager.getTargetImage(), false);
         this.currentImage = new ImageARGB(sessionManager.getWidth(), sessionManager.getHeight(), false);
-        if (sessionManager.getImportanceMapFile().isFile()) {
-            this.importanceMap = new ImageGray(ImageIO.read(sessionManager.getImportanceMapFile()), false);
+        if (sessionManager.getImportanceMap() != null) {
+            this.importanceMap = new ImageGray(sessionManager.getImportanceMap(), false);
         } else {
             this.importanceMap = null;
         }
@@ -168,12 +159,5 @@ public class MainWindow extends JFrame {
             renderer.render(genome);
             currentImageDisplay.repaint();
         }
-    }
-    
-    public synchronized void stored(File genomeFile) {
-        Preconditions.checkNotNull(genomeFile, "The parameter 'genomeFile' must not be null");
-        Preconditions.checkArgument(genomeFile.isFile(), "The parameter 'genomeFile' has to be a regular file");
-        Preconditions.checkArgument(genomeFile.getName().endsWith(".genome"), "The parameter 'genomeFile' has to end with the suffix '.genome'");
-        genomes.add(genomeFile);
     }
 }

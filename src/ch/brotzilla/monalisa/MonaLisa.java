@@ -6,6 +6,7 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -17,6 +18,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.SimpleMutationStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
+import ch.brotzilla.monalisa.images.ImageData;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
@@ -24,6 +26,7 @@ import ch.brotzilla.monalisa.utils.OldFormatConverter;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.utils.Utils;
 
+import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Queues;
 
@@ -32,20 +35,17 @@ public class MonaLisa {
     protected Params params;
     protected SessionManager session;
 
+    protected int[] targetImage, importanceMap;
+
     protected MainWindow mainWindow;
     
-    protected int[] inputPixelData;
-    protected int[] importanceMap;
-
     protected ExecutorService storageThread;
     protected BlockingQueue<Genome> storageQueue;
-
     protected ExecutorService processingThreads;
 
     protected MersenneTwister random;
 
     protected Genome currentGenome;
-
     protected int generated, selected;
     
     protected final DecimalFormat ff = new DecimalFormat( "#,###,###,###,##0.######" );
@@ -94,39 +94,44 @@ public class MonaLisa {
         return currentGenome;
     }
 
-    public void setup() throws IOException {
+    public void setup() throws IOException, SQLiteException {
         if (!params.isReady()) 
             throw new IllegalStateException("Not ready");
         
-        session = new SessionManager(params);
-        inputPixelData = session.getInputPixelData();
-        importanceMap = session.getImportanceMap();
-        if (importanceMap != null && importanceMap.length != inputPixelData.length)
-            throw new IllegalArgumentException("Importance map has to be of size " + inputPixelData.length + " but is " + importanceMap.length);
+        this.session = new SessionManager(params);
 
         final int imageWidth = session.getWidth(), imageHeight = session.getHeight();
-        if (session.isSessionResumed()) {
-            System.out.println("Resumed session '" + session.getSessionName() + "': " + session.getSessionDirectory().getAbsolutePath());
+        
+        this.targetImage = session.getTargetImage().getData();
+        if (session.getImportanceMap() != null) {
+            this.importanceMap = session.getImportanceMap().getData();
         } else {
-            System.out.println("Started new session '" + session.getSessionName() + "': " + session.getSessionDirectory().getAbsolutePath());
-            System.out.println("Using image file: " + params.getInputFile().getAbsolutePath());
+            this.importanceMap = new int[session.getTargetImage().getLength()];
+            Arrays.fill(importanceMap, 255);
         }
-        System.out.println("Image size: " + imageWidth + "x" + imageHeight + ", " + inputPixelData.length + " pixels, " + (inputPixelData.length * 4) + " bytes");
+
+        if (session.isSessionResumed()) {
+            System.out.println("Resumed session '" + session.getSessionName() + "': " + session.getDatabaseFile());
+        } else {
+            System.out.println("Started new session '" + session.getSessionName() + "': " + session.getDatabaseFile());
+            System.out.println("Using image file: " + params.getTargetImageFile());
+        }
+        System.out.println("Image size: " + imageWidth + "x" + imageHeight + ", " + session.getTargetImage().getLength() + " pixels");
         
         if (session.isSessionResumed()) {
-            int genomes = session.countGenomeFiles();
-            System.out.println("Counted " + genomes + " genome files.");
+            int genomes = session.getNumberOfGenomes();
+            System.out.println("Counted " + genomes + " genomes in database.");
         }
 
         random = new MersenneTwister(params.getSeed());
 
         if (session.isSessionResumed()) {
-            currentGenome = session.loadLatestGenome();
+            currentGenome = session.getLatestGenome();
             if (currentGenome == null) {
-                throw new IllegalStateException("Unable to load latest genome");
+                System.out.println("No latest genome found in database.");
             }
             final double oldFitness = currentGenome.fitness;
-            currentGenome.fitness = Utils.computeSimpleFitness(currentGenome, inputPixelData, importanceMap, imageWidth, imageHeight);
+            currentGenome.fitness = Utils.computeSimpleFitness(currentGenome, targetImage, importanceMap, imageWidth, imageHeight);
             if (oldFitness != currentGenome.fitness) {
                 System.out.println("Original fitness: " + ff.format(oldFitness));
                 System.out.println("New fitness     : " + ff.format(currentGenome.fitness));
@@ -148,24 +153,26 @@ public class MonaLisa {
         storageThread = Executors.newFixedThreadPool(1);
         storageThread.submit(new Runnable() {
 
+            private final SessionManager session = MonaLisa.this.session;
             private long timeLastStored = 0;
 
             @Override
             public void run() {
                 Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-                while (!storageThread.isShutdown()) {
-                    try {
-                        final Genome genome = storageQueue.poll(250, TimeUnit.MILLISECONDS);
-                        if (genome != null && System.currentTimeMillis() - timeLastStored >= 10000) {
-                            final File genomeFile = session.storeGenome(genome);
-                            if (mainWindow != null) {
-                                mainWindow.stored(genomeFile);
+                try (final Database db = session.connect()) {
+                    while (!storageThread.isShutdown()) {
+                        try {
+                            final Genome genome = storageQueue.poll(250, TimeUnit.MILLISECONDS);
+                            if (genome != null && System.currentTimeMillis() - timeLastStored >= 10000) {
+                                db.insertGenome(genome);
+                                timeLastStored = System.currentTimeMillis();
                             }
-                            timeLastStored = System.currentTimeMillis();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -210,7 +217,7 @@ public class MonaLisa {
                                 genome = strategy.apply(rng, context, genome);
                             }
                             renderer.render(genome);
-                            genome.fitness = Utils.computeSimpleFitness(genome, inputPixelData, importanceMap, renderer.getData());
+                            genome.fitness = Utils.computeSimpleFitness(genome, targetImage, importanceMap, renderer.getData());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

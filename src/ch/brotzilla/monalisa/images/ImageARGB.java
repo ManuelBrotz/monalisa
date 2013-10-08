@@ -3,6 +3,8 @@ package ch.brotzilla.monalisa.images;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 
+import ch.brotzilla.monalisa.images.ImageData.Type;
+
 import com.google.common.base.Preconditions;
 
 public class ImageARGB extends Image {
@@ -34,6 +36,16 @@ public class ImageARGB extends Image {
     }
 
     @Override
+    protected BufferedImage convertImageData(ImageData image) {
+        Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
+        Preconditions.checkArgument(image.getType() == Type.ARGB, "The type of the parameter 'image' must be 'BufferedImage.TYPE_INT_ARGB'");
+        final BufferedImage img = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        final WritableRaster raster = img.getRaster();
+        raster.setDataElements(0, 0, image.getWidth(), image.getHeight(), image.getData());
+        return img;
+    }
+
+    @Override
     protected void internalReadData(WritableRaster raster) {
         Preconditions.checkNotNull(raster, "The parameter 'raster' must not be null");
         Preconditions.checkNotNull(data, "The internal field 'data' must not be null");
@@ -50,4 +62,8 @@ public class ImageARGB extends Image {
         this.data = createData();
     }
 
+    public ImageARGB(ImageData image, boolean readData) {
+        super(image, readData);
+        this.data = createData();
+    }
 }

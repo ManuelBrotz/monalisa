@@ -1,19 +1,21 @@
 package ch.brotzilla.monalisa.utils;
 
+import ch.brotzilla.monalisa.images.ImageData;
+
 import com.google.common.base.Preconditions;
 
 public class Context {
     
     protected final int width, height;
-    protected final int[] inputData, importanceMap;
+    protected final ImageData targetImage, importanceMap;
 
     protected int borderX = 50, borderY = 50;
     
-    public Context(int width, int height, int[] inputData, int[] importanceMap) {
+    public Context(int width, int height, ImageData targetImage, ImageData importanceMap) {
         Preconditions.checkArgument(width > 0 && height > 0, "The parameters 'width' and 'height' have to be greater than zero");
         this.width = width;
         this.height = height;
-        this.inputData = Preconditions.checkNotNull(inputData, "The parameter 'inputData' must not be null");
+        this.targetImage = Preconditions.checkNotNull(targetImage, "The parameter 'targetImage' must not be null");
         this.importanceMap = importanceMap;
     }
     
@@ -25,11 +27,11 @@ public class Context {
         return height;
     }
     
-    public int[] getInputData() {
-        return inputData;
+    public ImageData getTargetImage() {
+        return targetImage;
     }
     
-    public int[] getImportanceMap() {
+    public ImageData getImportanceMap() {
         return importanceMap;
     }
 

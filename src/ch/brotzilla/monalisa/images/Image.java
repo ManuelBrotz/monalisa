@@ -20,6 +20,7 @@ public abstract class Image {
     
     protected abstract BufferedImage createImage(int width, int height);
     protected abstract BufferedImage checkImage(BufferedImage image);
+    protected abstract BufferedImage convertImageData(ImageData image);
     
     protected abstract void internalReadData(WritableRaster raster);
     
@@ -49,6 +50,23 @@ public abstract class Image {
     public Image(BufferedImage image, boolean readData) {
         Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
         this.image = Preconditions.checkNotNull(checkImage(image), "The internal method 'checkImage()' must not return null");
+        this.readData = readData;
+        this.width = this.image.getWidth();
+        this.height = this.image.getHeight();
+        this.size = this.width * this.height;
+        this.length = calculateLengthInBytes(size);
+        this.graphics = this.image.createGraphics();
+        setRenderingHints();
+        if (readData) {
+            this.raster = this.image.getRaster();
+        } else {
+            this.raster = null;
+        }
+    }
+    
+    public Image(ImageData image, boolean readData) {
+        Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
+        this.image = Preconditions.checkNotNull(convertImageData(image), "The internal method 'convertImageData()' must not return null");
         this.readData = readData;
         this.width = this.image.getWidth();
         this.height = this.image.getHeight();
