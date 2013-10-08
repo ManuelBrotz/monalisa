@@ -9,6 +9,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import ch.brotzilla.monalisa.db.Database;
+import ch.brotzilla.monalisa.db.Database.Transaction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
 import ch.brotzilla.monalisa.io.TextReader;
@@ -172,8 +173,7 @@ public final class OldFormatConverter {
             final TextReader txt = new TextReader(1024 * 100);
             final int total = files.size();
             int counter = 0, percentDone = 0;
-            db.begin();
-            try {
+            try (final Transaction t = db.begin()) {
                 for (final File file : files) {
                     final String json = txt.readTextFile(file);
                     final Genome genome = Genome.fromJson(json);
@@ -194,8 +194,6 @@ public final class OldFormatConverter {
                         percentDone = p;
                     }
                 }
-            } finally {
-                db.commit();
             }
             if (percentDone < 100) {
                 System.out.print("100% ");

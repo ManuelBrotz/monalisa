@@ -19,22 +19,24 @@ public class Database implements AutoCloseable {
     public static final String InsertFileQuery = "INSERT INTO files VALUES (?1, ?2, ?3, ?4)";
     public static final String InsertGenomeQuery = "INSERT INTO genomes VALUES (?1, ?2, ?3, ?4)";
     
-    protected final SQLiteConnection db;
+    protected final SQLiteConnection conn;
     
     protected final SQLiteStatement selectLatestGenomeQuery;
     protected final SQLiteStatement insertFileQuery, insertGenomeQuery;
     
-    private Database(SQLiteConnection db) throws SQLiteException {
-        Preconditions.checkNotNull(db, "The parameter 'db' must not be null");
-        Preconditions.checkState(db.isOpen(), "The connection to the database has to be open");
-        this.db = db;
-        selectLatestGenomeQuery = db.prepare(SelectLatestGenomeQuery);
-        insertFileQuery = db.prepare(InsertFileQuery);
-        insertGenomeQuery = db.prepare(InsertGenomeQuery);
+    protected Transaction transaction;
+    
+    private Database(SQLiteConnection conn) throws SQLiteException {
+        Preconditions.checkNotNull(conn, "The parameter 'conn' must not be null");
+        Preconditions.checkState(conn.isOpen(), "The connection to the database has to be open");
+        this.conn = conn;
+        selectLatestGenomeQuery = conn.prepare(SelectLatestGenomeQuery);
+        insertFileQuery = conn.prepare(InsertFileQuery);
+        insertGenomeQuery = conn.prepare(InsertGenomeQuery);
     }
     
     public File getDatabaseFile() {
-        return db.getDatabaseFile();
+        return conn.getDatabaseFile();
     }
     
     public Genome queryLatestGenome() throws SQLiteException, IOException {
@@ -78,21 +80,28 @@ public class Database implements AutoCloseable {
         insertGenomeQuery.step();
     }
     
-    public void execute(String sql) throws SQLiteException {
-        db.exec(sql);
-    }
-    
-    public void begin() throws SQLiteException {
-        db.exec("BEGIN");
-    }
-    
-    public void commit() throws SQLiteException {
-        db.exec("COMMIT"); 
+    public Transaction begin() throws SQLiteException {
+        if (transaction != null) {
+            transaction.enter();
+            return transaction;
+        }
+        this.transaction = new Transaction(this);
+        return transaction;
     }
     
     @Override
     public void close() {
-        db.dispose();
+        conn.dispose();
+    }
+    
+    public static Database openDatabase(File dbFile) throws IOException, SQLiteException {
+        Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
+        if (!dbFile.isFile()) {
+            throw new IOException("Database not found (" + dbFile + ")");
+        }
+        final SQLiteConnection conn = new SQLiteConnection(dbFile);
+        conn.open(false);
+        return new Database(conn);
     }
     
     public static Database createDatabase(File dbFile) throws SQLiteException, IOException {
@@ -103,16 +112,14 @@ public class Database implements AutoCloseable {
         final SQLiteConnection conn = new SQLiteConnection(dbFile);
         conn.open(true);
         final Database db = new Database(conn);
-        db.begin();
-        try {
+        
+        try (final Transaction t = db.begin()) {
             for (final String query : Schema.getCreateDatabaseQueries()) {
-                db.execute(query);
+                db.conn.exec(query);
             }
-            db.execute("PRAGMA count_changes=OFF");
-            db.execute("PRAGMA journal_mode=MEMORY");
-            db.execute("PRAGMA temp_store=MEMORY");
-        } finally {
-            db.commit();
+            db.conn.exec("PRAGMA count_changes=OFF");
+            db.conn.exec("PRAGMA journal_mode=MEMORY");
+            db.conn.exec("PRAGMA temp_store=MEMORY");
         }
         return db;
     }
@@ -120,6 +127,44 @@ public class Database implements AutoCloseable {
     public static void main(String[] args) throws Exception {
         try (final Database db = createDatabase(new File("output/test.mldb"))) {
             System.out.println(db.queryLatestGenome());
+        }
+    }
+    
+    public static class Transaction implements AutoCloseable {
+
+        private final Database db;
+        private int count = 0;
+        
+        private void enter() throws SQLiteException {
+            if (count == 0) {
+                db.conn.exec("BEGIN");
+            }
+            ++count;
+        }
+        
+        private void leave() throws SQLiteException {
+            if (count <= 0) {
+                throw new IllegalStateException("Transaction already closed");
+            }
+            --count;
+            if (count == 0) {
+                try {
+                    db.conn.exec("COMMIT");
+                } finally {
+                    db.transaction = null;
+                }
+            }
+        }
+        
+        public Transaction(Database db) throws SQLiteException {
+            Preconditions.checkNotNull(db, "The parameter 'db' must not be null");
+            this.db = db;
+            enter();
+        }
+
+        @Override
+        public void close() throws SQLiteException {
+            leave();
         }
     }
 }

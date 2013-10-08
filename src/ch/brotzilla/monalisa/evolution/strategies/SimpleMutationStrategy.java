@@ -44,7 +44,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
             new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAlphaChannel, geneColorChannel, geneBrighterColor, geneDarkerColor);
 
     protected static final BasicTableSelector<GeneMutation> geneDefaultMutations = 
-            new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneMovePoint);
+            new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAddPoint, geneRemovePoint, geneSwapPoints);
         
     protected static final GenomeAddGeneMutation genomeAddGene = new GenomeAddGeneMutation();
     protected static final GenomeRemoveGeneMutation genomeRemoveGene = new GenomeRemoveGeneMutation();
@@ -59,7 +59,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
         if (rng.nextBoolean(0.75f)) {
             return geneImportantMutations.select(rng).apply(rng, context, input);
         }
-        if (rng.nextBoolean(0.75f)) {
+        if (rng.nextBoolean(0.25f)) {
             return geneColorMutations.select(rng).apply(rng, context, input);
         }
         return geneDefaultMutations.select(rng).apply(rng, context, input);
