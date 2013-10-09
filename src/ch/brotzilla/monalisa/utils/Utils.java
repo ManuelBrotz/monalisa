@@ -9,10 +9,10 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import ch.brotzilla.monalisa.Renderer;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.io.TextReader;
+import ch.brotzilla.monalisa.rendering.Renderer;
 
 import com.google.common.base.Preconditions;
 

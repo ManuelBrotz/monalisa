@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa;
+package ch.brotzilla.monalisa.rendering;
 
 import java.awt.Color;
 //import java.awt.image.BufferedImage;

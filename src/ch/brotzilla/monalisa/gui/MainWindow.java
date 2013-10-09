@@ -13,11 +13,11 @@ import javax.swing.JTabbedPane;
 
 import com.google.common.base.Preconditions;
 
-import ch.brotzilla.monalisa.Renderer;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageARGB;
 import ch.brotzilla.monalisa.images.ImageGray;
 import ch.brotzilla.monalisa.io.SessionManager;
+import ch.brotzilla.monalisa.rendering.Renderer;
 
 @SuppressWarnings("serial")
 public class MainWindow extends JFrame {
