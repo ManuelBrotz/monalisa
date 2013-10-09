@@ -23,7 +23,7 @@ public class RenderTest {
     public static final int Width = 400, Height = 400;
     public static final int Type = BufferedImage.TYPE_INT_ARGB;
     
-    public static final int[][] randomPolygon = randomPolygon(Width, Height, "patrizia".hashCode());
+    public static final int[][] randomPolygon = randomPolygon(Width, Height, "IchLiebeMeinenSchatziSchnügel".hashCode());
     
     public static final ImageARGB image = new ImageARGB(Width, Height, false), cachedPolygon = new ImageARGB(Width, Height, true);
     
