@@ -7,7 +7,7 @@ import ch.brotzilla.monalisa.images.ImageData.Type;
 
 import com.google.common.base.Preconditions;
 
-public class ImageARGB extends Image {
+public class ImageARGB extends Image<int[]> {
 
     public final int[] data;
     
@@ -46,10 +46,11 @@ public class ImageARGB extends Image {
     }
 
     @Override
-    protected void internalReadData(WritableRaster raster) {
+    protected int[] internalReadData(WritableRaster raster) {
         Preconditions.checkNotNull(raster, "The parameter 'raster' must not be null");
         Preconditions.checkNotNull(data, "The internal field 'data' must not be null");
         raster.getDataElements(0, 0, width, height, data);
+        return data;
     }
 
     public ImageARGB(int width, int height, boolean readData) {

@@ -7,7 +7,7 @@ import ch.brotzilla.monalisa.images.ImageData.Type;
 
 import com.google.common.base.Preconditions;
 
-public class ImageGray extends Image {
+public class ImageGray extends Image<byte[]> {
 
     public final byte[] data;
     
@@ -52,10 +52,11 @@ public class ImageGray extends Image {
     }
 
     @Override
-    protected void internalReadData(WritableRaster raster) {
+    protected byte[] internalReadData(WritableRaster raster) {
         Preconditions.checkNotNull(raster, "The parameter 'raster' must not be null");
         Preconditions.checkNotNull(data, "The internal field 'data' must not be null");
         raster.getDataElements(0, 0, width, height, data);
+        return data;
     }
 
     public ImageGray(BufferedImage image, boolean readData) {

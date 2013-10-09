@@ -7,7 +7,7 @@ import java.awt.image.WritableRaster;
 
 import com.google.common.base.Preconditions;
 
-public abstract class Image {
+public abstract class Image<T> {
 
     public final int width, height, size, length;
     public final boolean readData;
@@ -22,7 +22,7 @@ public abstract class Image {
     protected abstract BufferedImage checkImage(BufferedImage image);
     protected abstract BufferedImage convertImageData(ImageData image);
     
-    protected abstract void internalReadData(WritableRaster raster);
+    protected abstract T internalReadData(WritableRaster raster);
     
     protected void setRenderingHints() {
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -81,9 +81,9 @@ public abstract class Image {
         }
     }
     
-    public final void readData() {
+    public final T readData() {
         if (!readData)
             throw new IllegalStateException("Unable to read image data.");
-        internalReadData(raster);
+        return internalReadData(raster);
     }
 }
