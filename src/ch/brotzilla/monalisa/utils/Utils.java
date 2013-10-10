@@ -126,7 +126,7 @@ public class Utils {
     public static double computeSimpleFitness(Genome genome, int[] inputData, int[] importanceMap, int width, int height) {
         final Renderer renderer = new Renderer(width, height, true);
         renderer.render(genome);
-        return computeSimpleFitness(genome, inputData, importanceMap, renderer.getData());
+        return computeSimpleFitness(genome, inputData, importanceMap, renderer.getBuffer());
     }
 
     public static int[] decodeColor(int argb, int[] output) {

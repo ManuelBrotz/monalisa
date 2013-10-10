@@ -215,7 +215,7 @@ public class MonaLisa {
                                 genome = strategy.apply(rng, context, genome);
                             }
                             renderer.render(genome);
-                            genome.fitness = Utils.computeSimpleFitness(genome, targetImage, importanceMap, renderer.getData());
+                            genome.fitness = Utils.computeSimpleFitness(genome, targetImage, importanceMap, renderer.getBuffer());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

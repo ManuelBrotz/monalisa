@@ -14,6 +14,7 @@ import ch.brotzilla.monalisa.db.Database;
 import ch.brotzilla.monalisa.db.Database.Transaction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
+import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.Params;
 
@@ -46,18 +47,18 @@ public class SessionManager {
             this.databaseFile = params.getSessionToResume().getAbsoluteFile();
             try (final Database db = Database.openDatabase(databaseFile)) {
                 this.targetImage = db.queryImage("target-image");
-                Preconditions.checkNotNull(this.targetImage, "Database contains no target image");
-                Preconditions.checkState(this.targetImage.getType() == ImageData.Type.ARGB, "Target image type is not support");
+                Preconditions.checkNotNull(targetImage, "Database contains no target image");
+                Preconditions.checkState(targetImage.getType() == ImageType.ARGB, "Target image type is not supported (" + targetImage.getType() + ")");
                 this.importanceMap = db.queryImage("importance-map");
                 this.numberOfGenomes = db.queryNumberOfGenomes();
                 this.latestGenome = db.queryLatestGenome();
             }
         } else {
             this.sessionName = extractSessionName(params.getTargetImageFile());
-            this.databaseFile = new File(params.getSessionRootFolder(), this.sessionName + ".mldb");
-            this.targetImage = ImageData.readARGB(ImageIO.read(params.getTargetImageFile()));
+            this.databaseFile = new File(params.getSessionRootFolder(), sessionName + ".mldb");
+            this.targetImage = ImageData.read(ImageIO.read(params.getTargetImageFile()), ImageType.ARGB);
             if (params.getImportanceMapFile() != null) {
-                this.importanceMap = ImageData.readGray(ImageIO.read(params.getImportanceMapFile()));
+                this.importanceMap = ImageData.read(ImageIO.read(params.getImportanceMapFile()), ImageType.Gray);
             } else {
                 this.importanceMap = null;
             }
@@ -65,8 +66,8 @@ public class SessionManager {
             this.latestGenome = null;
             try (final Database db = Database.createDatabase(databaseFile)) {
                 try (final Transaction t = db.begin()) {
-                    db.insertImage("target-image", params.getTargetImageFile().getAbsolutePath(), this.targetImage);
-                    if (this.importanceMap != null) {
+                    db.insertImage("target-image", params.getTargetImageFile().getAbsolutePath(), targetImage);
+                    if (importanceMap != null) {
                         db.insertImage("importance-map", params.getImportanceMapFile().getAbsolutePath(), importanceMap);
                     }
                 }

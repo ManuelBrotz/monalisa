@@ -8,7 +8,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import ch.brotzilla.monalisa.images.ImageARGB;
+import ch.brotzilla.monalisa.images.Image;
+import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 
 import com.google.common.base.Stopwatch;
@@ -25,7 +26,7 @@ public class RenderTest {
     
     public static final int[][] randomPolygon = randomPolygon(Width, Height, "IchLiebeMeinenSchatziSchnügel".hashCode());
     
-    public static final ImageARGB image = new ImageARGB(Width, Height, false), cachedPolygon = new ImageARGB(Width, Height, true);
+    public static final Image image = new Image(ImageType.ARGB, Width, Height), cachedPolygon = new Image(ImageType.ARGB, Width, Height);
     
     public static final int Loops = 20000;
     
@@ -44,8 +45,8 @@ public class RenderTest {
             g.drawImage(image, x, y, null);
         }
         
-        public void draw(ImageARGB target) {
-            draw(target.graphics);
+        public void draw(Image target) {
+            draw(target.getGraphics());
         }
         
         public BufferedImage untrimmed() {
@@ -62,7 +63,7 @@ public class RenderTest {
         
         clear(cachedPolygon);
         renderPolygon(cachedPolygon, randomPolygon, HalfRed);
-        ImageIO.write(cachedPolygon.image, "PNG", new File("./output/test_cached.png"));
+        ImageIO.write(cachedPolygon.getImage(), "PNG", new File("./output/test_cached.png"));
         
         final Trimmed trimmed = trim(cachedPolygon);
         ImageIO.write(trimmed.image, "PNG", new File("./output/test_trimmed.png"));
@@ -81,7 +82,7 @@ public class RenderTest {
         clear(image);
         w.reset().start();
         for (int i = 0; i < Loops; i++) {
-            draw(image, cachedPolygon.image);
+            draw(image, cachedPolygon.getImage());
         }
         w.stop();
         System.out.println("Time for blitting: " + w.elapsedMillis() + " ms");
@@ -106,22 +107,22 @@ public class RenderTest {
         return new int[][] {x, y};
     }
     
-    public static void clear(ImageARGB target) {
-        target.graphics.setBackground(Transparent);
-        target.graphics.clearRect(0, 0, target.width, target.height);
+    public static void clear(Image target) {
+        target.getGraphics().setBackground(Transparent);
+        target.getGraphics().clearRect(0, 0, target.getWidth(), target.getHeight());
     }
     
-    public static void renderPolygon(ImageARGB target, int[][] polygon, Color color) {
-        target.graphics.setColor(color);
-        target.graphics.fillPolygon(polygon[0], polygon[1], polygon[0].length);
+    public static void renderPolygon(Image target, int[][] polygon, Color color) {
+        target.getGraphics().setColor(color);
+        target.getGraphics().fillPolygon(polygon[0], polygon[1], polygon[0].length);
     }
     
-    public static void draw(ImageARGB target, BufferedImage source) {
-        target.graphics.drawImage(source, 0, 0, null);
+    public static void draw(Image target, BufferedImage source) {
+        target.getGraphics().drawImage(source, 0, 0, null);
     }
     
-    public static Trimmed trim(ImageARGB input) {
-        final int w = input.width, h = input.height;
+    public static Trimmed trim(Image input) {
+        final int w = input.getWidth(), h = input.getHeight();
         final int[] data = input.readData();
         
         int lx = w, rx = 0, ty = h, by = 0;
@@ -144,7 +145,7 @@ public class RenderTest {
         final Graphics2D g = result.createGraphics();
         g.setBackground(Transparent);
         g.clearRect(0, 0, width, height);
-        g.drawImage(input.image, 0, 0, width, height, lx, ty, rx, by, null);
+        g.drawImage(input.getImage(), 0, 0, width, height, lx, ty, rx, by, null);
         
         return new Trimmed(lx, ty, result);
     }
