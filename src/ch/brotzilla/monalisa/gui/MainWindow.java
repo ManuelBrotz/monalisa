@@ -17,7 +17,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.io.SessionManager;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 
 @SuppressWarnings("serial")
 public class MainWindow extends JFrame {
@@ -25,7 +25,7 @@ public class MainWindow extends JFrame {
     protected final SessionManager sessionManager;
     protected final Image inputImage, currentImage;
     protected final Image importanceMap;
-    protected final Renderer renderer;
+    protected final SimpleRenderer renderer;
     
     protected final JTabbedPane tabbedPane;
     protected final JScrollPane inputImageScrollPane, currentImageScrollPane, importanceMapScrollPane;
@@ -106,7 +106,7 @@ public class MainWindow extends JFrame {
             this.importanceMap = null;
         }
         
-        this.renderer = new Renderer(currentImage, false);
+        this.renderer = new SimpleRenderer(currentImage, false);
         if (currentGenome != null) {
             renderer.render(currentGenome);
         }

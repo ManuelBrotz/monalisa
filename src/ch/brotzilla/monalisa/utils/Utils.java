@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.io.TextReader;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 
 import com.google.common.base.Preconditions;
 
@@ -124,7 +124,7 @@ public class Utils {
     }
     
     public static double computeSimpleFitness(Genome genome, int[] inputData, int[] importanceMap, int width, int height) {
-        final Renderer renderer = new Renderer(width, height, true);
+        final SimpleRenderer renderer = new SimpleRenderer(width, height, true);
         renderer.render(genome);
         return computeSimpleFitness(genome, inputData, importanceMap, renderer.getBuffer());
     }

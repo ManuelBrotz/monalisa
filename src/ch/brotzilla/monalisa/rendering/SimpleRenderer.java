@@ -10,19 +10,19 @@ import ch.brotzilla.monalisa.images.ImageType;
 
 import com.google.common.base.Preconditions;
 
-public class Renderer {
+public class SimpleRenderer {
 
     public static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
     private Image image;
     private boolean autoUpdateBuffer;
     
-    public Renderer(int width, int height, boolean autoUpdateBuffer) {
+    public SimpleRenderer(int width, int height, boolean autoUpdateBuffer) {
         this.image = new Image(ImageType.ARGB, width, height);
         this.autoUpdateBuffer = autoUpdateBuffer;
     }
     
-    public Renderer(Image image, boolean autoUpdateBuffer) {
+    public SimpleRenderer(Image image, boolean autoUpdateBuffer) {
         Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
         Preconditions.checkArgument(image.getType() == ImageType.ARGB, "The parameter 'image' has to be of type ImageType.ARGB");
         this.image = image;

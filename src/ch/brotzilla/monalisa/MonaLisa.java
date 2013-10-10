@@ -18,7 +18,7 @@ import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.SimpleMutationStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Params;
@@ -203,7 +203,7 @@ public class MonaLisa {
                 @Override
                 public void run() {
                     final MersenneTwister rng = new MersenneTwister(seed);
-                    final Renderer renderer = new Renderer(context.getWidth(), context.getHeight(), true);
+                    final SimpleRenderer renderer = new SimpleRenderer(context.getWidth(), context.getHeight(), true);
 
                     Genome genome = currentGenome;
                     while (!processingThreads.isShutdown()) {
