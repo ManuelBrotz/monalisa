@@ -84,7 +84,7 @@ public class Genome {
         return (new Gson()).fromJson(json, Genome.class);
     }
     
-    public static Genome read(DataInputStream in) throws IOException {
+    public static Genome deserialize(DataInputStream in) throws IOException {
         Preconditions.checkNotNull(in, "The parameter 'in' must not be null");
         final byte version = in.readByte();
         Preconditions.checkState(version == 0, "Unable to deserialize genome, version not supported");
@@ -97,7 +97,7 @@ public class Genome {
         Preconditions.checkState(length > 0, "Unable to deserialize genome, too few genes");
         final Gene[] genes = new Gene[length];
         for (int i = 0; i < length; i++) {
-            genes[i] = Gene.read(in);
+            genes[i] = Gene.deserialize(in);
         }
         final Genome result = new Genome(background, genes, false);
         result.fitness = fitness;
@@ -107,7 +107,7 @@ public class Genome {
         return result;
     }
     
-    public static void write(Genome genome, DataOutputStream out) throws IOException {
+    public static void serialize(Genome genome, DataOutputStream out) throws IOException {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(out, "The parameter 'out' must not be null");
         out.writeByte(0); // version of serialization format
@@ -118,7 +118,7 @@ public class Genome {
         out.writeInt(genome.mutations);
         out.writeInt(genome.genes.length);
         for (final Gene g : genome.genes) {
-            Gene.write(g, out);
+            Gene.serialize(g, out);
         }
     }
     

@@ -24,14 +24,14 @@ public class Compression {
         if (input == null || input.length == 0)
             return null;
         
-        return ImageData.read(din(input));
+        return ImageData.deserialize(din(input));
     }
     
     public static Genome decodeGenome(byte[] input) throws IOException {
         if (input == null || input.length == 0)
             return null;
         
-        return Genome.read(din(input));
+        return Genome.deserialize(din(input));
     }
     
     public static String decodeString(byte[] input) throws IOException {
@@ -62,7 +62,7 @@ public class Compression {
         final GZIPOutputStream gzout = new GZIPOutputStream(bout);
         final DataOutputStream dout = new DataOutputStream(gzout);
         
-        ImageData.write(data, dout);
+        ImageData.serialize(data, dout);
         dout.close();
         
         return bout.toByteArray();
@@ -76,7 +76,7 @@ public class Compression {
         final GZIPOutputStream gzout = new GZIPOutputStream(bout);
         final DataOutputStream dout = new DataOutputStream(gzout);
         
-        Genome.write(genome, dout);
+        Genome.serialize(genome, dout);
         dout.close();
         
         return bout.toByteArray();

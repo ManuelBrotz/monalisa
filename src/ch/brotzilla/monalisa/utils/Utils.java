@@ -56,7 +56,7 @@ public class Utils {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         final int width = context.getWidth(), height = context.getHeight(), xborder = context.getBorderX(), yborder = context.getBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
-        final int[] inputData = context.getTargetImage().getData(), x = new int[3], y = new int[3];
+        final int[] inputData = context.getTargetImage().getBuffer(), x = new int[3], y = new int[3];
         final Point c = new Point();
         x[0] = rng.nextInt(bwidth) - xborder;
         x[1] = rng.nextInt(bwidth) - xborder;

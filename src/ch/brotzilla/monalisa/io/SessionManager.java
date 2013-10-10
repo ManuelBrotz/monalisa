@@ -56,9 +56,9 @@ public class SessionManager {
         } else {
             this.sessionName = extractSessionName(params.getTargetImageFile());
             this.databaseFile = new File(params.getSessionRootFolder(), sessionName + ".mldb");
-            this.targetImage = ImageData.read(ImageIO.read(params.getTargetImageFile()), ImageType.ARGB);
+            this.targetImage = ImageData.createFrom(ImageIO.read(params.getTargetImageFile()), ImageType.ARGB);
             if (params.getImportanceMapFile() != null) {
-                this.importanceMap = ImageData.read(ImageIO.read(params.getImportanceMapFile()), ImageType.Gray);
+                this.importanceMap = ImageData.createFrom(ImageIO.read(params.getImportanceMapFile()), ImageType.Gray);
             } else {
                 this.importanceMap = null;
             }

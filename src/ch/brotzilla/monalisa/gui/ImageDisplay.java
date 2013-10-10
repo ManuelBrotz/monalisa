@@ -41,7 +41,7 @@ public class ImageDisplay extends JPanel {
     public ImageDisplay(Image image) {
         super();
         this.image = Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
-        setPreferredSize(new Dimension(image.width, image.height));
+        setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
     }
     
     @Override
@@ -57,7 +57,7 @@ public class ImageDisplay extends JPanel {
         }
         
         final int ww = getWidth(), wh = getHeight();
-        final int iw = image.width, ih = image.height;
+        final int iw = image.getWidth(), ih = image.getHeight();
         
         int x = 0, y = 0;
         if (ww > iw) {
@@ -67,6 +67,6 @@ public class ImageDisplay extends JPanel {
             y = (wh - ih) / 2;
         }
         
-        g2.drawImage(image.image, x, y, null);
+        g2.drawImage(image.getImage(), x, y, null);
     }
 }

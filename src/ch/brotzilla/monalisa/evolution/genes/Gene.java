@@ -111,7 +111,7 @@ public class Gene {
         return b.toString();
     }
     
-    public static Gene read(DataInputStream in) throws IOException {
+    public static Gene deserialize(DataInputStream in) throws IOException {
         Preconditions.checkNotNull(in, "The parameter 'in' must not be null");
         final byte version = in.readByte();
         Preconditions.checkArgument(version == 0, "Unable to deserialize gene, version not supported");
@@ -130,7 +130,7 @@ public class Gene {
         return new Gene(x, y, color, false);
     }
     
-    public static void write(Gene gene, DataOutputStream out) throws IOException {
+    public static void serialize(Gene gene, DataOutputStream out) throws IOException {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         Preconditions.checkNotNull(out, "The parameter 'out' must not be null");
         out.writeByte(0); // version of serialization format

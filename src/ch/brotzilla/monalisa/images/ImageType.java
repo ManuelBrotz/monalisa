@@ -9,19 +9,19 @@ public enum ImageType {
     
     ARGB(BufferedImage.TYPE_INT_ARGB) {
         @Override
-        public Object createCompatibleArray(int length) {
+        public Object createArray(int length) {
             return new int[length];
         }
     },
     ARGBPre(BufferedImage.TYPE_INT_ARGB_PRE) {
         @Override
-        public Object createCompatibleArray(int length) {
+        public Object createArray(int length) {
             return new int[length];
         }
     },
     Gray(BufferedImage.TYPE_BYTE_GRAY) {
         @Override
-        public Object createCompatibleArray(int length) {
+        public Object createArray(int length) {
             return new byte[length];
         }
     };
@@ -36,25 +36,25 @@ public enum ImageType {
         return bufferedImageType;
     }
     
-    public abstract Object createCompatibleArray(int length);
+    public abstract Object createArray(int length);
     
-    public BufferedImage createCompatibleImage(int width, int height) {
+    public BufferedImage createBufferedImage(int width, int height) {
         return new BufferedImage(width, height, getBufferedImageType());
     }
-    
-    public BufferedImage convert(BufferedImage input) {
+
+    public BufferedImage convertBufferedImage(BufferedImage input) {
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         if (input.getType() == getBufferedImageType()) {
             return input;
         }
         final int width = input.getWidth(), height = input.getHeight();
-        final BufferedImage result = createCompatibleImage(width, height);
+        final BufferedImage result = createBufferedImage(width, height);
         final Graphics2D g = result.createGraphics();
         g.drawImage(input, 0, 0, null);
         return result;
     }
     
-    public static ImageType from(int type) {
+    public static ImageType fromBufferedImageType(int type) {
         switch (type) {
         case BufferedImage.TYPE_INT_ARGB:
             return ARGB;
@@ -66,13 +66,13 @@ public enum ImageType {
             return null;
         }
     }
-    
+
     public static boolean isSupported(int type) {
-        return from(type) != null;
+        return fromBufferedImageType(type) != null;
     }
     
     public static void check(int type) {
-        if (from(type) == null) {
+        if (fromBufferedImageType(type) == null) {
             throw new IllegalArgumentException("Image type not supported (" + type + ")");
         }
     }

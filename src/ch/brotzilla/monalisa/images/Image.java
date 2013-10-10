@@ -29,8 +29,8 @@ public class Image {
         this.type = type;
         this.width = width;
         this.height = height;
-        this.image = type.createCompatibleImage(width, height);
-        this.buffer = type.createCompatibleArray(width * height);
+        this.image = type.createBufferedImage(width, height);
+        this.buffer = type.createArray(width * height);
         this.graphics = image.createGraphics();
         this.raster = image.getRaster();
         setRenderingHints();
@@ -40,13 +40,26 @@ public class Image {
         Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
         final int t = image.getType();
         ImageType.check(t);
-        this.type = ImageType.from(t);
+        this.type = ImageType.fromBufferedImageType(t);
         this.width = image.getWidth();
         this.height = image.getHeight();
         this.image = image;
-        this.buffer = type.createCompatibleArray(width * height);
+        this.buffer = type.createArray(width * height);
         this.graphics = image.createGraphics();
         this.raster = image.getRaster();
+        setRenderingHints();
+    }
+    
+    public Image(ImageData data) {
+        Preconditions.checkNotNull(data, "The parameter 'data' must not be null");
+        this.type = data.getType();
+        this.width = data.getWidth();
+        this.height = data.getHeight();
+        this.image = ImageData.createBufferedImage(data);
+        this.buffer = type.createArray(width * height);
+        this.graphics = image.createGraphics();
+        this.raster = image.getRaster();
+        setRenderingHints();
     }
     
     public final ImageType getType() {

@@ -100,9 +100,9 @@ public class MonaLisa {
 
         final int imageWidth = session.getWidth(), imageHeight = session.getHeight();
         
-        this.targetImage = session.getTargetImage().getData();
+        this.targetImage = session.getTargetImage().getBuffer();
         if (session.getImportanceMap() != null) {
-            this.importanceMap = session.getImportanceMap().getData();
+            this.importanceMap = session.getImportanceMap().getBuffer();
         } else {
             this.importanceMap = new int[session.getTargetImage().getLength()];
             Arrays.fill(importanceMap, 255);

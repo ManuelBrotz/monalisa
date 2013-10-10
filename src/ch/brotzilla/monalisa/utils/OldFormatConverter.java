@@ -59,9 +59,9 @@ public final class OldFormatConverter {
         final Database db = createDatabase(dbFile);
         
         try {
-            importImage(db, "target-image", imageFile, ImageData.read(Utils.readImage(imageFile)));
+            importImage(db, "target-image", imageFile, ImageData.createFrom(Utils.readImage(imageFile)));
             if (mapFile.isFile()) {
-                importImage(db, "importance-map", mapFile, ImageData.read(ImageIO.read(mapFile)));
+                importImage(db, "importance-map", mapFile, ImageData.createFrom(ImageIO.read(mapFile)));
             }
             importGenomes(db, files);
         } finally {

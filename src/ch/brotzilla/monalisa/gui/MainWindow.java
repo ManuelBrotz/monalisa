@@ -14,8 +14,8 @@ import javax.swing.JTabbedPane;
 import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.images.ImageARGB;
-import ch.brotzilla.monalisa.images.ImageGray;
+import ch.brotzilla.monalisa.images.Image;
+import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.Renderer;
 
@@ -23,8 +23,8 @@ import ch.brotzilla.monalisa.rendering.Renderer;
 public class MainWindow extends JFrame {
     
     protected final SessionManager sessionManager;
-    protected final ImageARGB inputImage, currentImage;
-    protected final ImageGray importanceMap;
+    protected final Image inputImage, currentImage;
+    protected final Image importanceMap;
     protected final Renderer renderer;
     
     protected final JTabbedPane tabbedPane;
@@ -98,15 +98,15 @@ public class MainWindow extends JFrame {
         this.sessionManager = Preconditions.checkNotNull(sessionManager, "The parameter 'sessionManager' must not be null");
         this.currentGenome = currentGenome;
         
-        this.inputImage = new ImageARGB(sessionManager.getTargetImage(), false);
-        this.currentImage = new ImageARGB(sessionManager.getWidth(), sessionManager.getHeight(), false);
+        this.inputImage = new Image(sessionManager.getTargetImage());
+        this.currentImage = new Image(ImageType.ARGB, sessionManager.getWidth(), sessionManager.getHeight());
         if (sessionManager.getImportanceMap() != null) {
-            this.importanceMap = new ImageGray(sessionManager.getImportanceMap(), false);
+            this.importanceMap = new Image(sessionManager.getImportanceMap());
         } else {
             this.importanceMap = null;
         }
         
-        this.renderer = new Renderer(currentImage);
+        this.renderer = new Renderer(currentImage, false);
         if (currentGenome != null) {
             renderer.render(currentGenome);
         }
