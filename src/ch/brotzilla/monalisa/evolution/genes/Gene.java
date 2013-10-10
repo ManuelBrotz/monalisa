@@ -9,10 +9,18 @@ import java.io.IOException;
 import ch.brotzilla.monalisa.utils.Utils;
 
 import com.google.common.base.Preconditions;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 
 public class Gene {
 
+    private static final HashFunction hashFunction = Hashing.goodFastHash(32);
+
     public final int[] x, y, color;
+    
+    private int hash = 0;
+    private boolean hashed = false;
 
     public Gene(int[] x, int[] y, int[] color, boolean copy) {
         Preconditions.checkNotNull(x, "The parameter 'x' must not be null");
@@ -97,6 +105,26 @@ public class Gene {
             return true;
         }
         return false;
+    }
+    
+    @Override
+    public int hashCode() {
+        if (hashed) {
+            return hash;
+        }
+        final Hasher hasher = hashFunction.newHasher();
+        hasher.putByte((byte) color[0]);
+        hasher.putByte((byte) color[1]);
+        hasher.putByte((byte) color[2]);
+        hasher.putByte((byte) color[3]);
+        hasher.putInt(x.length);
+        for (int i = 0; i < x.length; i++) {
+            hasher.putInt(x[i]);
+            hasher.putInt(y[i]);
+        }
+        hash = hasher.hash().asInt();
+        hashed = true;
+        return hash;
     }
 
     @Override
