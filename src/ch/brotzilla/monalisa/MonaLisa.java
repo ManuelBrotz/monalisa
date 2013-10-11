@@ -22,6 +22,7 @@ import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Params;
+import ch.brotzilla.monalisa.utils.TickRate;
 import ch.brotzilla.monalisa.utils.Utils;
 
 import com.almworks.sqlite4java.SQLiteException;
@@ -46,7 +47,10 @@ public class MonaLisa {
     protected Genome currentGenome;
     protected int generated, selected;
     
-    protected final DecimalFormat ff = new DecimalFormat( "#,###,###,###,##0.######" );
+    protected TickRate tickrate = new TickRate(60);
+    
+    protected final DecimalFormat ff = new DecimalFormat("#,###,###,###,##0.######");
+    protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
     
     protected MutationStrategy setupMutationStrategy() {
         return new SimpleMutationStrategy();
@@ -88,6 +92,7 @@ public class MonaLisa {
                     mainWindow.submit(genome);
                 }
             }
+            tickrate.tick();
         }
         return currentGenome;
     }
@@ -272,11 +277,13 @@ public class MonaLisa {
                 shutdown();
                 System.out.println("Goodbye");
                 System.exit(0);
-            } if (input.equals("show-gui")) {
+            } else if (input.equals("show-gui")) {
                 showGui();
-            } if (input.equals("status")) {
+            } else if (input.equals("status")) {
                 final Genome genome = currentGenome;
                 System.out.println("Generated: " + generated + ", Selected: " + selected + ", Mutations: " + genome.mutations + ", Polygons: " + genome.genes.length + ", Points: " + genome.countPoints() + ", Fitness: " + ff.format(genome.fitness));
+            } else if (input.equals("rate")) {
+                System.out.println(rf.format(tickrate.getTickRate()) + " images/sec");
             } else {
                 System.out.println("Unknown command: " + input);
             }
