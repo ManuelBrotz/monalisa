@@ -56,14 +56,17 @@ public class TickRate {
         if (!started) {
             started = true;
             start = System.nanoTime();
-        }
-        ++count;
-        long now = System.nanoTime();
-        long elapsed = now - start;
-        if (elapsed > 1000000000) {
-            add(count * (1000000000d / elapsed));
-            start = now;
-            count = 0;
+            count = 1;
+        } else {
+            long now = System.nanoTime();
+            long elapsed = now - start;
+            if (elapsed > 1000000000) {
+                add(count * (1000000000d / elapsed));
+                start = now;
+                count = 1;
+            } else {
+                ++count;
+            }
         }
     }
 }
