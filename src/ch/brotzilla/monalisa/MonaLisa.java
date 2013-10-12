@@ -18,7 +18,8 @@ import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.SimpleMutationStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
-import ch.brotzilla.monalisa.rendering.SimpleRenderer;
+import ch.brotzilla.monalisa.rendering.CachingRenderer;
+import ch.brotzilla.monalisa.rendering.PolygonCache;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Params;
@@ -37,6 +38,8 @@ public class MonaLisa {
     protected int[] targetImage, importanceMap;
 
     protected MainWindow mainWindow;
+    
+    protected PolygonCache polygonCache;
     
     protected ExecutorService storageThread;
     protected BlockingQueue<Genome> storageQueue;
@@ -102,6 +105,7 @@ public class MonaLisa {
             throw new IllegalStateException("Not ready");
         
         this.session = new SessionManager(params);
+        this.polygonCache = new PolygonCache(session.getWidth(), session.getHeight());
 
         final int imageWidth = session.getWidth(), imageHeight = session.getHeight();
         
@@ -208,7 +212,7 @@ public class MonaLisa {
                 @Override
                 public void run() {
                     final MersenneTwister rng = new MersenneTwister(seed);
-                    final SimpleRenderer renderer = new SimpleRenderer(context.getWidth(), context.getHeight(), true);
+                    final CachingRenderer renderer = new CachingRenderer(polygonCache, context.getWidth(), context.getHeight(), true);
 
                     Genome genome = currentGenome;
                     while (!processingThreads.isShutdown()) {
@@ -284,6 +288,8 @@ public class MonaLisa {
                 System.out.println("Generated: " + generated + ", Selected: " + selected + ", Mutations: " + genome.mutations + ", Polygons: " + genome.genes.length + ", Points: " + genome.countPoints() + ", Fitness: " + ff.format(genome.fitness));
             } else if (input.equals("rate")) {
                 System.out.println(rf.format(tickrate.getTickRate()) + " images/sec");
+            } else if (input.equals("cache")) {
+                System.out.println("Number of cached polygons: " + polygonCache.getSize());
             } else {
                 System.out.println("Unknown command: " + input);
             }
