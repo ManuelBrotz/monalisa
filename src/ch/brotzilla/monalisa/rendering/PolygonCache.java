@@ -4,35 +4,32 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map.Entry;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
+import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.images.ImageType;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Queues;
+import com.google.common.collect.Sets;
 
 public class PolygonCache {
 
     private final int width, height;
     
-    private final ConcurrentMap<Gene, TempEntry> tempCache = Maps.newConcurrentMap();
-    private final ConcurrentMap<Gene, CacheEntry> polygonCache = Maps.newConcurrentMap();
+    private final BlockingQueue<Genome> queue = Queues.newLinkedBlockingQueue();
+    private final ConcurrentMap<Gene, CacheEntry> cache = Maps.newConcurrentMap();
     private final ExecutorService workerThread = Executors.newFixedThreadPool(1);
-    
-    private void touch(Gene gene) {
-        final TempEntry temp = tempCache.get(gene);
-        if (temp == null) {
-            tempCache.putIfAbsent(gene, new TempEntry());
-        } else {
-            temp.touch();
-        }
-    }
     
     public PolygonCache(int width, int height) {
         Preconditions.checkArgument(width > 0, "The parameter 'width' has to be greater than zero");
@@ -51,65 +48,62 @@ public class PolygonCache {
     }
     
     public int getSize() {
-        return polygonCache.size();
+        return cache.size();
     }
 
     public CacheEntry get(Gene gene) {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
-        final CacheEntry entry = polygonCache.get(gene);
-        if (entry == null) {
-            touch(gene);
-            return null;
+        final CacheEntry entry = cache.get(gene);
+        if (entry != null) {
+            entry.touch();
         }
-        if (!gene.equals(entry.getGene())) {
-            throw new IllegalStateException("Genes are not equal: " + gene.toString() + " != " + entry.getGene().toString());
-        }
-        entry.touch();
         return entry;
+    }
+    
+    public void submit(Genome genome) {
+        Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
+        queue.offer(genome);
+    }
+    
+    public void shutdown() {
+        workerThread.shutdownNow();
+        try {
+            workerThread.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+        }
     }
     
     private class WorkerThread implements Runnable {
 
         private final Color Transparent = new Color(0, 0, 0, 0);
         
-        private void processTempCache(LinkedList<Gene> output) {
-            final Iterator<Entry<Gene, TempEntry>> it = tempCache.entrySet().iterator();
-            while (it.hasNext()) {
-                final Entry<Gene, TempEntry> e = it.next();
-                final TempEntry t = e.getValue();
-                if (t.getTouchedSince() > 2000) {
-                    it.remove();
-                    continue;
-                } else if (t.getCreatedSince() > 10000) {
-                    output.add(e.getKey());
-                }
-            }
-        }
-        
         private void cleanupPolygonCache() {
-            final Iterator<CacheEntry> it = polygonCache.values().iterator();
+            final Iterator<CacheEntry> it = cache.values().iterator();
             while (it.hasNext()) {
                 final CacheEntry e = it.next();
-                if (e.getTouchedSince() > 60000) {
+                if (e.getTouchedSince() > 2000) {
                     it.remove();
                 }
             }
         }
         
-        private void sleep(long ms) {
+        private boolean sleep(long ms) {
             final long start = System.currentTimeMillis();
             try {
                 Thread.sleep(ms);
             } catch (InterruptedException e) {
-                System.out.println("Sleep interrupted...");
+                if (workerThread.isShutdown()) {
+                    return false;
+                }
                 final long now = System.currentTimeMillis();
                 if (now - start < ms * 0.9) {
-                    sleep(now - start);
+                    return sleep(now - start);
                 }
             }
+            return !workerThread.isShutdown();
         }
         
-        public CacheEntry renderPolygon(Gene gene, Image image) {
+        private CacheEntry renderPolygon(Gene gene, Image image) {
             
             image.getGraphics().setBackground(Transparent);
             image.getGraphics().clearRect(0, 0, image.getWidth(), image.getHeight());
@@ -142,22 +136,31 @@ public class PolygonCache {
             
             return new CacheEntry(gene, result, lx, ty);
         }
+        
+        private void processQueue(Image image) {
+            final List<Genome> genomes = Lists.newLinkedList();
+            final Set<Gene> genes = Sets.newHashSet();
+            queue.drainTo(genomes);
+            for (final Genome genome : genomes) {
+                for (final Gene gene : genome.genes) {
+                    genes.add(gene);
+                }
+            }
+            for (final Gene gene : genes) {
+                if (!cache.containsKey(gene)) {
+                    final CacheEntry entry = renderPolygon(gene, image);
+                    cache.put(gene, entry);
+                }
+            }
+        }
 
         @Override
         public void run() {
             Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-            final LinkedList<Gene> worklist = new LinkedList<Gene>();
             final Image image = new Image(ImageType.ARGB, getWidth(), getHeight());
-            while (true) {
-                sleep(1000);
+            while (sleep(2000)) {
                 cleanupPolygonCache();
-                processTempCache(worklist);
-                if (worklist.size() > 0) {
-                    for (final Gene gene : worklist) {
-                        polygonCache.put(gene, renderPolygon(gene, image));
-                    }
-                    worklist.clear();
-                }
+                processQueue(image);
             }
         }
     }

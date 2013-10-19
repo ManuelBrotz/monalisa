@@ -90,6 +90,7 @@ public class MonaLisa {
                 genome.generated = generated;
                 genome.selected = selected;
                 currentGenome = genome;
+                polygonCache.submit(genome);
                 storageQueue.offer(genome);
                 if (mainWindow != null) {
                     mainWindow.submit(genome);
@@ -248,6 +249,7 @@ public class MonaLisa {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            polygonCache.shutdown();
         }
     }
     

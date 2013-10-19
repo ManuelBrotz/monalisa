@@ -6,11 +6,12 @@ import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 
-public class CacheEntry extends TempEntry {
+public class CacheEntry {
     
     private final Gene gene;
     private final BufferedImage image;
     private final int x, y;
+    private long touched;
 
     public CacheEntry(Gene gene, BufferedImage image, int x, int y) {
         super();
@@ -22,6 +23,7 @@ public class CacheEntry extends TempEntry {
         this.image = image;
         this.x = x;
         this.y = y;
+        this.touched = System.currentTimeMillis();
     }
     
     public Gene getGene() {
@@ -38,5 +40,17 @@ public class CacheEntry extends TempEntry {
     
     public int getY() {
         return y;
+    }
+
+    public long getTouched() {
+        return touched;
+    }
+    
+    public long getTouchedSince() {
+        return (int) (System.currentTimeMillis() - touched);
+    }
+    
+    public void touch() {
+        touched = System.currentTimeMillis();
     }
 }
