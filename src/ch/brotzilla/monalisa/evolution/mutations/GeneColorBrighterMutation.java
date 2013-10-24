@@ -3,8 +3,8 @@ package ch.brotzilla.monalisa.evolution.mutations;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
+import ch.brotzilla.monalisa.vectorizer.Context;
 
 public class GeneColorBrighterMutation extends BasicMutation implements GeneMutation {
 

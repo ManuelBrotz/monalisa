@@ -23,11 +23,11 @@ import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.CachingRenderer;
 import ch.brotzilla.monalisa.rendering.PolygonCache;
-import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.utils.TickRate;
 import ch.brotzilla.monalisa.utils.Utils;
+import ch.brotzilla.monalisa.vectorizer.Context;
 
 import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;

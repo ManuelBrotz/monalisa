@@ -5,8 +5,8 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.intf.IndexSelector;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
+import ch.brotzilla.monalisa.vectorizer.Context;
 
 public class GenomeSwapGenesMutation extends BasicMutation implements GenomeMutation {
 

@@ -15,8 +15,8 @@ import ch.brotzilla.monalisa.db.Database.Transaction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
 import ch.brotzilla.monalisa.images.ImageType;
-import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.Params;
+import ch.brotzilla.monalisa.vectorizer.Context;
 
 import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;

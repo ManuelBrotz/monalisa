@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.utils;
+package ch.brotzilla.monalisa.vectorizer;
 
 import ch.brotzilla.monalisa.images.ImageData;
 
