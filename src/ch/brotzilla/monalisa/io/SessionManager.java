@@ -73,7 +73,7 @@ public class SessionManager {
                 }
             }
         }
-        this.vectorizerContext = new VectorizerContext(targetImage.getWidth(), targetImage.getHeight(), targetImage, importanceMap);
+        this.vectorizerContext = new VectorizerContext(targetImage, importanceMap);
     }
     
     public boolean isSessionResumed() {

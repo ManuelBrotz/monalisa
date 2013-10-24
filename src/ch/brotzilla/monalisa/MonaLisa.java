@@ -42,18 +42,10 @@ public class MonaLisa {
 
     protected MainWindow mainWindow;
     
-    protected PolygonCache polygonCache;
-    
-    protected ExecutorService storageThread;
-    protected BlockingQueue<Genome> storageQueue;
-    protected ExecutorService processingThreads;
 
     protected MersenneTwister random;
 
-    protected Genome currentGenome;
-    protected int generated, selected;
     
-    protected TickRate tickrate = new TickRate(60);
     
     protected final DecimalFormat ff = new DecimalFormat("#,###,###,###,##0.######");
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");

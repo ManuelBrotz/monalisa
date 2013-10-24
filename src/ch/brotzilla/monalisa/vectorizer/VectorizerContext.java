@@ -6,23 +6,20 @@ import com.google.common.base.Preconditions;
 
 public class VectorizerContext {
     
-    protected final int width, height;
     protected final ImageData targetImage, importanceMap;
 
-    public VectorizerContext(int width, int height, ImageData targetImage, ImageData importanceMap) {
-        Preconditions.checkArgument(width > 0 && height > 0, "The parameters 'width' and 'height' have to be greater than zero");
-        this.width = width;
-        this.height = height;
-        this.targetImage = Preconditions.checkNotNull(targetImage, "The parameter 'targetImage' must not be null");
+    public VectorizerContext(ImageData targetImage, ImageData importanceMap) {
+        Preconditions.checkNotNull(targetImage, "The parameter 'targetImage' must not be null");
+        this.targetImage = targetImage;
         this.importanceMap = importanceMap;
     }
     
     public int getWidth() {
-        return width;
+        return targetImage.getWidth();
     }
     
     public int getHeight() {
-        return height;
+        return targetImage.getHeight();
     }
     
     public ImageData getTargetImage() {
