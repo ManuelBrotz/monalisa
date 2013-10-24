@@ -6,7 +6,7 @@ import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Utils;
-import ch.brotzilla.monalisa.vectorizer.Context;
+import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 public class GenomeAddGeneMutation extends BasicMutation implements GenomeMutation {
 
@@ -15,7 +15,7 @@ public class GenomeAddGeneMutation extends BasicMutation implements GenomeMutati
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, Context context, EvolutionContext evolutionContext, Genome input) {
+    public Genome apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Genome input) {
         final Gene gene = Utils.createRandomGene(rng, context, evolutionContext);
         final Gene[] genes = new Gene[input.genes.length + 1];
         System.arraycopy(input.genes, 0, genes, 0, input.genes.length);

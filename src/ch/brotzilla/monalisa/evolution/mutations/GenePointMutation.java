@@ -6,7 +6,7 @@ import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
-import ch.brotzilla.monalisa.vectorizer.Context;
+import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 public class GenePointMutation extends BasicMutation implements GeneMutation {
 
@@ -15,7 +15,7 @@ public class GenePointMutation extends BasicMutation implements GeneMutation {
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, Context context, EvolutionContext evolutionContext, Gene input) {
+    public Gene apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final Gene result = new Gene(input);

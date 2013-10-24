@@ -16,7 +16,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
 import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.utils.Params;
-import ch.brotzilla.monalisa.vectorizer.Context;
+import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;
@@ -31,7 +31,7 @@ public class SessionManager {
     
     protected final File databaseFile;
 
-    protected final Context context;
+    protected final VectorizerContext context;
     protected final ImageData targetImage;
     protected final ImageData importanceMap;
     
@@ -73,7 +73,7 @@ public class SessionManager {
                 }
             }
         }
-        this.context = new Context(targetImage.getWidth(), targetImage.getHeight(), targetImage, importanceMap);
+        this.context = new VectorizerContext(targetImage.getWidth(), targetImage.getHeight(), targetImage, importanceMap);
     }
     
     public boolean isSessionResumed() {
@@ -116,7 +116,7 @@ public class SessionManager {
         return latestGenome;
     }
     
-    public Context getContext() {
+    public VectorizerContext getContext() {
         return context;
     }
     

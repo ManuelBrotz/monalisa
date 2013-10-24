@@ -14,7 +14,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.TextReader;
 import ch.brotzilla.monalisa.rendering.SimpleRenderer;
-import ch.brotzilla.monalisa.vectorizer.Context;
+import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 import com.google.common.base.Preconditions;
 
@@ -54,7 +54,7 @@ public class Utils {
         return new Point(cx, cy);
     }
 
-    public static Gene createRandomGene(MersenneTwister rng, Context context, EvolutionContext evolutionContext) {
+    public static Gene createRandomGene(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         final int width = context.getWidth(), height = context.getHeight(), xborder = evolutionContext.getBorderX(), yborder = evolutionContext.getBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
@@ -76,7 +76,7 @@ public class Utils {
         return new Gene(x, y, new Color(r, g, b, a));
     }
 
-    public static Gene[] createRandomGenes(MersenneTwister rng, Context context, EvolutionContext evolutionContext, int minGenes, int maxGenes) {
+    public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, int minGenes, int maxGenes) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(context, "The parameter 'context' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");

@@ -20,7 +20,7 @@ import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
 import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
-import ch.brotzilla.monalisa.vectorizer.Context;
+import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 public class SimpleMutationStrategy implements MutationStrategy {
     
@@ -51,7 +51,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
     protected static final BasicTableSelector<GenomeMutation> genomeMutations = 
             new BasicTableSelector<GenomeMutation>(defaultMutationSelector, genomeAddGene, genomeRemoveGene, genomeSwapGenes);
 
-    protected Gene mutateGene(MersenneTwister rng, Context context, EvolutionContext evolutionContext, Gene input) {
+    protected Gene mutateGene(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Gene input) {
         if (rng.nextBoolean(0.75f)) {
             return geneImportantMutations.select(rng).apply(rng, context, evolutionContext, input);
         }
@@ -61,7 +61,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
         return geneDefaultMutations.select(rng).apply(rng, context, evolutionContext, input);
     }
     
-    protected Genome mutateGene(MersenneTwister rng, Context context, EvolutionContext evolutionContext, Genome input) {
+    protected Genome mutateGene(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Genome input) {
         final int index = evolutionContext.getGeneIndexSelector().select(rng, input.genes.length);
         final Gene selected = input.genes[index];
         Gene mutated = selected;
@@ -73,7 +73,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
         return result;
     }
     
-    protected Genome mutateGenome(MersenneTwister rng, Context context, EvolutionContext evolutionContext, final Genome input) {
+    protected Genome mutateGenome(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, final Genome input) {
         Genome mutated = input;
         while (mutated == input) {
             mutated = genomeMutations.select(rng).apply(rng, context, evolutionContext, input);
@@ -84,7 +84,7 @@ public class SimpleMutationStrategy implements MutationStrategy {
     public SimpleMutationStrategy() {}
     
     @Override
-    public Genome apply(MersenneTwister rng, Context context, EvolutionContext evolutionContext, final Genome input) {
+    public Genome apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, final Genome input) {
         final int count = 1 + rng.nextInt(2);
         Genome result = input;
         for (int i = 0; i < count; i++) {

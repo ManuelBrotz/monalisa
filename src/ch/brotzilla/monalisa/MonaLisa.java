@@ -27,7 +27,7 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.utils.TickRate;
 import ch.brotzilla.monalisa.utils.Utils;
-import ch.brotzilla.monalisa.vectorizer.Context;
+import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;
@@ -219,7 +219,7 @@ public class MonaLisa {
 
                 private final Color backgroundColor = params.getBackgroundColor();
                 private final long seed = random.nextLong();
-                private final Context context = session.getContext();
+                private final VectorizerContext context = session.getContext();
                 private final MutationStrategy strategy = setupMutationStrategy();
                 private final EvolutionContext evolutionContext = setupEvolutionContext();
 

@@ -4,7 +4,7 @@ import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
-import ch.brotzilla.monalisa.vectorizer.Context;
+import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 public class GeneAlphaChannelMutation extends BasicMutation implements GeneMutation {
 
@@ -13,7 +13,7 @@ public class GeneAlphaChannelMutation extends BasicMutation implements GeneMutat
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, Context context, EvolutionContext evolutionContext, Gene input) {
+    public Gene apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Gene input) {
         final Gene result = new Gene(input);
         int value = result.color[0] + evolutionContext.getColorChannelMutationRange().select(rng);
         if (value < 0) value = 0;

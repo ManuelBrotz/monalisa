@@ -4,12 +4,12 @@ import ch.brotzilla.monalisa.images.ImageData;
 
 import com.google.common.base.Preconditions;
 
-public class Context {
+public class VectorizerContext {
     
     protected final int width, height;
     protected final ImageData targetImage, importanceMap;
 
-    public Context(int width, int height, ImageData targetImage, ImageData importanceMap) {
+    public VectorizerContext(int width, int height, ImageData targetImage, ImageData importanceMap) {
         Preconditions.checkArgument(width > 0 && height > 0, "The parameters 'width' and 'height' have to be greater than zero");
         this.width = width;
         this.height = height;
