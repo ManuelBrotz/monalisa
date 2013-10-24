@@ -18,7 +18,6 @@ import ch.brotzilla.monalisa.evolution.mutations.GenomeAddGeneMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeRemoveGeneMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
 import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
-import ch.brotzilla.monalisa.evolution.selectors.BiasedIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
 import ch.brotzilla.monalisa.utils.Context;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
@@ -26,7 +25,6 @@ import ch.brotzilla.monalisa.utils.MersenneTwister;
 public class SimpleMutationStrategy implements MutationStrategy {
     
     protected static final IndexSelector defaultMutationSelector = new BasicIndexSelector();
-    protected static final IndexSelector defaultGeneSelector = new BiasedIndexSelector(4);
     
     protected static final GenePointMutation geneMovePoint = new GenePointMutation();
     protected static final GeneAddPointMutation geneAddPoint = new GeneAddPointMutation();
@@ -53,63 +51,47 @@ public class SimpleMutationStrategy implements MutationStrategy {
     protected static final BasicTableSelector<GenomeMutation> genomeMutations = 
             new BasicTableSelector<GenomeMutation>(defaultMutationSelector, genomeAddGene, genomeRemoveGene, genomeSwapGenes);
 
-    protected IndexSelector selector;
-    
-    protected Gene mutateGene(MersenneTwister rng, Context context, Gene input) {
+    protected Gene mutateGene(MersenneTwister rng, Context context, EvolutionContext evolutionContext, Gene input) {
         if (rng.nextBoolean(0.75f)) {
-            return geneImportantMutations.select(rng).apply(rng, context, input);
+            return geneImportantMutations.select(rng).apply(rng, context, evolutionContext, input);
         }
         if (rng.nextBoolean(0.25f)) {
-            return geneColorMutations.select(rng).apply(rng, context, input);
+            return geneColorMutations.select(rng).apply(rng, context, evolutionContext, input);
         }
-        return geneDefaultMutations.select(rng).apply(rng, context, input);
+        return geneDefaultMutations.select(rng).apply(rng, context, evolutionContext, input);
     }
     
-    protected Genome mutateGene(MersenneTwister rng, Context context, Genome input) {
-        final int index = selector.select(rng, input.genes.length);
+    protected Genome mutateGene(MersenneTwister rng, Context context, EvolutionContext evolutionContext, Genome input) {
+        final int index = evolutionContext.getGeneIndexSelector().select(rng, input.genes.length);
         final Gene selected = input.genes[index];
         Gene mutated = selected;
         while (mutated == selected) {
-            mutated = mutateGene(rng, context, selected);
+            mutated = mutateGene(rng, context, evolutionContext, selected);
         }
         final Genome result = new Genome(input);
         result.genes[index] = mutated; 
         return result;
     }
     
-    protected Genome mutateGenome(MersenneTwister rng, Context context, final Genome input) {
+    protected Genome mutateGenome(MersenneTwister rng, Context context, EvolutionContext evolutionContext, final Genome input) {
         Genome mutated = input;
         while (mutated == input) {
-            mutated = genomeMutations.select(rng).apply(rng, selector, context, input);
+            mutated = genomeMutations.select(rng).apply(rng, context, evolutionContext, input);
         }
         return mutated;
     }
     
-    public SimpleMutationStrategy() {
-        this.selector = defaultGeneSelector;
-    }
+    public SimpleMutationStrategy() {}
     
-    public IndexSelector getGeneSelector() {
-        return selector;
-    }
-    
-    public void setGeneSelector(IndexSelector value) {
-        if (value == null) {
-            this.selector = defaultGeneSelector;
-        } else {
-            this.selector = value;
-        }
-    }
-
     @Override
-    public Genome apply(MersenneTwister rng, Context context, final Genome input) {
+    public Genome apply(MersenneTwister rng, Context context, EvolutionContext evolutionContext, final Genome input) {
         final int count = 1 + rng.nextInt(2);
         Genome result = input;
         for (int i = 0; i < count; i++) {
             if (rng.nextBoolean(0.95f)) {
-                result = mutateGene(rng, context, result);
+                result = mutateGene(rng, context, evolutionContext, result);
             } else {
-                result = mutateGenome(rng, context, result);
+                result = mutateGenome(rng, context, evolutionContext, result);
             }
         }
         result.mutations = count;

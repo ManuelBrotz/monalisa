@@ -15,6 +15,9 @@ import java.util.concurrent.TimeUnit;
 import ch.brotzilla.monalisa.db.Database;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
+import ch.brotzilla.monalisa.evolution.selectors.BiasedIndexSelector;
+import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
+import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.evolution.strategies.SimpleMutationStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
@@ -57,6 +60,15 @@ public class MonaLisa {
     
     protected MutationStrategy setupMutationStrategy() {
         return new SimpleMutationStrategy();
+    }
+    
+    protected EvolutionContext setupEvolutionContext() {
+        final EvolutionContext c = new EvolutionContext();
+        c.setBorder(50, 50);
+        c.setGeneIndexSelector(new BiasedIndexSelector(4));
+        c.setPointMutationRange(new GaussianRangeSelector(15));
+        c.setColorChannelMutationRange(new GaussianRangeSelector(10));
+        return c;
     }
     
     protected void printError() {
@@ -209,6 +221,7 @@ public class MonaLisa {
                 private final long seed = random.nextLong();
                 private final Context context = session.getContext();
                 private final MutationStrategy strategy = setupMutationStrategy();
+                private final EvolutionContext evolutionContext = setupEvolutionContext();
 
                 @Override
                 public void run() {
@@ -220,9 +233,9 @@ public class MonaLisa {
                         try {
                             genome = submit(genome);
                             if (genome == null) {
-                                genome = new Genome(backgroundColor, Utils.createRandomGenes(rng, context, 10, 20));
+                                genome = new Genome(backgroundColor, Utils.createRandomGenes(rng, context, evolutionContext, 10, 20));
                             } else {
-                                genome = strategy.apply(rng, context, genome);
+                                genome = strategy.apply(rng, context, evolutionContext, genome);
                             }
                             renderer.render(genome);
                             genome.fitness = Utils.computeSimpleFitness(genome, targetImage, importanceMap, renderer.getBuffer());
