@@ -7,6 +7,6 @@ import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 public interface GeneMutation extends Mutation {
 
-    public Gene apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Gene input);
+    public Gene apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input);
     
 }

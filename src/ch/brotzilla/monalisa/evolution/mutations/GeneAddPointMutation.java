@@ -13,7 +13,7 @@ public class GeneAddPointMutation extends BasicMutation implements GeneMutation 
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Gene input) {
+    public Gene apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
         final int len = input.x.length;
         final int[] x = new int[len + 1];
         final int[] y = new int[len + 1];

@@ -219,23 +219,23 @@ public class MonaLisa {
 
                 private final Color backgroundColor = params.getBackgroundColor();
                 private final long seed = random.nextLong();
-                private final VectorizerContext context = session.getContext();
-                private final MutationStrategy strategy = setupMutationStrategy();
+                private final VectorizerContext vectorizerContext = session.getVectorizerContext();
                 private final EvolutionContext evolutionContext = setupEvolutionContext();
+                private final MutationStrategy strategy = setupMutationStrategy();
 
                 @Override
                 public void run() {
                     final MersenneTwister rng = new MersenneTwister(seed);
-                    final CachingRenderer renderer = new CachingRenderer(polygonCache, context.getWidth(), context.getHeight(), true);
+                    final CachingRenderer renderer = new CachingRenderer(polygonCache, vectorizerContext.getWidth(), vectorizerContext.getHeight(), true);
 
                     Genome genome = currentGenome;
                     while (!processingThreads.isShutdown()) {
                         try {
                             genome = submit(genome);
                             if (genome == null) {
-                                genome = new Genome(backgroundColor, Utils.createRandomGenes(rng, context, evolutionContext, 10, 20));
+                                genome = new Genome(backgroundColor, Utils.createRandomGenes(rng, vectorizerContext, evolutionContext, 10, 20));
                             } else {
-                                genome = strategy.apply(rng, context, evolutionContext, genome);
+                                genome = strategy.apply(rng, vectorizerContext, evolutionContext, genome);
                             }
                             renderer.render(genome);
                             genome.fitness = Utils.computeSimpleFitness(genome, targetImage, importanceMap, renderer.getBuffer());

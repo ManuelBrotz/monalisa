@@ -31,7 +31,7 @@ public class SessionManager {
     
     protected final File databaseFile;
 
-    protected final VectorizerContext context;
+    protected final VectorizerContext vectorizerContext;
     protected final ImageData targetImage;
     protected final ImageData importanceMap;
     
@@ -73,7 +73,7 @@ public class SessionManager {
                 }
             }
         }
-        this.context = new VectorizerContext(targetImage.getWidth(), targetImage.getHeight(), targetImage, importanceMap);
+        this.vectorizerContext = new VectorizerContext(targetImage.getWidth(), targetImage.getHeight(), targetImage, importanceMap);
     }
     
     public boolean isSessionResumed() {
@@ -93,11 +93,11 @@ public class SessionManager {
     }
 
     public int getWidth() {
-        return context.getWidth();
+        return vectorizerContext.getWidth();
     }
     
     public int getHeight() {
-        return context.getHeight();
+        return vectorizerContext.getHeight();
     }
     
     public ImageData getTargetImage() {
@@ -116,8 +116,8 @@ public class SessionManager {
         return latestGenome;
     }
     
-    public VectorizerContext getContext() {
-        return context;
+    public VectorizerContext getVectorizerContext() {
+        return vectorizerContext;
     }
     
     public Database connect() throws IOException, SQLiteException {

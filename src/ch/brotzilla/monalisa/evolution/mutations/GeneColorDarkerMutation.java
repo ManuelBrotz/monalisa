@@ -13,7 +13,7 @@ public class GeneColorDarkerMutation extends BasicMutation implements GeneMutati
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Gene input) {
+    public Gene apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
         final Gene result = new Gene(input);
         final float factor = 0.5f + (0.49f * rng.nextFloat());
         float r = (result.color[1] + 1) * factor;

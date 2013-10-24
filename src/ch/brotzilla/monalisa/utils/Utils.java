@@ -54,11 +54,11 @@ public class Utils {
         return new Point(cx, cy);
     }
 
-    public static Gene createRandomGene(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext) {
+    public static Gene createRandomGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        final int width = context.getWidth(), height = context.getHeight(), xborder = evolutionContext.getBorderX(), yborder = evolutionContext.getBorderY();
+        final int width = vectorizerContext.getWidth(), height = vectorizerContext.getHeight(), xborder = evolutionContext.getBorderX(), yborder = evolutionContext.getBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
-        final int[] inputData = context.getTargetImage().getBuffer(), x = new int[3], y = new int[3];
+        final int[] inputData = vectorizerContext.getTargetImage().getBuffer(), x = new int[3], y = new int[3];
         final Point c = new Point();
         x[0] = rng.nextInt(bwidth) - xborder;
         x[1] = rng.nextInt(bwidth) - xborder;
@@ -76,9 +76,9 @@ public class Utils {
         return new Gene(x, y, new Color(r, g, b, a));
     }
 
-    public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, int minGenes, int maxGenes) {
+    public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, int minGenes, int maxGenes) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(context, "The parameter 'context' must not be null");
+        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");
         Preconditions.checkArgument(maxGenes >= minGenes, "The parameter 'maxGenes' must be greater than or equal to 'minGenes'");
         final int length;
@@ -91,7 +91,7 @@ public class Utils {
         Preconditions.checkState(length <= maxGenes);
         final Gene[] genes = new Gene[length];
         for (int i = 0; i < length; i++) {
-            genes[i] = createRandomGene(rng, context, evolutionContext);
+            genes[i] = createRandomGene(rng, vectorizerContext, evolutionContext);
         }
         return genes;
     }

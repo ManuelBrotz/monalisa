@@ -14,7 +14,7 @@ public class GenomeRemoveGeneMutation extends BasicMutation implements GenomeMut
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Genome input) {
+    public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
         final int length = input.genes.length;
         if (length > 1) {
             final int index = evolutionContext.getGeneIndexSelector().select(rng, length);

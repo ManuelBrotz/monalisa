@@ -51,32 +51,32 @@ public class SimpleMutationStrategy implements MutationStrategy {
     protected static final BasicTableSelector<GenomeMutation> genomeMutations = 
             new BasicTableSelector<GenomeMutation>(defaultMutationSelector, genomeAddGene, genomeRemoveGene, genomeSwapGenes);
 
-    protected Gene mutateGene(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Gene input) {
+    protected Gene mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
         if (rng.nextBoolean(0.75f)) {
-            return geneImportantMutations.select(rng).apply(rng, context, evolutionContext, input);
+            return geneImportantMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
         }
         if (rng.nextBoolean(0.25f)) {
-            return geneColorMutations.select(rng).apply(rng, context, evolutionContext, input);
+            return geneColorMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
         }
-        return geneDefaultMutations.select(rng).apply(rng, context, evolutionContext, input);
+        return geneDefaultMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
     }
     
-    protected Genome mutateGene(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Genome input) {
+    protected Genome mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
         final int index = evolutionContext.getGeneIndexSelector().select(rng, input.genes.length);
         final Gene selected = input.genes[index];
         Gene mutated = selected;
         while (mutated == selected) {
-            mutated = mutateGene(rng, context, evolutionContext, selected);
+            mutated = mutateGene(rng, vectorizerContext, evolutionContext, selected);
         }
         final Genome result = new Genome(input);
         result.genes[index] = mutated; 
         return result;
     }
     
-    protected Genome mutateGenome(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, final Genome input) {
+    protected Genome mutateGenome(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
         Genome mutated = input;
         while (mutated == input) {
-            mutated = genomeMutations.select(rng).apply(rng, context, evolutionContext, input);
+            mutated = genomeMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
         }
         return mutated;
     }
@@ -84,14 +84,14 @@ public class SimpleMutationStrategy implements MutationStrategy {
     public SimpleMutationStrategy() {}
     
     @Override
-    public Genome apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, final Genome input) {
+    public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
         final int count = 1 + rng.nextInt(2);
         Genome result = input;
         for (int i = 0; i < count; i++) {
             if (rng.nextBoolean(0.95f)) {
-                result = mutateGene(rng, context, evolutionContext, result);
+                result = mutateGene(rng, vectorizerContext, evolutionContext, result);
             } else {
-                result = mutateGenome(rng, context, evolutionContext, result);
+                result = mutateGenome(rng, vectorizerContext, evolutionContext, result);
             }
         }
         result.mutations = count;

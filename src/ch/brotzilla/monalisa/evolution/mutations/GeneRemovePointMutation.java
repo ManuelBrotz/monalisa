@@ -13,7 +13,7 @@ public class GeneRemovePointMutation extends BasicMutation implements GeneMutati
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Gene input) {
+    public Gene apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
         if (input.x.length > 3) {
             final int length = input.x.length;
             final int index = rng.nextInt(length);

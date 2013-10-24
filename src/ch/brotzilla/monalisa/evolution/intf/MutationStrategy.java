@@ -7,6 +7,6 @@ import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 public interface MutationStrategy {
 
-    Genome apply(MersenneTwister rng, VectorizerContext context, EvolutionContext evolutionContext, Genome input);
+    Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input);
     
 }
