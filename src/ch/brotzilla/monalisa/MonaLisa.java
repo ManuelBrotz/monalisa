@@ -106,6 +106,7 @@ public class MonaLisa {
                 storageQueue.offer(genome);
                 if (mainWindow != null) {
                     mainWindow.submit(genome);
+                    mainWindow.getStatusDisplay().updateRateAndCache(tickrate.getTickRate(), polygonCache.getSize());
                 }
             }
             tickrate.tick();

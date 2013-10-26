@@ -147,6 +147,10 @@ public class MainWindow extends JFrame {
         addWindowListener(listener);
     }
     
+    public StatusDisplay getStatusDisplay() {
+        return statusDisplay;
+    }
+    
     public synchronized void submit(Genome genome) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         
