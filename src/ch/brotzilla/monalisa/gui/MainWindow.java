@@ -14,6 +14,7 @@ import javax.swing.JTabbedPane;
 import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.gui.StatusDisplay.Orientation;
 import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.io.SessionManager;
@@ -137,7 +138,7 @@ public class MainWindow extends JFrame {
         
         add(tabbedPane, BorderLayout.CENTER);
         
-        this.statusDisplay = new StatusDisplay();
+        this.statusDisplay = new StatusDisplay(Orientation.Horizontal);
         
         add(statusDisplay, BorderLayout.PAGE_END);
         
