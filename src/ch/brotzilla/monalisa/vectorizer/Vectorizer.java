@@ -10,6 +10,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Queues;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
+import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.PolygonCache;
 import ch.brotzilla.monalisa.utils.TickRate;
@@ -25,14 +27,17 @@ public class Vectorizer {
 
     private boolean running;
     
+    private EvolutionContext evolutionContext;
+    private MutationStrategy mutationStrategy;
+    
     private ExecutorService workerThreads;
     private ExecutorService storageThread;
 
     private Genome currentGenome;
     private int generated, selected;
     
-    void submit(Genome genome) {
-        
+    Genome submit(Genome genome) {
+        return null;
     }
 
     public Vectorizer(SessionManager session) {
@@ -49,6 +54,32 @@ public class Vectorizer {
     
     public TickRate getTickRate() {
         return tickrate;
+    }
+    
+    public PolygonCache getPolygonCache() {
+        return polygonCache;
+    }
+    
+    public EvolutionContext getEvolutionContext() {
+        return evolutionContext;
+    }
+    
+    public void setEvolutionContext(EvolutionContext value) {
+        if (running) {
+            throw new IllegalStateException("Property 'EvolutionContext' cannot be changed while vectorizer is running.");
+        }
+        this.evolutionContext = value;
+    }
+    
+    public MutationStrategy getMutationStrategy() {
+        return mutationStrategy;
+    }
+    
+    public void setMutationStrategy(MutationStrategy value) {
+        if (running) {
+            throw new IllegalStateException("Property 'MutationStrategy' cannot be changed while vectorizer is running.");
+        }
+        this.mutationStrategy = value;
     }
 
     public synchronized void start() {
