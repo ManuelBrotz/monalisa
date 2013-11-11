@@ -26,6 +26,7 @@ public class StatusDisplay extends JPanel {
     
     protected final DecimalFormat ff = new DecimalFormat( "#,###,###,###,##0.00" );
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
+    protected final DecimalFormat pppf = new DecimalFormat("#0.00");
     
     public static enum Orientation {
         Horizontal,
@@ -114,14 +115,16 @@ public class StatusDisplay extends JPanel {
             selectedValue.setText("0");
             mutationsValue.setText("0");
             polygonsValue.setText("0");
-            pointsValue.setText("0");
+            pointsValue.setText("0 (0.0)");
             fitnessValue.setText("0");
         } else {
             generatedValue.setText(genome.generated + "");
             selectedValue.setText(genome.selected + "");
             mutationsValue.setText(genome.mutations + "");
             polygonsValue.setText(genome.genes.length + "");
-            pointsValue.setText(genome.countPoints() + "");
+            final int cp = genome.countPoints();
+            final double ppp = (double) cp / genome.genes.length;
+            pointsValue.setText(cp + " (" + pppf.format(ppp) + ")");
             fitnessValue.setText(ff.format(genome.fitness));
         }
     }

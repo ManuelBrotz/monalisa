@@ -15,13 +15,28 @@ public class GeneAddPointMutation extends BasicMutation implements GeneMutation 
     @Override
     public Gene apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
         final int len = input.x.length;
-        final int[] x = new int[len + 1];
-        final int[] y = new int[len + 1];
-        System.arraycopy(input.x, 0, x, 0, len);
-        System.arraycopy(input.y, 0, y, 0, len);
-        x[len] = Math.round((x[0] + x[len-1]) / 2.0f) + evolutionContext.getPointMutationRange().select(rng);
-        y[len] = Math.round((y[0] + y[len-1]) / 2.0f) + evolutionContext.getPointMutationRange().select(rng);
+        final int index = rng.nextInt(len+1);
+        final int prev = index == 0 ? len : index - 1;
+        final int next = index == len ? 0 : index + 1;
+        final int[] x = expand(input.x, index);
+        final int[] y = expand(input.y, index);
+        x[index] = Math.round((x[prev] + x[next]) / 2.0f) + evolutionContext.getPointMutationRange().select(rng);
+        y[index] = Math.round((y[prev] + y[next]) / 2.0f) + evolutionContext.getPointMutationRange().select(rng);
         return new Gene(x, y, input.color);
+    }
+    
+    private int[] expand(int[] input, int index) {
+        final int len = input.length;
+        final int[] result = new int[len + 1];
+        if (index == 0) {
+            System.arraycopy(input, 0, result, 1, len);
+        } else if (index == len) {
+            System.arraycopy(input, 0, result, 0, len);
+        } else {
+            System.arraycopy(input, 0, result, 0, index);
+            System.arraycopy(input, index, result, index + 1, len - index);
+        }
+        return result;
     }
     
 }
