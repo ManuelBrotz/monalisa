@@ -77,7 +77,7 @@ public class MonaLisa {
         if (params.getNumArguments() > 0) {
             System.out.println();
             System.out.println("Parameters:");
-            System.out.println(params.getArguments());
+            System.out.println(params.getArgumentsLine());
         }
         if (params.getError() != null) {
             System.out.println();
