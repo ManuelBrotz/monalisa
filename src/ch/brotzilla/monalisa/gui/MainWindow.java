@@ -34,8 +34,6 @@ public class MainWindow extends JFrame {
 
     protected final StatusDisplay statusDisplay;
     
-    protected final StatisticsPanel statisticsPanel;
-    
     protected Genome currentGenome;
     protected long lastRenderTime = 0;
     
@@ -133,9 +131,6 @@ public class MainWindow extends JFrame {
             this.importanceMapScrollPane = null;
         }
 
-        this.statisticsPanel = new StatisticsPanel(sessionManager);
-        tabbedPane.addTab("Statistics", statisticsPanel);
-        
         add(tabbedPane, BorderLayout.CENTER);
         
         this.statusDisplay = new StatusDisplay(Orientation.Horizontal);
