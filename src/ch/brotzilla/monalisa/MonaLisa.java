@@ -74,9 +74,11 @@ public class MonaLisa {
     protected void printError() {
         System.out.println("Usage:");
         params.getParser().printUsage(System.out);
-        System.out.println();
-        System.out.println("Parameters:");
-        System.out.println(params.getArguments());
+        if (params.getNumArguments() > 0) {
+            System.out.println();
+            System.out.println("Parameters:");
+            System.out.println(params.getArguments());
+        }
         if (params.getError() != null) {
             System.out.println();
             System.out.println("Error: " + params.getError().getMessage());
