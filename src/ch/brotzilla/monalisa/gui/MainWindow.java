@@ -60,6 +60,8 @@ public class MainWindow extends JFrame {
 
         @Override
         public void windowClosing(WindowEvent e) {
+            window.setVisible(false);
+            window.monalisa.quit();
         }
 
         @Override
@@ -177,6 +179,7 @@ public class MainWindow extends JFrame {
     
     private JMenu buildFileMenu() {
         final JMenu menu = new JMenu("File");
+
         final JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(new ActionListener() {
             @Override
@@ -186,6 +189,15 @@ public class MainWindow extends JFrame {
             }
         });
         
+        final JMenuItem hideItem = new JMenuItem("Hide");
+        hideItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+            }
+        });
+        
+        menu.add(hideItem);
         menu.add(exitItem);
         
         return menu;
