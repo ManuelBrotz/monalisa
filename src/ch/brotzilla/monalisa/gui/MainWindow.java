@@ -182,8 +182,7 @@ public class MainWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
-                monalisa.shutdown();
-                System.exit(0);
+                monalisa.quit();
             }
         });
         

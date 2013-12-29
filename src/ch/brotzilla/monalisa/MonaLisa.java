@@ -270,6 +270,13 @@ public class MonaLisa {
         }
     }
     
+    public void quit() {
+        System.out.println("Shutting down...");
+        shutdown();
+        System.out.println("Goodbye");
+        System.exit(0);
+    }
+    
     public void showGui() {
         if (mainWindow == null) {
             try {
@@ -296,10 +303,7 @@ public class MonaLisa {
                 continue;
             }
             if (input.equals("shutdown") || input.equals("exit")) {
-                System.out.println("Shutting down...");
-                shutdown();
-                System.out.println("Goodbye");
-                System.exit(0);
+                quit();
             } else if (input.equals("show-gui")) {
                 showGui();
             } else if (input.equals("status")) {
