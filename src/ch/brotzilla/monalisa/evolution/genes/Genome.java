@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import ch.brotzilla.monalisa.utils.BoundingBox;
 import ch.brotzilla.monalisa.utils.Utils;
 
 import com.google.common.base.Preconditions;
@@ -52,6 +53,21 @@ public class Genome {
             result += gene.x.length;
         }
         return result;
+    }
+    
+    public BoundingBox computeBoundingBox() {
+        int xmin = Integer.MAX_VALUE, xmax = Integer.MIN_VALUE;
+        int ymin = Integer.MAX_VALUE, ymax = Integer.MIN_VALUE;
+        for (Gene g : genes) {
+            for (int i = 0; i < g.x.length; i++) {
+                final int x = g.x[i], y = g.y[i];
+                if (x < xmin) xmin = x;
+                if (x > xmax) xmax = x;
+                if (y < ymin) ymin = x;
+                if (y > ymax) ymax = x;
+            }
+        }
+        return new BoundingBox(xmin, ymin, xmax, ymax);
     }
 
     @Override
