@@ -1,6 +1,8 @@
 package ch.brotzilla.monalisa.gui;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowEvent;
@@ -8,11 +10,15 @@ import java.awt.event.WindowListener;
 import java.io.IOException;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
 import com.google.common.base.Preconditions;
 
+import ch.brotzilla.monalisa.MonaLisa;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.gui.StatusDisplay.Orientation;
 import ch.brotzilla.monalisa.images.Image;
@@ -23,10 +29,13 @@ import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 @SuppressWarnings("serial")
 public class MainWindow extends JFrame {
     
+    protected final MonaLisa monalisa;
     protected final SessionManager sessionManager;
     protected final Image inputImage, currentImage;
     protected final Image importanceMap;
     protected final SimpleRenderer renderer;
+    
+    protected final JMenuBar menuBar;
     
     protected final JTabbedPane tabbedPane;
     protected final JScrollPane inputImageScrollPane, currentImageScrollPane, importanceMapScrollPane;
@@ -91,9 +100,10 @@ public class MainWindow extends JFrame {
         }
     }
     
-    public MainWindow(SessionManager sessionManager, Genome currentGenome) throws IOException { 
+    public MainWindow(MonaLisa monalisa, SessionManager sessionManager, Genome currentGenome) throws IOException { 
         super();
         
+        this.monalisa = Preconditions.checkNotNull(monalisa, "The parameter 'monalisa' must not be null");
         this.sessionManager = Preconditions.checkNotNull(sessionManager, "The parameter 'sessionManager' must not be null");
         this.currentGenome = currentGenome;
         
@@ -111,6 +121,10 @@ public class MainWindow extends JFrame {
         }
         
         setLayout(new BorderLayout());
+        
+        this.menuBar = new JMenuBar();
+        menuBar.add(buildFileMenu());
+        setJMenuBar(menuBar);
         
         this.tabbedPane = new JTabbedPane();
         
@@ -159,5 +173,22 @@ public class MainWindow extends JFrame {
             renderer.render(genome);
             currentImageDisplay.repaint();
         }
+    }
+    
+    private JMenu buildFileMenu() {
+        final JMenu menu = new JMenu("File");
+        final JMenuItem exitItem = new JMenuItem("Exit");
+        exitItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                monalisa.shutdown();
+                System.exit(0);
+            }
+        });
+        
+        menu.add(exitItem);
+        
+        return menu;
     }
 }

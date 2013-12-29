@@ -273,7 +273,7 @@ public class MonaLisa {
     public void showGui() {
         if (mainWindow == null) {
             try {
-                mainWindow = new MainWindow(session, currentGenome);
+                mainWindow = new MainWindow(this, session, currentGenome);
                 final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
                 final int width = 640, height = 480;
                 mainWindow.setBounds(screen.width / 2 - width / 2, screen.height / 2 - height / 2, width, height);
