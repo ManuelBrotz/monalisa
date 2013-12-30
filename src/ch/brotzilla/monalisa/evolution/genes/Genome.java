@@ -63,8 +63,8 @@ public class Genome {
                 final int x = g.x[i], y = g.y[i];
                 if (x < xmin) xmin = x;
                 if (x > xmax) xmax = x;
-                if (y < ymin) ymin = x;
-                if (y > ymax) ymax = x;
+                if (y < ymin) ymin = y;
+                if (y > ymax) ymax = y;
             }
         }
         return new BoundingBox(xmin, ymin, xmax, ymax);
