@@ -126,12 +126,19 @@ public class SessionManager {
         return Database.openDatabase(databaseFile);
     }
     
-    public File exportSVG(Genome genome, File folder, boolean clipped) throws IOException {
+    public File exportSVG(Genome genome, File folder, boolean clipped, boolean autoName) throws IOException {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(folder, "The parameter 'folder' must not be null");
-        Preconditions.checkArgument(folder.isDirectory(), "The parameter 'folder' has to be a directory");
+        if (autoName) {
+            Preconditions.checkArgument(folder.isDirectory(), "The parameter 'folder' has to be a directory");
+        }
         
-        final File exportFile = new File(folder, sessionName + '-' + Strings.padStart(genome.selected+"", 6, '0') + (clipped ? "-clipped" : "") + ".svg");
+        final File exportFile;
+        if (autoName) {
+            exportFile = new File(folder, sessionName + '-' + Strings.padStart(genome.selected+"", 6, '0') + (clipped ? "-clipped" : "") + ".svg");
+        } else {
+            exportFile = folder;
+        }
         
         if (exportFile.exists())
             throw new IllegalArgumentException("File already exists: " + exportFile);
