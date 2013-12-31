@@ -66,9 +66,11 @@ public class MonaLisa {
     protected void printError() {
         System.out.println("Usage:");
         params.getParser().printUsage(System.out);
-        System.out.println();
-        System.out.println("Parameters:");
-        System.out.println(params.getArguments());
+        if (params.getNumArguments() > 0) {
+            System.out.println();
+            System.out.println("Parameters:");
+            System.out.println(params.getArgumentsLine());
+        }
         if (params.getError() != null) {
             System.out.println();
             System.out.println("Error: " + params.getError().getMessage());
@@ -155,8 +157,8 @@ public class MonaLisa {
         
         if (params.getExportLatest() != null) {
             try {
-                session.exportSVG(currentGenome, params.getExportLatest(), false);
-                session.exportSVG(currentGenome, params.getExportLatest(), true);
+                session.exportSVG(currentGenome, params.getExportLatest(), false, true);
+                session.exportSVG(currentGenome, params.getExportLatest(), true, true);
             } catch (Exception e) {
                 System.out.println("Failed exporting latest genome as svg document.");
                 e.printStackTrace();
@@ -260,10 +262,17 @@ public class MonaLisa {
         }
     }
     
+    public void quit() {
+        System.out.println("Shutting down...");
+        shutdown();
+        System.out.println("Goodbye");
+        System.exit(0);
+    }
+    
     public void showGui() {
         if (mainWindow == null) {
             try {
-                mainWindow = new MainWindow(session, currentGenome);
+                mainWindow = new MainWindow(this, session, currentGenome);
                 final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
                 final int width = 640, height = 480;
                 mainWindow.setBounds(screen.width / 2 - width / 2, screen.height / 2 - height / 2, width, height);
@@ -286,10 +295,7 @@ public class MonaLisa {
                 continue;
             }
             if (input.equals("shutdown") || input.equals("exit")) {
-                System.out.println("Shutting down...");
-                shutdown();
-                System.out.println("Goodbye");
-                System.exit(0);
+                quit();
             } else if (input.equals("show-gui")) {
                 showGui();
             } else if (input.equals("status")) {

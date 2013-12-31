@@ -17,8 +17,8 @@ import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.TickRate;
 
-import com.beust.jcommander.internal.Maps;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Maps;
 
 public class RenderTest {
 

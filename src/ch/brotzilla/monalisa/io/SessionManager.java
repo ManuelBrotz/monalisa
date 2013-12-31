@@ -1,5 +1,6 @@
 package ch.brotzilla.monalisa.io;
 
+import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
 
@@ -15,6 +16,7 @@ import ch.brotzilla.monalisa.db.Database.Transaction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
 import ch.brotzilla.monalisa.images.ImageType;
+import ch.brotzilla.monalisa.utils.BoundingBox;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
@@ -124,12 +126,19 @@ public class SessionManager {
         return Database.openDatabase(databaseFile);
     }
     
-    public File exportSVG(Genome genome, File folder, boolean clipped) throws IOException {
+    public File exportSVG(Genome genome, File folder, boolean clipped, boolean autoName) throws IOException {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(folder, "The parameter 'folder' must not be null");
-        Preconditions.checkArgument(folder.isDirectory(), "The parameter 'folder' has to be a directory");
+        if (autoName) {
+            Preconditions.checkArgument(folder.isDirectory(), "The parameter 'folder' has to be a directory");
+        }
         
-        final File exportFile = new File(folder, sessionName + '-' + Strings.padStart(genome.selected+"", 6, '0') + (clipped ? "-clipped" : "") + ".svg");
+        final File exportFile;
+        if (autoName) {
+            exportFile = new File(folder, sessionName + '-' + Strings.padStart(genome.selected+"", 6, '0') + (clipped ? "-clipped" : "") + ".svg");
+        } else {
+            exportFile = folder;
+        }
         
         if (exportFile.exists())
             throw new IllegalArgumentException("File already exists: " + exportFile);
@@ -140,6 +149,11 @@ public class SessionManager {
 
         if (clipped) {
             svg.setClip(0, 0, getWidth(), getHeight());
+        } else {
+            final BoundingBox b = genome.computeBoundingBox();
+            final int tx = b.getXMin() < 0 ? -b.getXMin() : 0;
+            final int ty = b.getYMin() < 0 ? -b.getYMin() : 0;
+            svg.setTransform(AffineTransform.getTranslateInstance(tx, ty));
         }
         
         genome.renderGenes(svg);

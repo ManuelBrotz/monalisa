@@ -14,8 +14,8 @@ import com.google.common.base.Preconditions;
 public class Params {
 
     private final CmdLineParser parser;
-    private final String arguments;
-    private int numArguments = 0;
+    private final String argumentsLine;
+    private final String[] arguments;
     private boolean isValid = false, isInitialized = false;
     private Exception error = null;
     
@@ -51,12 +51,12 @@ public class Params {
         Preconditions.checkNotNull(args, "The parameter 'args' must not be null");
         parser = new CmdLineParser(this);
         parser.setUsageWidth(80);
-        arguments = Joiner.on(" ").join(args);
+        argumentsLine = Joiner.on(" ").join(args);
+        arguments = args;
         try {
             parser.parseArgument(args);
-            numArguments = parser.getArguments().size();
-            validate();
-            init();
+            isValid = validate();
+            isInitialized = init();
         } catch (Exception e) {
             error = e;
         }
@@ -66,12 +66,16 @@ public class Params {
         return parser;
     }
     
-    public String getArguments() {
+    public String getArgumentsLine() {
+        return argumentsLine;
+    }
+    
+    public String[] getArguments() {
         return arguments;
     }
     
     public int getNumArguments() {
-        return numArguments;
+        return arguments == null ? 0 : arguments.length;
     }
     
     public boolean isValid() {
@@ -130,7 +134,10 @@ public class Params {
         return exportLatest;
     }
 
-    public void validate() {
+    public boolean validate() {
+        if (getNumArguments() == 0) {
+            return false;
+        }
         if (sessionToResume != null) {
             if (targetImageFile != null)
                 throw new IllegalArgumentException("--image cannot be used with --resume");
@@ -150,10 +157,13 @@ public class Params {
             throw new IllegalArgumentException("--export-latest has to be a directory");
         if (numThreads < 1) 
             throw new IllegalArgumentException("--num-threads must be greater than or equal to 1");
-        isValid = true;
+        return true;
     }
 
-    public void init() throws IOException {
+    public boolean init() throws IOException {
+        if (!isValid) {
+            return false;
+        }
         if (seed == 0) {
             seed = (new Random()).nextInt();
         }
@@ -164,6 +174,6 @@ public class Params {
                 throw new IllegalArgumentException("--background-color is not a valid color (" + backgroundColorName + ")");
             }
         }
-        isInitialized = true;
+        return true;
     }
 }

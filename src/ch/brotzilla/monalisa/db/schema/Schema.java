@@ -3,8 +3,9 @@ package ch.brotzilla.monalisa.db.schema;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
 public abstract class Schema {
     
     public static final String CreateTable = "CREATE TABLE";
