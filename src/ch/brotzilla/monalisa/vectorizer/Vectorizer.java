@@ -1,6 +1,5 @@
 package ch.brotzilla.monalisa.vectorizer;
 
-import java.io.File;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,25 +18,25 @@ import ch.brotzilla.monalisa.utils.TickRate;
 public class Vectorizer {
 
     private final SessionManager session;
-    
+
     private final TickRate tickrate;
     private final PolygonCache polygonCache;
-    
+
     private final BlockingQueue<Genome> storageQueue;
 
-    private boolean running;
-    
+    private State state = State.Stopped;
+
     private EvolutionContext evolutionContext;
     private MutationStrategy mutationStrategy;
-    
+
     private ExecutorService workerThreads;
     private ExecutorService storageThread;
 
     private Genome currentGenome;
-    private int generated, selected;
-    
-    Genome submit(Genome genome) {
-        return null;
+    private int mutations, improvements;
+
+    public enum State {
+        Running, Stopping, Stopped
     }
 
     public Vectorizer(SessionManager session) {
@@ -47,74 +46,88 @@ public class Vectorizer {
         this.polygonCache = new PolygonCache(session.getWidth(), session.getHeight());
         this.storageQueue = Queues.newLinkedBlockingQueue();
     }
-    
+
     public SessionManager getSessionManager() {
         return session;
     }
-    
+
     public TickRate getTickRate() {
         return tickrate;
     }
-    
+
     public PolygonCache getPolygonCache() {
         return polygonCache;
     }
-    
+
+    public State getState() {
+        return state;
+    }
+
     public EvolutionContext getEvolutionContext() {
         return evolutionContext;
     }
-    
+
     public void setEvolutionContext(EvolutionContext value) {
-        if (running) {
-            throw new IllegalStateException("Property 'EvolutionContext' cannot be changed while vectorizer is running.");
+        if (state != State.Stopped) {
+            throw new IllegalStateException("Property 'EvolutionContext' cannot be changed while vectorizer is running");
         }
         this.evolutionContext = value;
     }
-    
+
     public MutationStrategy getMutationStrategy() {
         return mutationStrategy;
     }
-    
+
     public void setMutationStrategy(MutationStrategy value) {
-        if (running) {
-            throw new IllegalStateException("Property 'MutationStrategy' cannot be changed while vectorizer is running.");
+        if (state != State.Stopped) {
+            throw new IllegalStateException("Property 'MutationStrategy' cannot be changed while vectorizer is running");
         }
         this.mutationStrategy = value;
     }
 
     public synchronized void start() {
-        if (running) {
-            throw new IllegalStateException("Vectorizer is already running");
+        if (state != State.Stopped) {
+            throw new IllegalStateException("Unable to start vectorizer");
         }
-        running = true;
-        
+
+        state = State.Running;
+
         storageThread = Executors.newFixedThreadPool(1);
-        storageThread.submit(new StorageThread(this, storageQueue));
-        
+        storageThread.submit(new StorageThread(this, storageThread, storageQueue));
+
         final int numThreads = session.getParams().getNumThreads();
         workerThreads = Executors.newFixedThreadPool(numThreads);
         for (int i = 0; i < numThreads; i++) {
-            workerThreads.submit(new WorkerThread(this));
+            workerThreads.submit(new WorkerThread(this, workerThreads));
         }
     }
 
     public synchronized void stop() {
-        if (!running) {
+        if (state != State.Running) {
             return;
         }
-        running = false;
-        storageThread.shutdown();
-        workerThreads.shutdown();
+        state = State.Stopping;
         try {
-            storageThread.awaitTermination(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            storageThread.shutdown();
+            workerThreads.shutdown();
+            try {
+                storageThread.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            try {
+                workerThreads.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            polygonCache.shutdown();
+        } finally {
+            state = State.Stopped;
         }
-        try {
-            workerThreads.awaitTermination(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        polygonCache.shutdown();
     }
+
+    synchronized public Genome submit(Genome genome) {
+        return null;
+    }
+
 }
