@@ -17,7 +17,7 @@ import ch.brotzilla.monalisa.utils.TickRate;
 
 public class Vectorizer {
 
-    private final SessionManager session;
+//    private final SessionManager session;
 
     private final TickRate tickrate;
     private final PolygonCache polygonCache;
@@ -25,6 +25,8 @@ public class Vectorizer {
     private final BlockingQueue<Genome> storageQueue;
 
     private State state = State.Stopped;
+    
+    private int numThreads = 4;
 
     private EvolutionContext evolutionContext;
     private MutationStrategy mutationStrategy;
@@ -41,15 +43,15 @@ public class Vectorizer {
 
     public Vectorizer(SessionManager session) {
         Preconditions.checkNotNull(session, "The parameter 'session' must not be null");
-        this.session = session;
+//        this.session = session;
         this.tickrate = new TickRate(60);
         this.polygonCache = new PolygonCache(session.getWidth(), session.getHeight());
         this.storageQueue = Queues.newLinkedBlockingQueue();
     }
 
-    public SessionManager getSessionManager() {
-        return session;
-    }
+//    public SessionManager getSessionManager() {
+//        return session;
+//    }
 
     public TickRate getTickRate() {
         return tickrate;
@@ -61,6 +63,15 @@ public class Vectorizer {
 
     public State getState() {
         return state;
+    }
+    
+    public int getNumThreads() {
+        return numThreads;
+    }
+    
+    public void setNumThreads(int value) {
+        Preconditions.checkArgument(value > 0, "The parameter 'value' has to be greater than zero");
+        this.numThreads = value;
     }
 
     public EvolutionContext getEvolutionContext() {
@@ -127,7 +138,7 @@ public class Vectorizer {
     }
 
     synchronized public Genome submit(Genome genome) {
-        return null;
+        if (genome == null)
     }
 
 }
