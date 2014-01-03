@@ -169,7 +169,9 @@ public class MainWindow extends JFrame {
     }
 
     public synchronized void submit(Genome genome) {
-        Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
+        if (genome == null) {
+            return;
+        }
 
         currentGenome = genome;
 
