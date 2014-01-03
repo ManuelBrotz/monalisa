@@ -12,14 +12,6 @@ import ch.brotzilla.monalisa.utils.Utils;
 
 public class WorkerThread extends BasicThread {
     
-    private int getSeed(MersenneTwister rng) {
-        int seed = rng.nextInt();
-        while (seed == 0) {
-            seed = rng.nextInt();
-        }
-        return seed;
-    }
-
     @Override
     protected void execute() {
         
@@ -37,7 +29,7 @@ public class WorkerThread extends BasicThread {
         final int[] targetImageData = vc.getTargetImageData();
         final int[] importanceMapData = vc.getImportanceMapData();
         
-        final MersenneTwister rng = new MersenneTwister(getSeed(v.getRng()));
+        final MersenneTwister rng = new MersenneTwister(v.nextSeed());
         final CachingRenderer renderer = new CachingRenderer(getOwner().getPolygonCache(), vc.getWidth(), vc.getHeight(), true);
 
         Genome genome = vc.getLatestGenome();

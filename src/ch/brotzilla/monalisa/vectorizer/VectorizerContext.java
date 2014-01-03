@@ -67,7 +67,7 @@ public class VectorizerContext {
         return latestGenome;
     }
     
-    public void setLatestGenome(Genome value) {
+    public synchronized void setLatestGenome(Genome value) {
         this.latestGenome = value;
     }
     
@@ -75,12 +75,12 @@ public class VectorizerContext {
         return numberOfGenomes;
     }
     
-    public void setNumberOfGenomes(int value) {
+    public synchronized void setNumberOfGenomes(int value) {
         Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
         numberOfGenomes = value;
     }
     
-    public int incNumberOfGenomes() {
+    public synchronized int incNumberOfGenomes() {
         return ++numberOfGenomes;
     }
 
@@ -88,12 +88,12 @@ public class VectorizerContext {
         return numberOfMutations;
     }
     
-    public void setNumberOfMutations(int value) {
+    public synchronized void setNumberOfMutations(int value) {
         Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
         numberOfMutations = value;
     }
     
-    public int incNumberOfMutations() {
+    public synchronized int incNumberOfMutations() {
         return ++numberOfMutations;
     }
 
@@ -101,12 +101,12 @@ public class VectorizerContext {
         return numberOfImprovements;
     }
     
-    public void setNumberOfImprovements(int value) {
+    public synchronized void setNumberOfImprovements(int value) {
         Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
         this.numberOfImprovements = value;
     }
     
-    public int incNumberOfImprovements() {
+    public synchronized int incNumberOfImprovements() {
         return ++numberOfImprovements;
     }
 }

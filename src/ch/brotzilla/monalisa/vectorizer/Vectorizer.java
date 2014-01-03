@@ -63,10 +63,6 @@ public class Vectorizer {
         return tickrate;
     }
 
-    public MersenneTwister getRng() {
-        return rng;
-    }
-    
     public PolygonCache getPolygonCache() {
         return polygonCache;
     }
@@ -118,6 +114,14 @@ public class Vectorizer {
         checkStopped("MutationStrategy");
         this.mutationStrategy = value;
     }
+    
+    public synchronized int nextSeed() {
+        int seed = rng.nextInt();
+        while (seed == 0) {
+            seed = rng.nextInt();
+        }
+        return seed;
+    }
 
     public void start() {
         if (state != State.Stopped) {
@@ -137,7 +141,6 @@ public class Vectorizer {
         storageThread.submit(new StorageThread(this, storageThread, storageQueue));
 
         final int numThreads = session.getParams().getNumThreads();
-        System.out.println("Number of threads: " + numThreads);
         workerThreads = Executors.newFixedThreadPool(numThreads);
         for (int i = 0; i < numThreads; i++) {
             workerThreads.submit(new WorkerThread(this, workerThreads));
@@ -175,7 +178,7 @@ public class Vectorizer {
         }
     }
 
-    synchronized public Genome submit(Genome genome) {
+    public synchronized Genome submit(Genome genome) {
         if (state != State.Running) {
             return null;
         }
