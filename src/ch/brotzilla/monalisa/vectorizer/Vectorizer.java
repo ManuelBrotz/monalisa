@@ -16,6 +16,7 @@ import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.PolygonCache;
+import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.TickRate;
 
 public class Vectorizer {
@@ -27,6 +28,7 @@ public class Vectorizer {
     private final TickRate tickrate;
 
     // created on startup
+    private MersenneTwister rng;
     private PolygonCache polygonCache;
 
     // supplied by the user
@@ -61,6 +63,10 @@ public class Vectorizer {
         return tickrate;
     }
 
+    public MersenneTwister getRng() {
+        return rng;
+    }
+    
     public PolygonCache getPolygonCache() {
         return polygonCache;
     }
@@ -123,6 +129,7 @@ public class Vectorizer {
 
         state = State.Running;
         tickrate.reset();
+        rng = new MersenneTwister(session.getParams().getSeed());
         polygonCache = new PolygonCache(getWidth(), getHeight());
 
         storageQueue = Queues.newLinkedBlockingQueue();

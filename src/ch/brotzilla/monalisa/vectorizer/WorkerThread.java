@@ -6,12 +6,19 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.CachingRenderer;
 import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Utils;
 
 public class WorkerThread extends BasicThread {
+    
+    private int getSeed(MersenneTwister rng) {
+        int seed = rng.nextInt();
+        while (seed == 0) {
+            seed = rng.nextInt();
+        }
+        return seed;
+    }
 
     @Override
     protected void execute() {
@@ -22,7 +29,6 @@ public class WorkerThread extends BasicThread {
             throw new IllegalStateException("Vectorizer is not ready");
         }
         
-        final SessionManager sm = v.getSession();
         final VectorizerContext vc = v.getVectorizerContext();
         final GenomeFactory gf = v.getGenomeFactory();
         final EvolutionContext ec = v.getEvolutionContext();
@@ -31,7 +37,7 @@ public class WorkerThread extends BasicThread {
         final int[] targetImageData = vc.getTargetImageData();
         final int[] importanceMapData = vc.getImportanceMapData();
         
-        final MersenneTwister rng = new MersenneTwister(sm.getParams().getSeed());
+        final MersenneTwister rng = new MersenneTwister(getSeed(v.getRng()));
         final CachingRenderer renderer = new CachingRenderer(getOwner().getPolygonCache(), vc.getWidth(), vc.getHeight(), true);
 
         Genome genome = vc.getLatestGenome();
