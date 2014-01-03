@@ -82,21 +82,21 @@ public class Vectorizer {
     public SessionManager getSession() {
         return session;
     }
-    
+
     public void setSession(SessionManager value) {
         checkStopped("Session");
         this.session = value;
     }
-    
+
     public GenomeFactory getGenomeFactory() {
         return genomeFactory;
     }
-    
+
     public void setGenomeFactory(GenomeFactory value) {
         checkStopped("GenomeFactory");
         this.genomeFactory = value;
     }
-    
+
     public EvolutionContext getEvolutionContext() {
         return evolutionContext;
     }
@@ -114,7 +114,7 @@ public class Vectorizer {
         checkStopped("MutationStrategy");
         this.mutationStrategy = value;
     }
-    
+
     public synchronized int nextSeed() {
         int seed = rng.nextInt();
         while (seed == 0) {
@@ -134,7 +134,12 @@ public class Vectorizer {
         state = State.Running;
         tickrate.reset();
         rng = new MersenneTwister(session.getParams().getSeed());
+
+        if (polygonCache != null) {
+            removeListener(polygonCache.getListener());
+        }
         polygonCache = new PolygonCache(getWidth(), getHeight());
+        addListener(polygonCache.getListener());
 
         storageQueue = Queues.newLinkedBlockingQueue();
         storageThread = Executors.newFixedThreadPool(1);
@@ -145,7 +150,7 @@ public class Vectorizer {
         for (int i = 0; i < numThreads; i++) {
             workerThreads.submit(new WorkerThread(this, workerThreads));
         }
-        
+
         fireStarted(getSession().getVectorizerContext().getLatestGenome());
     }
 
@@ -154,8 +159,12 @@ public class Vectorizer {
             return;
         }
         state = State.Stopping;
-        fireStopping();
         try {
+            try {
+                fireStopping();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             storageThread.shutdown();
             workerThreads.shutdown();
             try {
@@ -168,7 +177,6 @@ public class Vectorizer {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            polygonCache.shutdown();
         } finally {
             state = State.Stopped;
             storageThread = null;
@@ -191,21 +199,20 @@ public class Vectorizer {
                 genome.numberOfMutations = numberOfMutations;
                 vc.setLatestGenome(genome);
                 storageQueue.offer(genome);
-                polygonCache.submit(genome);
                 fireImprovement(genome);
             }
             tickrate.tick();
         }
         return vc.getLatestGenome();
     }
-    
+
     public void addListener(VectorizerListener listener) {
         Preconditions.checkNotNull(listener, "The parameter 'listener' must not be null");
         if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
     }
-    
+
     public void removeListener(VectorizerListener listener) {
         listeners.remove(listener);
     }
@@ -215,19 +222,19 @@ public class Vectorizer {
             l.started(this, latest);
         }
     }
-    
+
     private void fireImprovement(Genome latest) {
         for (VectorizerListener l : listeners) {
             l.improvement(this, latest);
         }
     }
-    
+
     private void fireStopping() {
         for (VectorizerListener l : listeners) {
             l.stopping(this);
         }
     }
-    
+
     private void fireStopped() {
         for (VectorizerListener l : listeners) {
             l.stopped(this);

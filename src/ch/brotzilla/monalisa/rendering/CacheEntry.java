@@ -11,6 +11,7 @@ public class CacheEntry {
     private final Gene gene;
     private final BufferedImage image;
     private final int x, y;
+    private long created;
     private long touched;
 
     public CacheEntry(Gene gene, BufferedImage image, int x, int y) {
@@ -23,7 +24,8 @@ public class CacheEntry {
         this.image = image;
         this.x = x;
         this.y = y;
-        this.touched = System.currentTimeMillis();
+        this.created = System.currentTimeMillis();
+        this.touched = created;
     }
     
     public Gene getGene() {
@@ -40,6 +42,14 @@ public class CacheEntry {
     
     public int getY() {
         return y;
+    }
+    
+    public long getCreated() {
+        return created;
+    }
+    
+    public long getCreatedSince() {
+        return (int) (System.currentTimeMillis() - created);
     }
 
     public long getTouched() {
