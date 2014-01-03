@@ -1,5 +1,7 @@
 package ch.brotzilla.monalisa.evolution.strategies;
 
+import com.google.common.base.Preconditions;
+
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
@@ -52,6 +54,10 @@ public class SimpleMutationStrategy implements MutationStrategy {
             new BasicTableSelector<GenomeMutation>(defaultMutationSelector, genomeAddGene, genomeRemoveGene, genomeSwapGenes);
 
     protected Gene mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
+        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
+        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         if (rng.nextBoolean(0.75f)) {
             return geneImportantMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
         }
@@ -62,6 +68,10 @@ public class SimpleMutationStrategy implements MutationStrategy {
     }
     
     protected Genome mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
+        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
+        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final int index = evolutionContext.getGeneIndexSelector().select(rng, input.genes.length);
         final Gene selected = input.genes[index];
         Gene mutated = selected;
@@ -85,6 +95,10 @@ public class SimpleMutationStrategy implements MutationStrategy {
     
     @Override
     public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
+        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
+        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final int count = 1 + rng.nextInt(2);
         Genome result = input;
         for (int i = 0; i < count; i++) {
@@ -94,7 +108,6 @@ public class SimpleMutationStrategy implements MutationStrategy {
                 result = mutateGenome(rng, vectorizerContext, evolutionContext, result);
             }
         }
-        result.mutations = count;
         return result;
     }
     

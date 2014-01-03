@@ -186,7 +186,7 @@ public final class OldFormatConverter {
                         System.out.println("Decoded genome : " + decoded);
                         throw new RuntimeException("Error! Original and encoded/decoded genomes are not identical!");
                     }
-                    db.insertGenome(genome.fitness, genome.selected, genome.genes.length, encoded);
+                    db.insertGenome(genome.fitness, genome.numberOfImprovements, genome.genes.length, encoded);
                     ++counter;
                     final int p = (int) (100d / total * counter);
                     if (p - percentDone >= 10) {

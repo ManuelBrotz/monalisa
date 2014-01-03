@@ -88,7 +88,7 @@ public class Database implements AutoCloseable {
     public void insertGenome(Genome genome) throws IOException, SQLiteException {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         final byte[] encoded = Compression.encode(genome);
-        insertGenome(genome.fitness, genome.selected, genome.genes.length, encoded);
+        insertGenome(genome.fitness, genome.numberOfImprovements, genome.genes.length, encoded);
     }
     
     public void insertGenome(double fitness, int selected, int polygons, byte[] data) throws SQLiteException {

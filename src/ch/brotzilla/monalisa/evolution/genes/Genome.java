@@ -17,7 +17,7 @@ public class Genome {
     public final Color background;
     public final Gene[] genes;
     public double fitness;
-    public int generated, selected, mutations;
+    public int numberOfMutations, numberOfImprovements;
 
     public Genome(Color background, Gene[] genes, boolean copy) {
         Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
@@ -74,7 +74,7 @@ public class Genome {
     public boolean equals(Object value) {
         if (value instanceof Genome) {
             final Genome v = (Genome) value;
-            if (genes.length != v.genes.length || !Utils.equals(background, v.background) || !Utils.equals(fitness, v.fitness) || generated != v.generated || selected != v.selected || mutations != v.mutations)
+            if (genes.length != v.genes.length || !Utils.equals(background, v.background) || !Utils.equals(fitness, v.fitness) || numberOfMutations != v.numberOfMutations || numberOfImprovements != v.numberOfImprovements)
                 return false;
             final int length = genes.length;
             for (int i = 0; i < length; i++) {
@@ -106,9 +106,9 @@ public class Genome {
         Preconditions.checkState(version == 0, "Unable to deserialize genome, version not supported");
         final Color background = readColor(in);
         final double fitness = in.readDouble();
-        final int selected = in.readInt();
-        final int generated = in.readInt();
-        final int mutations = in.readInt();
+        final int numberOfImprovements = in.readInt();
+        final int numberOfMutations = in.readInt();
+        in.readInt(); // unused
         final int length = in.readInt();
         Preconditions.checkState(length > 0, "Unable to deserialize genome, too few genes");
         final Gene[] genes = new Gene[length];
@@ -117,9 +117,8 @@ public class Genome {
         }
         final Genome result = new Genome(background, genes, false);
         result.fitness = fitness;
-        result.selected = selected;
-        result.generated = generated;
-        result.mutations = mutations;
+        result.numberOfImprovements = numberOfImprovements;
+        result.numberOfMutations = numberOfMutations;
         return result;
     }
     
@@ -129,9 +128,9 @@ public class Genome {
         out.writeByte(0); // version of serialization format
         writeColor(genome.background, out);
         out.writeDouble(genome.fitness);
-        out.writeInt(genome.selected);
-        out.writeInt(genome.generated);
-        out.writeInt(genome.mutations);
+        out.writeInt(genome.numberOfImprovements);
+        out.writeInt(genome.numberOfMutations);
+        out.writeInt(0); // unused
         out.writeInt(genome.genes.length);
         for (final Gene g : genome.genes) {
             Gene.serialize(g, out);

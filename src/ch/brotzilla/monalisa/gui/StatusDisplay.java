@@ -118,9 +118,8 @@ public class StatusDisplay extends JPanel {
             pointsValue.setText("0 (0.0)");
             fitnessValue.setText("0");
         } else {
-            generatedValue.setText(genome.generated + "");
-            selectedValue.setText(genome.selected + "");
-            mutationsValue.setText(genome.mutations + "");
+            generatedValue.setText(genome.numberOfMutations + "");
+            selectedValue.setText(genome.numberOfImprovements + "");
             polygonsValue.setText(genome.genes.length + "");
             final int cp = genome.countPoints();
             final double ppp = (double) cp / genome.genes.length;

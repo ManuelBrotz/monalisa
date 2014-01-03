@@ -5,10 +5,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Queues;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.SessionManager;
@@ -17,41 +17,40 @@ import ch.brotzilla.monalisa.utils.TickRate;
 
 public class Vectorizer {
 
-//    private final SessionManager session;
-
-    private final TickRate tickrate;
-    private final PolygonCache polygonCache;
-
-    private final BlockingQueue<Genome> storageQueue;
-
     private State state = State.Stopped;
-    
-    private int numThreads = 4;
 
+    // created on construction
+    private final TickRate tickrate;
+
+    // created on startup
+    private PolygonCache polygonCache;
+
+    // supplied by the user
+    private SessionManager session;
+    private GenomeFactory genomeFactory;
     private EvolutionContext evolutionContext;
     private MutationStrategy mutationStrategy;
 
+    // created on startup
     private ExecutorService workerThreads;
+    private BlockingQueue<Genome> storageQueue;
     private ExecutorService storageThread;
-
-    private Genome currentGenome;
-    private int mutations, improvements;
 
     public enum State {
         Running, Stopping, Stopped
     }
 
-    public Vectorizer(SessionManager session) {
-        Preconditions.checkNotNull(session, "The parameter 'session' must not be null");
-//        this.session = session;
+    public Vectorizer() {
         this.tickrate = new TickRate(60);
-        this.polygonCache = new PolygonCache(session.getWidth(), session.getHeight());
-        this.storageQueue = Queues.newLinkedBlockingQueue();
     }
 
-//    public SessionManager getSessionManager() {
-//        return session;
-//    }
+    public boolean isReady() {
+        return session != null && genomeFactory != null && evolutionContext != null && mutationStrategy != null;
+    }
+
+    public State getState() {
+        return state;
+    }
 
     public TickRate getTickRate() {
         return tickrate;
@@ -61,27 +60,42 @@ public class Vectorizer {
         return polygonCache;
     }
 
-    public State getState() {
-        return state;
-    }
-    
-    public int getNumThreads() {
-        return numThreads;
-    }
-    
-    public void setNumThreads(int value) {
-        Preconditions.checkArgument(value > 0, "The parameter 'value' has to be greater than zero");
-        this.numThreads = value;
+    public int getWidth() {
+        return session == null ? 0 : session.getWidth();
     }
 
+    public int getHeight() {
+        return session == null ? 0 : session.getHeight();
+    }
+
+    public VectorizerContext getVectorizerContext() {
+        return session == null ? null : session.getVectorizerContext();
+    }
+
+    public SessionManager getSession() {
+        return session;
+    }
+    
+    public void setSession(SessionManager value) {
+        checkStopped("Session");
+        this.session = value;
+    }
+    
+    public GenomeFactory getGenomeFactory() {
+        return genomeFactory;
+    }
+    
+    public void setGenomeFactory(GenomeFactory value) {
+        checkStopped("GenomeFactory");
+        this.genomeFactory = value;
+    }
+    
     public EvolutionContext getEvolutionContext() {
         return evolutionContext;
     }
 
     public void setEvolutionContext(EvolutionContext value) {
-        if (state != State.Stopped) {
-            throw new IllegalStateException("Property 'EvolutionContext' cannot be changed while vectorizer is running");
-        }
+        checkStopped("EvolutionContext");
         this.evolutionContext = value;
     }
 
@@ -90,9 +104,7 @@ public class Vectorizer {
     }
 
     public void setMutationStrategy(MutationStrategy value) {
-        if (state != State.Stopped) {
-            throw new IllegalStateException("Property 'MutationStrategy' cannot be changed while vectorizer is running");
-        }
+        checkStopped("MutationStrategy");
         this.mutationStrategy = value;
     }
 
@@ -100,9 +112,15 @@ public class Vectorizer {
         if (state != State.Stopped) {
             throw new IllegalStateException("Unable to start vectorizer");
         }
+        if (!isReady()) {
+            throw new IllegalStateException("Vectorizer not ready");
+        }
 
         state = State.Running;
+        tickrate.reset();
+        polygonCache = new PolygonCache(getWidth(), getHeight());
 
+        storageQueue = Queues.newLinkedBlockingQueue();
         storageThread = Executors.newFixedThreadPool(1);
         storageThread.submit(new StorageThread(this, storageThread, storageQueue));
 
@@ -134,11 +152,34 @@ public class Vectorizer {
             polygonCache.shutdown();
         } finally {
             state = State.Stopped;
+            storageThread = null;
+            workerThreads = null;
+            storageQueue = null;
         }
     }
 
     synchronized public Genome submit(Genome genome) {
-        if (genome == null)
+        if (state != State.Running) {
+            throw new IllegalStateException("Vectorizer is not running");
+        }
+        final VectorizerContext vc = getVectorizerContext();
+        final Genome latest = vc.getLatestGenome();
+        if (genome != null && genome != latest) {
+            final int numberOfMutations = vc.incNumberOfMutations();
+            if (latest == null || genome.fitness < latest.fitness) {
+                genome.numberOfImprovements = vc.incNumberOfImprovements();
+                genome.numberOfMutations = numberOfMutations;
+                vc.setLatestGenome(genome);
+                storageQueue.offer(genome);
+            }
+            tickrate.tick();
+        }
+        return vc.getLatestGenome();
     }
 
+    private void checkStopped(String property) {
+        if (state != State.Stopped) {
+            throw new IllegalStateException("Property '" + property + "' cannot be changed while vectorizer is running");
+        }
+    }
 }

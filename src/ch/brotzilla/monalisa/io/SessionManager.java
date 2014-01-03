@@ -34,38 +34,39 @@ public class SessionManager {
     protected final File databaseFile;
 
     protected final VectorizerContext vectorizerContext;
-    protected final ImageData targetImage;
-    protected final ImageData importanceMap;
-    
-    protected final int numberOfGenomes;
-    protected final Genome latestGenome;
 
     public SessionManager(Params params) throws IOException, SQLiteException {
         Preconditions.checkNotNull(params, "The parameter 'params' must not be null");
+        
         this.params = params;
         this.sessionResumed = params.getSessionToResume() != null;
+        
+        final ImageData targetImage, importanceMap;
+        final int numberOfGenomes;
+        final Genome latestGenome;
+        
         if (this.sessionResumed) {
             this.sessionName = extractSessionName(params.getSessionToResume());
             this.databaseFile = params.getSessionToResume().getAbsoluteFile();
             try (final Database db = Database.openDatabase(databaseFile)) {
-                this.targetImage = db.queryImage("target-image");
+                targetImage = db.queryImage("target-image");
                 Preconditions.checkNotNull(targetImage, "Database contains no target image");
                 Preconditions.checkState(targetImage.getType() == ImageType.ARGB, "Target image type is not supported (" + targetImage.getType() + ")");
-                this.importanceMap = db.queryImage("importance-map");
-                this.numberOfGenomes = db.queryNumberOfGenomes();
-                this.latestGenome = db.queryLatestGenome();
+                importanceMap = db.queryImage("importance-map");
+                numberOfGenomes = db.queryNumberOfGenomes();
+                latestGenome = db.queryLatestGenome();
             }
         } else {
             this.sessionName = extractSessionName(params.getTargetImageFile());
             this.databaseFile = new File(params.getSessionRootFolder(), sessionName + ".mldb");
-            this.targetImage = ImageData.createFrom(ImageIO.read(params.getTargetImageFile()), ImageType.ARGB);
+            targetImage = ImageData.createFrom(ImageIO.read(params.getTargetImageFile()), ImageType.ARGB);
             if (params.getImportanceMapFile() != null) {
-                this.importanceMap = ImageData.createFrom(ImageIO.read(params.getImportanceMapFile()), ImageType.Gray);
+                importanceMap = ImageData.createFrom(ImageIO.read(params.getImportanceMapFile()), ImageType.Gray);
             } else {
-                this.importanceMap = null;
+                importanceMap = null;
             }
-            this.numberOfGenomes = 0;
-            this.latestGenome = null;
+            numberOfGenomes = 0;
+            latestGenome = null;
             try (final Database db = Database.createDatabase(databaseFile)) {
                 try (final Transaction t = db.begin()) {
                     db.insertImage("target-image", params.getTargetImageFile().getAbsolutePath(), targetImage);
@@ -75,7 +76,8 @@ public class SessionManager {
                 }
             }
         }
-        this.vectorizerContext = new VectorizerContext(targetImage, importanceMap);
+        
+        this.vectorizerContext = new VectorizerContext(targetImage, importanceMap, numberOfGenomes, latestGenome);
     }
     
     public boolean isSessionResumed() {
@@ -102,22 +104,6 @@ public class SessionManager {
         return vectorizerContext.getHeight();
     }
     
-    public ImageData getTargetImage() {
-        return targetImage;
-    }
-    
-    public ImageData getImportanceMap() {
-        return importanceMap;
-    }
-    
-    public int getNumberOfGenomes() {
-        return numberOfGenomes;
-    }
-    
-    public Genome getLatestGenome() {
-        return latestGenome;
-    }
-    
     public VectorizerContext getVectorizerContext() {
         return vectorizerContext;
     }
@@ -126,18 +112,18 @@ public class SessionManager {
         return Database.openDatabase(databaseFile);
     }
     
-    public File exportSVG(Genome genome, File folder, boolean clipped, boolean autoName) throws IOException {
+    public File exportSVG(Genome genome, File target, boolean clipped, boolean autoName) throws IOException {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
-        Preconditions.checkNotNull(folder, "The parameter 'folder' must not be null");
+        Preconditions.checkNotNull(target, "The parameter 'target' must not be null");
         if (autoName) {
-            Preconditions.checkArgument(folder.isDirectory(), "The parameter 'folder' has to be a directory");
+            Preconditions.checkArgument(target.isDirectory(), "The parameter 'target' has to be a directory");
         }
         
         final File exportFile;
         if (autoName) {
-            exportFile = new File(folder, sessionName + '-' + Strings.padStart(genome.selected+"", 6, '0') + (clipped ? "-clipped" : "") + ".svg");
+            exportFile = new File(target, sessionName + '-' + Strings.padStart(genome.numberOfImprovements+"", 6, '0') + (clipped ? "-clipped" : "") + ".svg");
         } else {
-            exportFile = folder;
+            exportFile = target;
         }
         
         if (exportFile.exists())

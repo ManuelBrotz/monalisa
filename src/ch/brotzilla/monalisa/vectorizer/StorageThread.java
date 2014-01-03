@@ -19,7 +19,7 @@ public class StorageThread extends BasicThread {
     protected void execute() throws IOException, SQLiteException {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         long timeLastStored = 0;
-        try (final Database db = getOwner().getSessionManager().connect()) {
+        try (final Database db = getOwner().getSession().connect()) {
             while (getExecutor().isShutdown()) {
                 try {
                     final Genome genome = storageQueue.poll(250, TimeUnit.MILLISECONDS);

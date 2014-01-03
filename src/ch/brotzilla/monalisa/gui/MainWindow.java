@@ -28,6 +28,7 @@ import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.SimpleRenderer;
+import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 @SuppressWarnings("serial")
 public class MainWindow extends JFrame {
@@ -112,10 +113,12 @@ public class MainWindow extends JFrame {
         this.sessionManager = Preconditions.checkNotNull(sessionManager, "The parameter 'sessionManager' must not be null");
         this.currentGenome = currentGenome;
 
-        this.inputImage = new Image(sessionManager.getTargetImage());
+        final VectorizerContext vc = sessionManager.getVectorizerContext();
+        
+        this.inputImage = new Image(vc.getTargetImage());
         this.currentImage = new Image(ImageType.ARGB, sessionManager.getWidth(), sessionManager.getHeight());
-        if (sessionManager.getImportanceMap() != null) {
-            this.importanceMap = new Image(sessionManager.getImportanceMap());
+        if (vc.getImportanceMap() != null) {
+            this.importanceMap = new Image(vc.getImportanceMap());
         } else {
             this.importanceMap = null;
         }

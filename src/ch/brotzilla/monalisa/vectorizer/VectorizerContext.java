@@ -1,17 +1,42 @@
 package ch.brotzilla.monalisa.vectorizer;
 
+import java.util.Arrays;
+
+import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
 
 import com.google.common.base.Preconditions;
 
 public class VectorizerContext {
     
-    protected final ImageData targetImage, importanceMap;
+    // image data
+    private final ImageData targetImage, importanceMap;
+    private final int[] targetImageData, importanceMapData;
 
-    public VectorizerContext(ImageData targetImage, ImageData importanceMap) {
+    // vectorization state
+    private Genome latestGenome;
+    private int numberOfGenomes, numberOfMutations, numberOfImprovements;
+
+    public VectorizerContext(ImageData targetImage, ImageData importanceMap, int numberOfGenomes, Genome latestGenome) {
         Preconditions.checkNotNull(targetImage, "The parameter 'targetImage' must not be null");
         this.targetImage = targetImage;
         this.importanceMap = importanceMap;
+        this.targetImageData = targetImage.getBuffer();
+        if (importanceMap != null) {
+            this.importanceMapData = importanceMap.getBuffer();
+        } else {
+            this.importanceMapData = new int[targetImage.getWidth() * targetImage.getHeight()];
+            Arrays.fill(importanceMapData, 255);
+        }
+        this.numberOfGenomes = numberOfGenomes;
+        this.latestGenome = latestGenome;
+        if (latestGenome != null) {
+            this.numberOfMutations = latestGenome.numberOfMutations;
+            this.numberOfImprovements = latestGenome.numberOfImprovements;
+        } else {
+            this.numberOfMutations = 0;
+            this.numberOfImprovements = 0;
+        }
     }
     
     public int getWidth() {
@@ -29,5 +54,59 @@ public class VectorizerContext {
     public ImageData getImportanceMap() {
         return importanceMap;
     }
+    
+    public int[] getTargetImageData() {
+        return targetImageData;
+    }
+    
+    public int[] getImportanceMapData() {
+        return importanceMapData;
+    }
+    
+    public Genome getLatestGenome() {
+        return latestGenome;
+    }
+    
+    public void setLatestGenome(Genome value) {
+        this.latestGenome = value;
+    }
+    
+    public int getNumberOfGenomes() {
+        return numberOfGenomes;
+    }
+    
+    public void setNumberOfGenomes(int value) {
+        Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
+        numberOfGenomes = value;
+    }
+    
+    public int incNumberOfGenomes() {
+        return ++numberOfGenomes;
+    }
 
+    public int getNumberOfMutations() {
+        return numberOfMutations;
+    }
+    
+    public void setNumberOfMutations(int value) {
+        Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
+        numberOfMutations = value;
+    }
+    
+    public int incNumberOfMutations() {
+        return ++numberOfMutations;
+    }
+
+    public int getNumberOfImprovements() {
+        return numberOfImprovements;
+    }
+    
+    public void setNumberOfImprovements(int value) {
+        Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
+        this.numberOfImprovements = value;
+    }
+    
+    public int incNumberOfImprovements() {
+        return ++numberOfImprovements;
+    }
 }
