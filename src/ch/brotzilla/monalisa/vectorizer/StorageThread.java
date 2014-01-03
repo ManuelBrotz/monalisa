@@ -20,7 +20,7 @@ public class StorageThread extends BasicThread {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         long timeLastStored = 0;
         try (final Database db = getOwner().getSession().connect()) {
-            while (getExecutor().isShutdown()) {
+            while (!getExecutor().isShutdown()) {
                 try {
                     final Genome genome = storageQueue.poll(250, TimeUnit.MILLISECONDS);
                     if (genome != null && System.currentTimeMillis() - timeLastStored >= 10000) {

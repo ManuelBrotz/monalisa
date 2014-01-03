@@ -1,10 +1,13 @@
 package ch.brotzilla.monalisa.vectorizer;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
@@ -20,6 +23,7 @@ public class Vectorizer {
     private State state = State.Stopped;
 
     // created on construction
+    private final List<VectorizerListener> listeners;
     private final TickRate tickrate;
 
     // created on startup
@@ -41,6 +45,7 @@ public class Vectorizer {
     }
 
     public Vectorizer() {
+        this.listeners = Lists.newArrayList();
         this.tickrate = new TickRate(60);
     }
 
@@ -108,7 +113,7 @@ public class Vectorizer {
         this.mutationStrategy = value;
     }
 
-    public synchronized void start() {
+    public void start() {
         if (state != State.Stopped) {
             throw new IllegalStateException("Unable to start vectorizer");
         }
@@ -125,17 +130,21 @@ public class Vectorizer {
         storageThread.submit(new StorageThread(this, storageThread, storageQueue));
 
         final int numThreads = session.getParams().getNumThreads();
+        System.out.println("Number of threads: " + numThreads);
         workerThreads = Executors.newFixedThreadPool(numThreads);
         for (int i = 0; i < numThreads; i++) {
             workerThreads.submit(new WorkerThread(this, workerThreads));
         }
+        
+        fireStarted(getSession().getVectorizerContext().getLatestGenome());
     }
 
-    public synchronized void stop() {
+    public void stop() {
         if (state != State.Running) {
             return;
         }
         state = State.Stopping;
+        fireStopping();
         try {
             storageThread.shutdown();
             workerThreads.shutdown();
@@ -155,12 +164,13 @@ public class Vectorizer {
             storageThread = null;
             workerThreads = null;
             storageQueue = null;
+            fireStopped();
         }
     }
 
     synchronized public Genome submit(Genome genome) {
         if (state != State.Running) {
-            throw new IllegalStateException("Vectorizer is not running");
+            return null;
         }
         final VectorizerContext vc = getVectorizerContext();
         final Genome latest = vc.getLatestGenome();
@@ -171,10 +181,47 @@ public class Vectorizer {
                 genome.numberOfMutations = numberOfMutations;
                 vc.setLatestGenome(genome);
                 storageQueue.offer(genome);
+                polygonCache.submit(genome);
+                fireImprovement(genome);
             }
             tickrate.tick();
         }
         return vc.getLatestGenome();
+    }
+    
+    public void addListener(VectorizerListener listener) {
+        Preconditions.checkNotNull(listener, "The parameter 'listener' must not be null");
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+    
+    public void removeListener(VectorizerListener listener) {
+        listeners.remove(listener);
+    }
+
+    private void fireStarted(Genome latest) {
+        for (VectorizerListener l : listeners) {
+            l.started(this, latest);
+        }
+    }
+    
+    private void fireImprovement(Genome latest) {
+        for (VectorizerListener l : listeners) {
+            l.improvement(this, latest);
+        }
+    }
+    
+    private void fireStopping() {
+        for (VectorizerListener l : listeners) {
+            l.stopping(this);
+        }
+    }
+    
+    private void fireStopped() {
+        for (VectorizerListener l : listeners) {
+            l.stopped(this);
+        }
     }
 
     private void checkStopped(String property) {

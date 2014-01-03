@@ -18,6 +18,7 @@ import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.vectorizer.Vectorizer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.monalisa.vectorizer.VectorizerListener;
 
 import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;
@@ -114,6 +115,30 @@ public class MonaLisa {
         vectorizer.setEvolutionContext(setupEvolutionContext());
         vectorizer.setGenomeFactory(new SimpleGenomeFactory(20, 50));
         vectorizer.setMutationStrategy(setupMutationStrategy());
+        
+        vectorizer.addListener(new VectorizerListener() {
+            @Override
+            public void started(Vectorizer v, Genome latest) {
+                if (mainWindow != null) {
+                    mainWindow.submit(latest);
+                }
+            }
+            @Override
+            public void improvement(Vectorizer v, Genome latest) {
+                if (mainWindow != null) {
+                    mainWindow.submit(latest);
+                    mainWindow.getStatusDisplay().updateRateAndCache(v.getTickRate().getTickRate(), v.getPolygonCache().getSize());
+                }
+            }
+            @Override
+            public void stopping(Vectorizer v) {
+                System.out.println("Stopping...");
+            }
+            @Override
+            public void stopped(Vectorizer v) {
+                System.out.println("Stopped!");
+            }
+        });
     }
 
     public void start() {
@@ -127,14 +152,8 @@ public class MonaLisa {
         vectorizer.start();
     }
 
-    public void shutdown() {
-        vectorizer.stop();
-    }
-
     public void quit() {
-        System.out.println("Shutting down...");
-        shutdown();
-        System.out.println("Goodbye");
+        vectorizer.stop();
         System.exit(0);
     }
 
