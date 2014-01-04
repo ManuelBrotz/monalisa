@@ -5,8 +5,8 @@ import com.google.common.base.Preconditions;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.util.MersenneTwister;
 
 public class GenePointMutation extends BasicMutation implements GeneMutation {
 

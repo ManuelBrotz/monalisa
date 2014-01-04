@@ -14,8 +14,8 @@ import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.images.ImageType;
-import ch.brotzilla.monalisa.utils.MersenneTwister;
-import ch.brotzilla.monalisa.utils.TickRate;
+import ch.brotzilla.util.MersenneTwister;
+import ch.brotzilla.util.TickRate;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;

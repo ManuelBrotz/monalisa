@@ -16,8 +16,8 @@ import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.PolygonCache;
-import ch.brotzilla.monalisa.utils.MersenneTwister;
-import ch.brotzilla.monalisa.utils.TickRate;
+import ch.brotzilla.util.MersenneTwister;
+import ch.brotzilla.util.TickRate;
 
 public class Vectorizer {
 

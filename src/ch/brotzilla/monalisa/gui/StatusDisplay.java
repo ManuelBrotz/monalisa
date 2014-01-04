@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.util.MatrixLayout;
 
 @SuppressWarnings("serial")
 public class StatusDisplay extends JPanel {

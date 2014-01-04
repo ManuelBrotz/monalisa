@@ -2,7 +2,7 @@ package ch.brotzilla.monalisa.evolution.selectors;
 
 import ch.brotzilla.monalisa.evolution.intf.IndexSelector;
 import ch.brotzilla.monalisa.evolution.intf.TableSelector;
-import ch.brotzilla.monalisa.utils.MersenneTwister;
+import ch.brotzilla.util.MersenneTwister;
 
 import com.google.common.base.Preconditions;
 

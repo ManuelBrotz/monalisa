@@ -1,7 +1,7 @@
 package ch.brotzilla.monalisa.evolution.selectors;
 
 import ch.brotzilla.monalisa.evolution.intf.IndexSelector;
-import ch.brotzilla.monalisa.utils.MersenneTwister;
+import ch.brotzilla.util.MersenneTwister;
 
 public class BasicIndexSelector implements IndexSelector {
 

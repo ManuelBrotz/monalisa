@@ -12,9 +12,10 @@ import javax.imageio.ImageIO;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.io.TextReader;
 import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.util.MersenneTwister;
+import ch.brotzilla.util.TextReader;
 
 import com.google.common.base.Preconditions;
 

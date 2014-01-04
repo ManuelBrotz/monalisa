@@ -3,7 +3,7 @@ package ch.brotzilla.monalisa.evolution.selectors;
 import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.intf.RangeSelector;
-import ch.brotzilla.monalisa.utils.MersenneTwister;
+import ch.brotzilla.util.MersenneTwister;
 
 public class BasicRangeSelector implements RangeSelector {
 

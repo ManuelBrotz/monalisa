@@ -7,8 +7,8 @@ import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.rendering.CachingRenderer;
-import ch.brotzilla.monalisa.utils.MersenneTwister;
 import ch.brotzilla.monalisa.utils.Utils;
+import ch.brotzilla.util.MersenneTwister;
 
 public class WorkerThread extends BasicThread {
     

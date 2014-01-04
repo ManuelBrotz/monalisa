@@ -1,6 +1,7 @@
 package ch.brotzilla.monalisa.evolution.intf;
 
-import ch.brotzilla.monalisa.utils.MersenneTwister;
+import ch.brotzilla.util.MersenneTwister;
+
 
 public interface RangeSelector {
 

@@ -12,7 +12,7 @@ import ch.brotzilla.monalisa.db.Database;
 import ch.brotzilla.monalisa.db.Database.Transaction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
-import ch.brotzilla.monalisa.io.TextReader;
+import ch.brotzilla.util.TextReader;
 
 import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;
