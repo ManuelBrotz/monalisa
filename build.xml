@@ -39,6 +39,7 @@
             <zipfileset excludes="META-INF/*.SF" src="/home/mbrotz/Entwicklung/java/workspace/MonaLisa/lib/gson/gson-2.2.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="/home/mbrotz/Entwicklung/java/workspace/MonaLisa/lib/guava/guava-13.0.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="/home/mbrotz/Entwicklung/java/workspace/MonaLisa/lib/sqlite4java/sqlite4java-282/sqlite4java.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/mbrotz/Entwicklung/java/workspace/MonaLisa/lib/brotzilla-util/brotzilla-util.jar"/>
         </jar>
     </target>
 </project>
