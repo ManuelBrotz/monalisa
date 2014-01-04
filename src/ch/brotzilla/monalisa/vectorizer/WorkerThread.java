@@ -39,7 +39,7 @@ public class WorkerThread extends BasicThread {
                 throw new IllegalStateException("GenomeFactory must not return null");
             }
         }
-        while (!getExecutor().isShutdown()) {
+        while (genome != null && !getExecutor().isShutdown()) {
             try {
                 final Genome mutated = strategy.apply(rng, vc, ec, genome);
                 if (mutated == null) {

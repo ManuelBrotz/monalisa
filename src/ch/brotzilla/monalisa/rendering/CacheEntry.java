@@ -9,21 +9,16 @@ import ch.brotzilla.monalisa.evolution.genes.Gene;
 public class CacheEntry {
     
     private final Gene gene;
-    private final BufferedImage image;
-    private final int x, y;
     private long created;
     private long touched;
 
-    public CacheEntry(Gene gene, BufferedImage image, int x, int y) {
+    private BufferedImage image;
+    private int x, y;
+
+    public CacheEntry(Gene gene) {
         super();
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
-        Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
-        Preconditions.checkArgument(x >= 0, "The parameter 'x' has to be greater than or equal to zero");
-        Preconditions.checkArgument(y >= 0, "The parameter 'y' has to be greater than or equal to zero");
         this.gene = gene;
-        this.image = image;
-        this.x = x;
-        this.y = y;
         this.created = System.currentTimeMillis();
         this.touched = created;
     }
@@ -42,6 +37,16 @@ public class CacheEntry {
     
     public int getY() {
         return y;
+    }
+    
+    public void setImage(BufferedImage image, int x, int y) {
+        Preconditions.checkState(this.image == null, "The property 'Image' has already been set");
+        Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
+        Preconditions.checkArgument(x >= 0, "The parameter 'x' has to be greater than or equal to zero");
+        Preconditions.checkArgument(y >= 0, "The parameter 'y' has to be greater than or equal to zero");
+        this.image = image;
+        this.x = x;
+        this.y = y;
     }
     
     public long getCreated() {

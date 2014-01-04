@@ -3,6 +3,7 @@ package ch.brotzilla.monalisa.rendering;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -92,11 +93,17 @@ public class PolygonCache {
 
     public CacheEntry get(Gene gene) {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
-        final CacheEntry entry = cache.get(gene);
+        CacheEntry entry = cache.get(gene);
         if (entry != null) {
             entry.touch();
+            return entry;
+        } else {
+            entry = temp.get(gene);
+            if (entry != null) {
+                entry.touch();
+            }
         }
-        return entry;
+        return null;
     }
 
     private class WorkerThread implements Runnable {
@@ -104,14 +111,14 @@ public class PolygonCache {
         private final Color Transparent = new Color(0, 0, 0, 0);
         private final ExecutorService owner;
 
-        private CacheEntry renderPolygon(Gene gene, Image image) {
+        private void renderPolygon(CacheEntry entry, Image buffer) {
 
-            image.getGraphics().setBackground(Transparent);
-            image.getGraphics().clearRect(0, 0, image.getWidth(), image.getHeight());
-            gene.render(image.getGraphics());
+            buffer.getGraphics().setBackground(Transparent);
+            buffer.getGraphics().clearRect(0, 0, buffer.getWidth(), buffer.getHeight());
+            entry.getGene().render(buffer.getGraphics());
 
-            final int w = image.getWidth(), h = image.getHeight();
-            final int[] data = image.readData();
+            final int w = buffer.getWidth(), h = buffer.getHeight();
+            final int[] data = buffer.readData();
 
             int lx = w, rx = 0, ty = h, by = 0;
             for (int y = 0; y < h; y++) {
@@ -138,9 +145,9 @@ public class PolygonCache {
             final Graphics2D g = result.createGraphics();
             g.setBackground(Transparent);
             g.clearRect(0, 0, width, height);
-            g.drawImage(image.getImage(), 0, 0, width, height, lx, ty, rx, by, null);
+            g.drawImage(buffer.getImage(), 0, 0, width, height, lx, ty, rx, by, null);
 
-            return new CacheEntry(gene, result, lx, ty);
+            entry.setImage(result, lx, ty);
         }
 
         private void drainQueue(final List<Genome> genomes) {
@@ -154,7 +161,7 @@ public class PolygonCache {
             }
         }
 
-        private void processQueue(Image image) {
+        private void processQueue() {
             final List<Genome> genomes = Lists.newArrayList();
             drainQueue(genomes);
             for (final Genome genome : genomes) {
@@ -166,22 +173,31 @@ public class PolygonCache {
                     if (entry != null) {
                         entry.touch();
                     } else {
-                        entry = renderPolygon(gene, image);
-                        temp.put(gene, entry);
+                        temp.put(gene, new CacheEntry(gene));
                     }
                 }
             }
         }
 
-        private void processTemp() {
-            final List<CacheEntry> good = Lists.newArrayList();
-            for (final CacheEntry entry : temp.values()) {
-                if (entry.getCreatedSince() >= 5000 & entry.getTouchedSince() <= 1000) {
-                    good.add(entry);
+        private void processTemp(Image buffer) {
+            final Collection<CacheEntry> entries = temp.values();
+            final List<CacheEntry> good = Lists.newArrayListWithCapacity(entries.size());
+            final List<CacheEntry> bad = Lists.newArrayListWithCapacity(entries.size());
+            for (final CacheEntry entry : entries) {
+                if (entry.getCreatedSince() >= 5000) {
+                    if (entry.getTouchedSince() <= 100) {
+                        good.add(entry);
+                    } else {
+                        bad.add(entry);
+                    }
                 }
+            }
+            for (final CacheEntry entry : bad) {
+                temp.remove(entry.getGene());
             }
             for (final CacheEntry entry : good) {
                 temp.remove(entry.getGene());
+                renderPolygon(entry, buffer);
                 cache.put(entry.getGene(), entry);
             }
         }
@@ -207,10 +223,10 @@ public class PolygonCache {
         @Override
         public void run() {
             Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-            final Image image = new Image(ImageType.ARGB, getWidth(), getHeight());
+            final Image buffer = new Image(ImageType.ARGB, getWidth(), getHeight());
             while (!owner.isShutdown()) {
-                processQueue(image);
-                processTemp();
+                processQueue();
+                processTemp(buffer);
                 processCache();
             }
         }
