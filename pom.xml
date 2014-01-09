@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ch.brotzilla</groupId>
-	<artifactId>ch.brotzilla.monalisa</artifactId>
+	<artifactId>monalisa</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Monalisa Image Evolution</name>
 	<description>Image vectorization using genetic algorithms.</description>
-    <url>https://github.com/ManuelBrotz/monalisa</url>
+	<url>https://github.com/ManuelBrotz/monalisa</url>
 	<repositories>
 		<repository>
 			<id>java.net</id>
@@ -24,18 +24,59 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<issueManagement>
 		<url>https://github.com/ManuelBrotz/monalisa/issues</url>
 		<system>GitHub</system>
 	</issueManagement>
-  <dependencies>
-  	<dependency>
-  		<groupId>args4j</groupId>
-  		<artifactId>args4j</artifactId>
-  		<version>2.0.26</version>
-  		<type>bundle</type>
-  	</dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>13.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>args4j</groupId>
+			<artifactId>args4j</artifactId>
+			<version>2.0.26</version>
+		</dependency>
+		<dependency>
+			<groupId>batik</groupId>
+			<artifactId>batik</artifactId>
+			<version>1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.almworks.sqlite4java</groupId>
+			<artifactId>sqlite4java</artifactId>
+			<version>0.282</version>
+		</dependency>
+		<dependency>
+			<groupId>batik</groupId>
+			<artifactId>batik-svggen</artifactId>
+			<version>1.6-1</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.brotzilla</groupId>
+			<artifactId>brotzilla-util</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
 </project>
