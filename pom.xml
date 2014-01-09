@@ -1,26 +1,41 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>ch.brotzilla</groupId>
-  <artifactId>ch.brotzilla.monalisa</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Monalisa Image Evolution</name>
-  <description>Image vectorization using genetic algorithms.</description>
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  <url>https://github.com/ManuelBrotz/monalisa</url>
-  <issueManagement>
-  	<url>https://github.com/ManuelBrotz/monalisa/issues</url>
-  	<system>GitHub</system>
-  </issueManagement>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>ch.brotzilla</groupId>
+	<artifactId>ch.brotzilla.monalisa</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Monalisa Image Evolution</name>
+	<description>Image vectorization using genetic algorithms.</description>
+    <url>https://github.com/ManuelBrotz/monalisa</url>
+	<repositories>
+		<repository>
+			<id>java.net</id>
+			<url>http://download.java.net/maven/2</url>
+		</repository>
+	</repositories>
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<issueManagement>
+		<url>https://github.com/ManuelBrotz/monalisa/issues</url>
+		<system>GitHub</system>
+	</issueManagement>
+  <dependencies>
+  	<dependency>
+  		<groupId>args4j</groupId>
+  		<artifactId>args4j</artifactId>
+  		<version>2.0.26</version>
+  		<type>bundle</type>
+  	</dependency>
+  </dependencies>
 </project>
