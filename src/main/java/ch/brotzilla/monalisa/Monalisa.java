@@ -23,7 +23,7 @@ import ch.brotzilla.monalisa.vectorizer.VectorizerListener;
 import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;
 
-public class MonaLisa {
+public class Monalisa {
 
     protected Params params;
     protected SessionManager session;
@@ -64,11 +64,11 @@ public class MonaLisa {
         }
     }
 
-    public MonaLisa(String[] args) {
+    public Monalisa(String[] args) {
         this(new Params(args));
     }
 
-    public MonaLisa(Params params) {
+    public Monalisa(Params params) {
         Preconditions.checkNotNull(params, "The parameter 'params' must not be null");
         this.params = params;
     }
@@ -202,7 +202,7 @@ public class MonaLisa {
     }
 
     public static void main(String[] args) {
-        final MonaLisa ml = new MonaLisa(args);
+        final Monalisa ml = new Monalisa(args);
         try {
             if (ml.params.isReady()) {
                 ml.setup();

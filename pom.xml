@@ -41,7 +41,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>ch.brotzilla.monalisa.MonaLisa</mainClass>
+							<mainClass>ch.brotzilla.monalisa.Monalisa</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
