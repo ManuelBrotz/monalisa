@@ -9,9 +9,9 @@ import jline.console.ConsoleReader;
 
 import org.reflections.Reflections;
 
-import ch.brotzilla.monalisa.cli.errors.CLIException;
-import ch.brotzilla.monalisa.cli.errors.CommandInstanciationException;
-import ch.brotzilla.monalisa.cli.errors.UnknownCommandException;
+import ch.brotzilla.monalisa.cli.exceptions.CLIException;
+import ch.brotzilla.monalisa.cli.exceptions.CommandInstanciationException;
+import ch.brotzilla.monalisa.cli.exceptions.UnknownCommandException;
 import ch.brotzilla.monalisa.cli.input.CLIJlineReader;
 import ch.brotzilla.monalisa.cli.input.CLIScannerReader;
 import ch.brotzilla.monalisa.cli.input.CLIStartupArgsReader;

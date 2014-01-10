@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.cli.errors;
+package ch.brotzilla.monalisa.cli.exceptions;
 
 @SuppressWarnings("serial")
 public class CommandInstanciationException extends CLIException {
