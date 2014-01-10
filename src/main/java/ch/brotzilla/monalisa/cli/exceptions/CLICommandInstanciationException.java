@@ -1,9 +1,9 @@
 package ch.brotzilla.monalisa.cli.exceptions;
 
 @SuppressWarnings("serial")
-public class CommandInstanciationException extends CLICommandException {
+public class CLICommandInstanciationException extends CLICommandException {
 
-    public CommandInstanciationException(String commandName, Throwable cause) {
+    public CLICommandInstanciationException(String commandName, Throwable cause) {
         super(commandName, "Cannot instanciate command: " + commandName, cause);
     }
 

@@ -1,9 +1,9 @@
 package ch.brotzilla.monalisa.cli.exceptions;
 
 @SuppressWarnings("serial")
-public class UnknownCommandException extends CLICommandException {
+public class CLIUnknownCommandException extends CLICommandException {
 
-    public UnknownCommandException(String commandName) {
+    public CLIUnknownCommandException(String commandName) {
         super(commandName, "Unknown command: " + commandName, null);
     }
 

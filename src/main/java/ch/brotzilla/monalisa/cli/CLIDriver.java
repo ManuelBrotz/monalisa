@@ -9,11 +9,11 @@ import jline.console.ConsoleReader;
 
 import org.reflections.Reflections;
 
-import ch.brotzilla.monalisa.cli.exceptions.BadArgumentsException;
+import ch.brotzilla.monalisa.cli.exceptions.CLIBadArgumentsException;
 import ch.brotzilla.monalisa.cli.exceptions.CLICommandException;
 import ch.brotzilla.monalisa.cli.exceptions.CLIExitException;
-import ch.brotzilla.monalisa.cli.exceptions.CommandInstanciationException;
-import ch.brotzilla.monalisa.cli.exceptions.UnknownCommandException;
+import ch.brotzilla.monalisa.cli.exceptions.CLICommandInstanciationException;
+import ch.brotzilla.monalisa.cli.exceptions.CLIUnknownCommandException;
 import ch.brotzilla.monalisa.cli.input.CLIJlineReader;
 import ch.brotzilla.monalisa.cli.input.CLIScannerReader;
 import ch.brotzilla.monalisa.cli.input.CLIStartupArgsReader;
@@ -110,15 +110,15 @@ public class CLIDriver {
         private final Class<? extends CLICommand> clazz;
         private final String name, description;
         
-        private CLICommand createCommand() throws CommandInstanciationException {
+        private CLICommand createCommand() throws CLICommandInstanciationException {
             try {
                 return clazz.newInstance();
             } catch (Exception e) {
-                throw new CommandInstanciationException(name, e);
+                throw new CLICommandInstanciationException(name, e);
             }
         }
         
-        private CLICommand parseArguments(CLICommand cmd, String[] args) throws BadArgumentsException {
+        private CLICommand parseArguments(CLICommand cmd, String[] args) throws CLIBadArgumentsException {
             if (args == null) {
                 return cmd;
             }
@@ -126,7 +126,7 @@ public class CLIDriver {
                 new JCommander(cmd, args);
                 return cmd;
             } catch (Exception e) {
-                throw new BadArgumentsException(name, e);
+                throw new CLIBadArgumentsException(name, e);
             }
         }
 
@@ -181,7 +181,7 @@ public class CLIDriver {
         final Command command = commands.get(commandName);
         
         if (command == null) {
-            throw new UnknownCommandException(commandName);
+            throw new CLIUnknownCommandException(commandName);
         }
         
         command.execute(stripArgs(args), context);
