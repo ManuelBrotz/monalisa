@@ -41,7 +41,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>ch.brotzilla.monalisa.Monalisa</mainClass>
+							<mainClass>ch.brotzilla.monalisa.cli.CLIDriver</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
