@@ -1,8 +1,8 @@
 package ch.brotzilla.monalisa.cli.cmd;
 
-import ch.brotzilla.monalisa.cli.intf.CLICommand;
+import ch.brotzilla.monalisa.cli.intf.CLICommandInfo;
 
-@CLICommand(name = "test", description = "this is a test command")
+@CLICommandInfo(name = "test", description = "this is a test command")
 public class TestCommand {
 
     public TestCommand() {

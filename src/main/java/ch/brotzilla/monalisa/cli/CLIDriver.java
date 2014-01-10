@@ -12,7 +12,7 @@ import org.reflections.Reflections;
 import ch.brotzilla.monalisa.cli.input.CLIJlineReader;
 import ch.brotzilla.monalisa.cli.input.CLIScannerReader;
 import ch.brotzilla.monalisa.cli.input.CLIStartupArgsReader;
-import ch.brotzilla.monalisa.cli.intf.CLICommand;
+import ch.brotzilla.monalisa.cli.intf.CLICommandInfo;
 import ch.brotzilla.monalisa.cli.intf.CLIReader;
 
 import com.google.common.base.Preconditions;
@@ -51,10 +51,10 @@ public class CLIDriver {
 
     public void loadCommands() {
         final Reflections ref = new Reflections("ch.brotzilla.monalisa");
-        final Set<Class<?>> cmds = ref.getTypesAnnotatedWith(CLICommand.class);
+        final Set<Class<?>> cmds = ref.getTypesAnnotatedWith(CLICommandInfo.class);
         final Map<String, Command> result = Maps.newHashMap();
         for (final Class<?> clazz : cmds) {
-            final CLICommand annotation = clazz.getAnnotation(CLICommand.class);
+            final CLICommandInfo annotation = clazz.getAnnotation(CLICommandInfo.class);
             final String name = annotation.name(), description = annotation.description();
             if (name == null || name.trim().isEmpty()) {
                 throw new IllegalStateException("Command name must not be empty (class = '" + clazz.getSimpleName() + "')");
