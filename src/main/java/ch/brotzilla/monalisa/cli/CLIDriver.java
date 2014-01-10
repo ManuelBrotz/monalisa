@@ -9,9 +9,13 @@ import jline.console.ConsoleReader;
 
 import org.reflections.Reflections;
 
+import ch.brotzilla.monalisa.cli.errors.CLIException;
+import ch.brotzilla.monalisa.cli.errors.CommandInstanciationException;
+import ch.brotzilla.monalisa.cli.errors.UnknownCommandException;
 import ch.brotzilla.monalisa.cli.input.CLIJlineReader;
 import ch.brotzilla.monalisa.cli.input.CLIScannerReader;
 import ch.brotzilla.monalisa.cli.input.CLIStartupArgsReader;
+import ch.brotzilla.monalisa.cli.intf.CLICommand;
 import ch.brotzilla.monalisa.cli.intf.CLICommandInfo;
 import ch.brotzilla.monalisa.cli.intf.CLIReader;
 
@@ -51,10 +55,13 @@ public class CLIDriver {
 
     public void loadCommands() {
         final Reflections ref = new Reflections("ch.brotzilla.monalisa");
-        final Set<Class<?>> cmds = ref.getTypesAnnotatedWith(CLICommandInfo.class);
+        final Set<Class<? extends CLICommand>> cmds = ref.getSubTypesOf(CLICommand.class);
         final Map<String, Command> result = Maps.newHashMap();
-        for (final Class<?> clazz : cmds) {
+        for (final Class<? extends CLICommand> clazz : cmds) {
             final CLICommandInfo annotation = clazz.getAnnotation(CLICommandInfo.class);
+            if (annotation == null) {
+                continue;
+            }
             final String name = annotation.name(), description = annotation.description();
             if (name == null || name.trim().isEmpty()) {
                 throw new IllegalStateException("Command name must not be empty (class = '" + clazz.getSimpleName() + "')");
@@ -73,7 +80,13 @@ public class CLIDriver {
         try (final CLIReader reader = createReader()) {
             while (true) {
                 final String[] nextLine = reader.nextLine(PROMPT);
-                processLine(nextLine, nextLine == startupArgs);
+                try {
+                    processLine(nextLine, nextLine == startupArgs);
+                } catch (CLIException e) {
+                    System.out.println(e.getMessage());
+                } catch (Exception e) {
+                    
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -89,10 +102,18 @@ public class CLIDriver {
 
     public static class Command {
 
-        private final Class<?> clazz;
+        private final Class<? extends CLICommand> clazz;
         private final String name, description;
+        
+        private CLICommand createCommand() throws CommandInstanciationException {
+            try {
+                return clazz.newInstance();
+            } catch (Exception e) {
+                throw new CommandInstanciationException(name, e);
+            }
+        }
 
-        public Command(Class<?> clazz, String name, String description) {
+        public Command(Class<? extends CLICommand> clazz, String name, String description) {
             Preconditions.checkNotNull(clazz, "The parameter 'clazz' must not be null");
             Preconditions.checkNotNull(name, "The parameter 'name' must not be null");
             Preconditions.checkArgument(!name.trim().isEmpty(), "The parameter 'name' must not be empty");
@@ -113,8 +134,9 @@ public class CLIDriver {
             return description;
         }
         
-        public void execute() throws Exception {
-             
+        public void execute(String[] args, CLIContext context) throws Exception {
+             final CLICommand cmd = createCommand();
+             cmd.execute(context);
         }
     }
 
@@ -134,7 +156,7 @@ public class CLIDriver {
         return reader;
     }
 
-    private void processLine(String[] args, boolean isStartupArgs) {
+    private void processLine(String[] args, boolean isStartupArgs) throws Exception {
         if (args == null || args.length == 0) {
             return;
         }
@@ -143,11 +165,18 @@ public class CLIDriver {
         final Command command = commands.get(commandName);
         
         if (command == null) {
-            System.out.println("Unknown command: " + commandName);
-            return;
+            throw new UnknownCommandException(commandName);
         }
         
-        
-        
+        command.execute(stripArgs(args), context);
+    }
+    
+    private String[] stripArgs(String[] args) {
+        if (args == null || args.length < 2) {
+            return null;
+        }
+        final String[] result = new String[args.length-1];
+        System.arraycopy(args, 1, result, 0, result.length);
+        return result;
     }
 }
