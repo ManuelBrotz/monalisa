@@ -9,7 +9,8 @@ import jline.console.ConsoleReader;
 
 import org.reflections.Reflections;
 
-import ch.brotzilla.monalisa.cli.exceptions.CLIException;
+import ch.brotzilla.monalisa.cli.exceptions.CLICommandException;
+import ch.brotzilla.monalisa.cli.exceptions.CLIExitException;
 import ch.brotzilla.monalisa.cli.exceptions.CommandInstanciationException;
 import ch.brotzilla.monalisa.cli.exceptions.UnknownCommandException;
 import ch.brotzilla.monalisa.cli.input.CLIJlineReader;
@@ -82,8 +83,10 @@ public class CLIDriver {
                 final String[] nextLine = reader.nextLine(PROMPT);
                 try {
                     processLine(nextLine, nextLine == startupArgs);
-                } catch (CLIException e) {
+                } catch (CLICommandException e) {
                     System.out.println(e.getMessage());
+                } catch (CLIExitException e) {
+                    break;
                 } catch (Exception e) {
                     
                 }

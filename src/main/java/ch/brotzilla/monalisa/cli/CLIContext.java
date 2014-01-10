@@ -5,5 +5,9 @@ public class CLIContext {
     public CLIContext() {
         // TODO Auto-generated constructor stub
     }
+    
+    public void shutdown() {
+        
+    }
 
 }
