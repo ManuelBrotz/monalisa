@@ -9,6 +9,7 @@ import jline.console.ConsoleReader;
 
 import org.reflections.Reflections;
 
+import ch.brotzilla.monalisa.cli.exceptions.BadArgumentsException;
 import ch.brotzilla.monalisa.cli.exceptions.CLICommandException;
 import ch.brotzilla.monalisa.cli.exceptions.CLIExitException;
 import ch.brotzilla.monalisa.cli.exceptions.CommandInstanciationException;
@@ -20,6 +21,7 @@ import ch.brotzilla.monalisa.cli.intf.CLICommand;
 import ch.brotzilla.monalisa.cli.intf.CLICommandInfo;
 import ch.brotzilla.monalisa.cli.intf.CLIReader;
 
+import com.beust.jcommander.JCommander;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -115,6 +117,18 @@ public class CLIDriver {
                 throw new CommandInstanciationException(name, e);
             }
         }
+        
+        private CLICommand parseArguments(CLICommand cmd, String[] args) throws BadArgumentsException {
+            if (args == null) {
+                return cmd;
+            }
+            try {
+                new JCommander(cmd, args);
+                return cmd;
+            } catch (Exception e) {
+                throw new BadArgumentsException(name, e);
+            }
+        }
 
         public Command(Class<? extends CLICommand> clazz, String name, String description) {
             Preconditions.checkNotNull(clazz, "The parameter 'clazz' must not be null");
@@ -138,8 +152,7 @@ public class CLIDriver {
         }
         
         public void execute(String[] args, CLIContext context) throws Exception {
-             final CLICommand cmd = createCommand();
-             cmd.execute(context);
+             parseArguments(createCommand(), args).execute(context);
         }
     }
 
