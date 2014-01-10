@@ -1,4 +1,4 @@
-package ch.brotzilla.monalisa.cli.cmd;
+package ch.brotzilla.monalisa.cli.commands;
 
 import ch.brotzilla.monalisa.cli.CLIContext;
 import ch.brotzilla.monalisa.cli.intf.CLICommand;
