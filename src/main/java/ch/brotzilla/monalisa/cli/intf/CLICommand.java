@@ -1,9 +1,9 @@
 package ch.brotzilla.monalisa.cli.intf;
 
-import ch.brotzilla.monalisa.cli.CLIContext;
+import ch.brotzilla.monalisa.Monalisa;
 
 public interface CLICommand {
 
-    void execute(CLIContext context) throws Exception;
+    void execute(Monalisa context) throws Exception;
     
 }

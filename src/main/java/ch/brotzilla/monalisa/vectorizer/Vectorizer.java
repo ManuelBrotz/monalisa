@@ -125,7 +125,7 @@ public class Vectorizer {
 
     public void start() {
         if (state != State.Stopped) {
-            throw new IllegalStateException("Unable to start vectorizer");
+            return;
         }
         if (!isReady()) {
             throw new IllegalStateException("Vectorizer not ready");

@@ -9,6 +9,7 @@ import jline.console.ConsoleReader;
 
 import org.reflections.Reflections;
 
+import ch.brotzilla.monalisa.Monalisa;
 import ch.brotzilla.monalisa.cli.exceptions.CLIBadArgumentsException;
 import ch.brotzilla.monalisa.cli.exceptions.CLICommandException;
 import ch.brotzilla.monalisa.cli.exceptions.CLIExitException;
@@ -16,7 +17,6 @@ import ch.brotzilla.monalisa.cli.exceptions.CLICommandInstanciationException;
 import ch.brotzilla.monalisa.cli.exceptions.CLIUnknownCommandException;
 import ch.brotzilla.monalisa.cli.input.CLIJlineReader;
 import ch.brotzilla.monalisa.cli.input.CLIScannerReader;
-import ch.brotzilla.monalisa.cli.input.CLIStartupArgsReader;
 import ch.brotzilla.monalisa.cli.intf.CLICommand;
 import ch.brotzilla.monalisa.cli.intf.CLICommandInfo;
 import ch.brotzilla.monalisa.cli.intf.CLIReader;
@@ -31,10 +31,10 @@ public class CLIDriver {
     private static final String PROMPT = "monalisa> ";
 
     private final String[] startupArgs;
-    private final CLIContext context;
+    private final Monalisa context;
     private Map<String, CmdInfo> commands = ImmutableMap.of();
 
-    public CLIDriver(String[] args, CLIContext context) {
+    public CLIDriver(String[] args, Monalisa context) {
         Preconditions.checkNotNull(context, "The parameter 'context' must not be null");
         this.startupArgs = args == null || args.length == 0 ? null : args;
         this.context = context;
@@ -48,7 +48,7 @@ public class CLIDriver {
         return startupArgs == null ? null : Arrays.copyOf(startupArgs, startupArgs.length);
     }
 
-    public CLIContext getContext() {
+    public Monalisa getContext() {
         return context;
     }
 
@@ -84,7 +84,7 @@ public class CLIDriver {
             while (true) {
                 final String[] nextLine = reader.nextLine(PROMPT);
                 try {
-                    processLine(nextLine, nextLine == startupArgs);
+                    processLine(nextLine);
                 } catch (CLICommandException e) {
                     System.out.println(e.getMessage());
                 } catch (CLIExitException e) {
@@ -99,7 +99,7 @@ public class CLIDriver {
     }
 
     public static void main(String[] args) {
-        final CLIContext ctx = new CLIContext();
+        final Monalisa ctx = new Monalisa();
         final CLIDriver cli = new CLIDriver(args, ctx);
         cli.loadCommands();
         cli.start();
@@ -164,13 +164,10 @@ public class CLIDriver {
             consoleReader.setBellEnabled(false);
             reader = new CLIJlineReader(consoleReader);
         }
-        if (startupArgs != null) {
-            return new CLIStartupArgsReader(startupArgs, reader);
-        }
         return reader;
     }
 
-    private void processLine(String[] args, boolean isStartupArgs) throws Exception {
+    private void processLine(String[] args) throws Exception {
         if (args == null || args.length == 0) {
             return;
         }

@@ -1,6 +1,6 @@
 package ch.brotzilla.monalisa.cli.commands;
 
-import ch.brotzilla.monalisa.cli.CLIContext;
+import ch.brotzilla.monalisa.Monalisa;
 import ch.brotzilla.monalisa.cli.exceptions.CLIExitException;
 import ch.brotzilla.monalisa.cli.intf.CLICommand;
 import ch.brotzilla.monalisa.cli.intf.CLICommandInfo;
@@ -12,7 +12,7 @@ public class ExitCommand implements CLICommand {
     }
 
     @Override
-    public void execute(CLIContext context) throws Exception {
+    public void execute(Monalisa context) throws Exception {
         try {
             context.shutdown();
         } catch (Exception e) {

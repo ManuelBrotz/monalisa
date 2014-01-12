@@ -21,7 +21,7 @@ import javax.swing.filechooser.FileFilter;
 
 import com.google.common.base.Preconditions;
 
-import ch.brotzilla.monalisa.Monalisa;
+import ch.brotzilla.monalisa.MonalisaOld;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.gui.StatusDisplay.Orientation;
 import ch.brotzilla.monalisa.images.Image;
@@ -33,7 +33,7 @@ import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 @SuppressWarnings("serial")
 public class MainWindow extends JFrame {
 
-    protected final Monalisa monalisa;
+    protected final MonalisaOld monalisa;
     protected final SessionManager sessionManager;
     protected final Image inputImage, currentImage;
     protected final Image importanceMap;
@@ -106,7 +106,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    public MainWindow(Monalisa monalisa, SessionManager sessionManager, Genome currentGenome) throws IOException {
+    public MainWindow(MonalisaOld monalisa, SessionManager sessionManager, Genome currentGenome) throws IOException {
         super();
 
         this.monalisa = Preconditions.checkNotNull(monalisa, "The parameter 'monalisa' must not be null");
