@@ -32,7 +32,7 @@ public class CLIDriver {
 
     private final String[] startupArgs;
     private final CLIContext context;
-    private Map<String, Command> commands = ImmutableMap.of();
+    private Map<String, CmdInfo> commands = ImmutableMap.of();
 
     public CLIDriver(String[] args, CLIContext context) {
         Preconditions.checkNotNull(context, "The parameter 'context' must not be null");
@@ -52,14 +52,14 @@ public class CLIDriver {
         return context;
     }
 
-    public Map<String, Command> getCommands() {
+    public Map<String, CmdInfo> getCommands() {
         return commands;
     }
 
     public void loadCommands() {
         final Reflections ref = new Reflections("ch.brotzilla.monalisa");
         final Set<Class<? extends CLICommand>> cmds = ref.getSubTypesOf(CLICommand.class);
-        final Map<String, Command> result = Maps.newHashMap();
+        final Map<String, CmdInfo> result = Maps.newHashMap();
         for (final Class<? extends CLICommand> clazz : cmds) {
             final CLICommandInfo annotation = clazz.getAnnotation(CLICommandInfo.class);
             if (annotation == null) {
@@ -71,9 +71,9 @@ public class CLIDriver {
             }
             if (result.containsKey(name)) {
                 throw new IllegalStateException("Duplicate command detected (name = '" + name + "', class = '" + clazz.getSimpleName() + "', already registered class = '"
-                        + result.get(name).getClazz().getSimpleName() + "')");
+                        + result.get(name).getCmdClass().getSimpleName() + "')");
             }
-            final Command cmd = new Command(clazz, name, description);
+            final CmdInfo cmd = new CmdInfo(clazz, name, description);
             result.put(name, cmd);
         }
         commands = ImmutableMap.copyOf(result);
@@ -90,7 +90,7 @@ public class CLIDriver {
                 } catch (CLIExitException e) {
                     break;
                 } catch (Exception e) {
-                    
+                    e.printStackTrace();
                 }
             }
         } catch (Exception e) {
@@ -105,32 +105,12 @@ public class CLIDriver {
         cli.start();
     }
 
-    public static class Command {
+    public static class CmdInfo {
 
         private final Class<? extends CLICommand> clazz;
         private final String name, description;
-        
-        private CLICommand createCommand() throws CLICommandInstanciationException {
-            try {
-                return clazz.newInstance();
-            } catch (Exception e) {
-                throw new CLICommandInstanciationException(name, e);
-            }
-        }
-        
-        private CLICommand parseArguments(CLICommand cmd, String[] args) throws CLIBadArgumentsException {
-            if (args == null) {
-                return cmd;
-            }
-            try {
-                new JCommander(cmd, args);
-                return cmd;
-            } catch (Exception e) {
-                throw new CLIBadArgumentsException(name, e);
-            }
-        }
 
-        public Command(Class<? extends CLICommand> clazz, String name, String description) {
+        public CmdInfo(Class<? extends CLICommand> clazz, String name, String description) {
             Preconditions.checkNotNull(clazz, "The parameter 'clazz' must not be null");
             Preconditions.checkNotNull(name, "The parameter 'name' must not be null");
             Preconditions.checkArgument(!name.trim().isEmpty(), "The parameter 'name' must not be empty");
@@ -139,21 +119,39 @@ public class CLIDriver {
             this.description = description == null || description.trim().isEmpty() ? "" : description;
         }
 
-        public Class<?> getClazz() {
+        public Class<? extends CLICommand> getCmdClass() {
             return clazz;
         }
 
-        public String getName() {
+        public String getCmdName() {
             return name;
         }
 
-        public String getDescription() {
+        public String getCmdDescription() {
             return description;
         }
-        
-        public void execute(String[] args, CLIContext context) throws Exception {
-             parseArguments(createCommand(), args).execute(context);
+
+        public JCommander parse(CLICommand cmd, String[] args) throws CLIBadArgumentsException {
+            final JCommander commander = new JCommander(cmd);
+            commander.setProgramName(getCmdName());
+            try {
+                if (args != null) {
+                    commander.parse(args);
+                }
+                return commander;
+            } catch (Exception e) {
+                throw new CLIBadArgumentsException(getCmdName(), commander, e);
+            }
         }
+
+        public CLICommand instanciate() throws CLICommandInstanciationException {
+            try {
+                return getCmdClass().newInstance();
+            } catch (Exception e) {
+                throw new CLICommandInstanciationException(getCmdName(), e);
+            }
+        }
+
     }
 
     private CLIReader createReader() throws Exception {
@@ -177,21 +175,30 @@ public class CLIDriver {
             return;
         }
 
-        final String commandName = args[0];
-        final Command command = commands.get(commandName);
-        
-        if (command == null) {
-            throw new CLIUnknownCommandException(commandName);
+        final String cmdName = args[0];
+        final String[] cmdArgs = stripCmdName(args);
+        final boolean isHelp = cmdArgs != null && cmdArgs.length == 1 && cmdArgs[0].equals("--help");
+        final CmdInfo cmdInfo = commands.get(cmdName);
+
+        if (cmdInfo == null) {
+            throw new CLIUnknownCommandException(cmdName);
         }
-        
-        command.execute(stripArgs(args), context);
+
+        final CLICommand cmd = cmdInfo.instanciate();
+        final JCommander commander = cmdInfo.parse(cmd, isHelp ? null : cmdArgs);
+
+        if (isHelp) {
+            commander.usage();
+        } else {
+            cmd.execute(context);
+        }
     }
-    
-    private String[] stripArgs(String[] args) {
+
+    private String[] stripCmdName(String[] args) {
         if (args == null || args.length < 2) {
             return null;
         }
-        final String[] result = new String[args.length-1];
+        final String[] result = new String[args.length - 1];
         System.arraycopy(args, 1, result, 0, result.length);
         return result;
     }
