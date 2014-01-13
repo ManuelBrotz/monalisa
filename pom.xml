@@ -86,5 +86,10 @@
 			<artifactId>batik-svggen</artifactId>
 			<version>1.6-1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.beust</groupId>
+			<artifactId>jcommander</artifactId>
+			<version>1.32</version>
+		</dependency>
 	</dependencies>
 </project>
