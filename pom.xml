@@ -86,5 +86,41 @@
 			<artifactId>batik-svggen</artifactId>
 			<version>1.6-1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.almworks.sqlite4java</groupId>
+			<artifactId>libsqlite4java-linux-amd64</artifactId>
+			<version>0.282</version>
+			<type>so</type>
+		</dependency>
+		<dependency>
+			<groupId>com.almworks.sqlite4java</groupId>
+			<artifactId>libsqlite4java-linux-i386</artifactId>
+			<version>0.282</version>
+			<type>so</type>
+		</dependency>
+		<dependency>
+			<groupId>com.almworks.sqlite4java</groupId>
+			<artifactId>libsqlite4java-osx</artifactId>
+			<version>0.282</version>
+			<type>jnilib</type>
+		</dependency>
+		<dependency>
+			<groupId>com.almworks.sqlite4java</groupId>
+			<artifactId>libsqlite4java-osx-10.4</artifactId>
+			<version>0.282</version>
+			<type>jnilib</type>
+		</dependency>
+		<dependency>
+			<groupId>com.almworks.sqlite4java</groupId>
+			<artifactId>sqlite4java-win32-x64</artifactId>
+			<version>0.282</version>
+			<type>dll</type>
+		</dependency>
+		<dependency>
+			<groupId>com.almworks.sqlite4java</groupId>
+			<artifactId>sqlite4java-win32-x86</artifactId>
+			<version>0.282</version>
+			<type>dll</type>
+		</dependency>
 	</dependencies>
 </project>
