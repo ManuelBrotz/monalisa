@@ -59,7 +59,9 @@ public class PolygonCache {
                 workerThread = Executors.newFixedThreadPool(1);
                 new WorkerThread(workerThread);
             }
-            queue.offer(latest);
+            if (latest != null) {
+                queue.offer(latest);
+            }
         }
 
         @Override
