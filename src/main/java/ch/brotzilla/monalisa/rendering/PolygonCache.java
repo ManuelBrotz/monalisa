@@ -160,6 +160,7 @@ public class PolygonCache {
                     queue.drainTo(genomes);
                 }
             } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
 
