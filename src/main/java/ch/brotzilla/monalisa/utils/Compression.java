@@ -12,7 +12,6 @@ import java.util.zip.GZIPOutputStream;
 import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.evolution.genes.RawGenome;
 import ch.brotzilla.monalisa.images.ImageData;
 
 public class Compression {
@@ -33,13 +32,6 @@ public class Compression {
             return null;
         
         return Genome.deserialize(din(input));
-    }
-    
-    public static RawGenome decodeRawGenome(byte[] input) throws IOException {
-        if (input == null || input.length == 0) 
-            return null;
-        
-        return Genome.deserializeRaw(din(input));
     }
     
     public static String decodeString(byte[] input) throws IOException {
@@ -106,7 +98,7 @@ public class Compression {
         return bout.toByteArray();
     }
     
-    private static DataInputStream din(byte[] input) throws IOException {
+    public static DataInputStream din(byte[] input) throws IOException {
         Preconditions.checkNotNull(input, "The parameter 'data' must not be null");
         final ByteArrayInputStream bin = new ByteArrayInputStream(input);
         final GZIPInputStream gzin = new GZIPInputStream(bin);

@@ -158,20 +158,6 @@ public class Gene {
         return new Gene(x, y, color, false);
     }
     
-    public static byte[] deserializeRaw(DataInputStream in) throws IOException {
-        Preconditions.checkNotNull(in, "The parameter 'in' must not be null");
-        final byte[] head = new byte[6];
-        readBytes(in, head, 0, head.length);
-        final byte version = head[0];
-        Preconditions.checkArgument(version == 0, "Unable to deserialize gene, version not supported");
-        final int length = head[5] & 0xFF;
-        Preconditions.checkArgument(length >= 3, "Unable to deserialize gene, too few coordinates");
-        final byte[] result = new byte[head.length + (length * 4)];
-        System.arraycopy(head, 0, result, 0, head.length);
-        readBytes(in, result, head.length, length * 4);
-        return result;
-    }
-    
     public static void serialize(Gene gene, DataOutputStream out) throws IOException {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         Preconditions.checkNotNull(out, "The parameter 'out' must not be null");
@@ -190,14 +176,4 @@ public class Gene {
         }
     }
     
-    private static void readBytes(DataInputStream in, byte[] dst, int offset, int length) throws IOException {
-        int read = 0;
-        while (read < length) {
-            int current = in.read(dst, offset + read, length - read);
-            if (current == -1) {
-                throw new IOException("Unable to deserialize gene, end of file reached");
-            }
-            read += current;
-        }
-    }
 }

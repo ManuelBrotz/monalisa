@@ -1,12 +1,13 @@
 package ch.brotzilla.monalisa.utils;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.zip.CRC32;
 
 import ch.brotzilla.monalisa.db.Database;
-import ch.brotzilla.monalisa.evolution.genes.RawGenome;
 
 import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;
@@ -68,7 +69,7 @@ public class DBCompressor {
         int collisions = 0, totalGenes = 0;
         for (int i = 0; i < input.size(); i++) {
             final byte[] rawGenome = input.get(i);
-            final RawGenome genome = Compression.decodeRawGenome(rawGenome);
+            final RawGenome genome = decodeRawGenome(rawGenome);
             totalGenes += genome.genes.length;
             genomes.add(genome);
             genome.computeCRCs();
@@ -87,6 +88,54 @@ public class DBCompressor {
         System.out.println("");
     }
     
+    private static void readBytes(DataInputStream in, byte[] dst, int offset, int length) throws IOException {
+        int read = 0;
+        while (read < length) {
+            int current = in.read(dst, offset + read, length - read);
+            if (current == -1) {
+                throw new IOException("Unable to deserialize gene, end of file reached");
+            }
+            read += current;
+        }
+    }
+
+    public static byte[] deserializeRawGene(DataInputStream in) throws IOException {
+        Preconditions.checkNotNull(in, "The parameter 'in' must not be null");
+        final byte[] head = new byte[6];
+        readBytes(in, head, 0, head.length);
+        final byte version = head[0];
+        Preconditions.checkArgument(version == 0, "Unable to deserialize gene, version not supported");
+        final int length = head[5] & 0xFF;
+        Preconditions.checkArgument(length >= 3, "Unable to deserialize gene, too few coordinates");
+        final byte[] result = new byte[head.length + (length * 4)];
+        System.arraycopy(head, 0, result, 0, head.length);
+        readBytes(in, result, head.length, length * 4);
+        return result;
+    }
+    
+    public static RawGenome deserializeRawGenome(DataInputStream in) throws IOException {
+        Preconditions.checkNotNull(in, "The parameter 'in' must not be null");
+        final int hlen = 29;
+        final byte[] head = new byte[hlen];
+        readBytes(in, head, 0, head.length);
+        final byte version = head[0];
+        Preconditions.checkState(version == 0, "Unable to deserialize genome, version not supported");
+        final int length = ((head[hlen - 4] & 0xFF) << 24) | ((head[hlen - 3] & 0xFF) << 16) | ((head[hlen - 2] & 0xFF) << 8) | (head[hlen - 1] & 0xFF);
+        Preconditions.checkState(length > 0, "Unable to deserialize genome, too few genes");
+        final byte[][] genes = new byte[length][];
+        for (int i = 0; i < length; i++) {
+                genes[i] = deserializeRawGene(in);
+        }
+        return new RawGenome(head, genes);
+    }
+
+    public static RawGenome decodeRawGenome(byte[] input) throws IOException {
+        if (input == null || input.length == 0) 
+            return null;
+        
+        return deserializeRawGenome(Compression.din(input));
+    }
+    
     private static class Entry {
         
         private static int nextIndex = 0;
@@ -98,6 +147,34 @@ public class DBCompressor {
             this.index = nextIndex++;
             this.crc = crc;
             this.gene = gene;
+        }
+    }
+    
+    private static class RawGenome {
+        
+        public byte[] head;
+        public byte[][] genes;
+        public int[] crcs;
+        public int[] indexes;
+        
+        public RawGenome(byte[] head, byte[][] genes) {
+            Preconditions.checkNotNull(head, "The parameter 'head' must not be null");
+            Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
+            this.head = head;
+            this.genes = genes;
+        }
+        
+        public void computeCRCs() {
+            if (genes != null & crcs == null) {
+                final int[] result = new int[genes.length];
+                final CRC32 crc = new CRC32();
+                for (int i = 0; i < genes.length; i++) {
+                    crc.reset();
+                    crc.update(genes[i]);
+                    result[i] = (int) (crc.getValue() & 0xFFFFFFFF);
+                }
+                this.crcs = result;
+            }
         }
     }
 
