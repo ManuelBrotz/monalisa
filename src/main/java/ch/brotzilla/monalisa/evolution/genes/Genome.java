@@ -122,6 +122,24 @@ public class Genome {
         return result;
     }
     
+    public static RawGenome deserializeRaw(DataInputStream in) throws IOException {
+        Preconditions.checkNotNull(in, "The parameter 'in' must not be null");
+        final int hlen = 29;
+        final byte[] head = new byte[hlen];
+        if (in.read(head) != hlen) {
+            throw new IOException("Unable to deserialize genome");
+        }
+        final byte version = head[0];
+        Preconditions.checkState(version == 0, "Unable to deserialize genome, version not supported");
+        final int length = ((head[hlen - 4] & 0xFF) << 24) | ((head[hlen - 3] & 0xFF) << 16) | ((head[hlen - 2] & 0xFF) << 8) | (head[hlen - 1] & 0xFF);
+        Preconditions.checkState(length > 0, "Unable to deserialize genome, too few genes");
+        final byte[][] genes = new byte[length][];
+        for (int i = 0; i < length; i++) {
+                genes[i] = Gene.deserializeRaw(in);
+        }
+        return new RawGenome(head, genes);
+    }
+    
     public static void serialize(Genome genome, DataOutputStream out) throws IOException {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(out, "The parameter 'out' must not be null");

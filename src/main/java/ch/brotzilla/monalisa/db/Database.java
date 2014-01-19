@@ -2,6 +2,7 @@ package ch.brotzilla.monalisa.db;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
@@ -18,12 +19,13 @@ public class Database implements AutoCloseable {
     public static final String SelectLatestGenomeQuery = "SELECT selected, data FROM genomes ORDER BY selected DESC LIMIT 1";
     public static final String SelectFileByIdQuery = "SELECT id, data FROM files WHERE id = ?1";
     public static final String SelectNumberOfGenomesQuery = "SELECT Count(selected) FROM genomes";
+    public static final String SelectAllGenomesQuery = "SELECT selected, data FROM genomes ORDER BY selected ASC";
     public static final String InsertFileQuery = "INSERT INTO files VALUES (?1, ?2, ?3, ?4)";
     public static final String InsertGenomeQuery = "INSERT INTO genomes VALUES (?1, ?2, ?3, ?4)";
     
     protected final SQLiteConnection conn;
     
-    protected final SQLiteStatement selectLatestGenomeQuery, selectFileByIdQuery, selectNumberOfGenomesQuery;
+    protected final SQLiteStatement selectLatestGenomeQuery, selectFileByIdQuery, selectNumberOfGenomesQuery, selectAllGenomesQuery;
     protected final SQLiteStatement insertFileQuery, insertGenomeQuery;
     
     protected Transaction transaction;
@@ -35,6 +37,7 @@ public class Database implements AutoCloseable {
         this.selectLatestGenomeQuery = conn.prepare(SelectLatestGenomeQuery);
         this.selectFileByIdQuery = conn.prepare(SelectFileByIdQuery);
         this.selectNumberOfGenomesQuery = conn.prepare(SelectNumberOfGenomesQuery);
+        this.selectAllGenomesQuery = conn.prepare(SelectAllGenomesQuery);
         this.insertFileQuery = conn.prepare(InsertFileQuery);
         this.insertGenomeQuery = conn.prepare(InsertGenomeQuery);
     }
@@ -49,6 +52,17 @@ public class Database implements AutoCloseable {
             return selectNumberOfGenomesQuery.columnInt(0);
         }
         return -1;
+    }
+    
+    public int queryAllGenomesCompressed(List<byte[]> output) throws SQLiteException {
+        Preconditions.checkNotNull(output, "The parameter 'output' must not be null");
+        selectAllGenomesQuery.reset();
+        int count = 0;
+        while (selectAllGenomesQuery.step()) {
+            output.add(selectAllGenomesQuery.columnBlob(1));
+            ++count;
+        }
+        return count;
     }
     
     public Genome queryLatestGenome() throws SQLiteException, IOException {

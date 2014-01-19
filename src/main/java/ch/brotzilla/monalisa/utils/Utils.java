@@ -210,25 +210,36 @@ public class Utils {
     }
     
     public static boolean equals(int[] a, int[] b) {
-        if (a == null && b == null)
+        if (a == b)
             return true;
-        if (a == null && b != null || a != null && b == null)
+        if (a == null || b == null || a.length != b.length)
             return false;
-        if (a.length != b.length)
-            return false;
-        final int length = a.length;
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < a.length; i++) {
             if (a[i] != b[i])
                 return false;
         }
         return true;
     }
     
-    public static <T> boolean equals(T a, T b) {
-        if (a == null && b == null)
+    public static boolean equals(byte[] a, byte[] b) {
+        if (a == b)
             return true;
-        if (a == null && b != null || a != null && b == null)
+        if (a == null || b == null || a.length != b.length)
             return false;
-        return a.equals(b);
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] != b[i])
+                return false;
+        }
+        return true;
+    }
+    
+    public static boolean equals(Object a, Object b) {
+        if (a == b)
+            return true;
+        if (a == null || b == null)
+            return false;
+        if (a.getClass().equals(b.getClass()))
+          return a.equals(b);
+        return a.equals(b) && b.equals(a);
     }
 }

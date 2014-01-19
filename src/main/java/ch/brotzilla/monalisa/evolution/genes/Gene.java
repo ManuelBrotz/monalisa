@@ -2,20 +2,17 @@ package ch.brotzilla.monalisa.evolution.genes;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.zip.CRC32;
 
 import ch.brotzilla.monalisa.utils.Utils;
 
 import com.google.common.base.Preconditions;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
 
 public class Gene {
-
-    private static final HashFunction hashFunction = Hashing.goodFastHash(32);
 
     public final int[] x, y, color;
     
@@ -96,6 +93,9 @@ public class Gene {
     public boolean equals(Object value) {
         if (value instanceof Gene) {
             final Gene v = (Gene) value;
+            if (hashed && v.hashed && hash != v.hash) {
+                return false;
+            }
             if (!Utils.equals(x, v.x))
                 return false;
             if (!Utils.equals(y, v.y))
@@ -112,19 +112,19 @@ public class Gene {
         if (hashed) {
             return hash;
         }
-        final Hasher hasher = hashFunction.newHasher();
-        hasher.putByte((byte) color[0]);
-        hasher.putByte((byte) color[1]);
-        hasher.putByte((byte) color[2]);
-        hasher.putByte((byte) color[3]);
-        hasher.putInt(x.length);
-        for (int i = 0; i < x.length; i++) {
-            hasher.putInt(x[i]);
-            hasher.putInt(y[i]);
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
+        final DataOutputStream dos = new DataOutputStream(bos);
+        try {
+            serialize(this, dos);
+            dos.flush();
+            final CRC32 crc = new CRC32();
+            crc.update(bos.toByteArray());
+            this.hash = (int) (crc.getValue() & 0xFFFFFFFF);
+            this.hashed = true;
+        } catch (IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
-        hash = hasher.hash().asInt();
-        hashed = true;
-        return hash;
+        return this.hash;
     }
 
     @Override
@@ -158,6 +158,20 @@ public class Gene {
         return new Gene(x, y, color, false);
     }
     
+    public static byte[] deserializeRaw(DataInputStream in) throws IOException {
+        Preconditions.checkNotNull(in, "The parameter 'in' must not be null");
+        final byte[] head = new byte[6];
+        readBytes(in, head, 0, head.length);
+        final byte version = head[0];
+        Preconditions.checkArgument(version == 0, "Unable to deserialize gene, version not supported");
+        final int length = head[5] & 0xFF;
+        Preconditions.checkArgument(length >= 3, "Unable to deserialize gene, too few coordinates");
+        final byte[] result = new byte[head.length + (length * 4)];
+        System.arraycopy(head, 0, result, 0, head.length);
+        readBytes(in, result, head.length, length * 4);
+        return result;
+    }
+    
     public static void serialize(Gene gene, DataOutputStream out) throws IOException {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         Preconditions.checkNotNull(out, "The parameter 'out' must not be null");
@@ -173,6 +187,17 @@ public class Gene {
             Preconditions.checkState(gene.x[i] == (short) gene.x[i] && gene.y[i] == (short) gene.y[i], "Unable to serialize gene, coordinate out of bounds");
             out.writeShort(gene.x[i]);
             out.writeShort(gene.y[i]);
+        }
+    }
+    
+    private static void readBytes(DataInputStream in, byte[] dst, int offset, int length) throws IOException {
+        int read = 0;
+        while (read < length) {
+            int current = in.read(dst, offset + read, length - read);
+            if (current == -1) {
+                throw new IOException("Unable to deserialize gene, end of file reached");
+            }
+            read += current;
         }
     }
 }
