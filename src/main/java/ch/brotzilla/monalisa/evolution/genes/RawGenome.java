@@ -9,7 +9,8 @@ public class RawGenome {
     public byte[] head;
     public byte[][] genes;
     public int[] crcs;
-
+    public int[] indexes;
+    
     public RawGenome(byte[] head, byte[][] genes) {
         Preconditions.checkNotNull(head, "The parameter 'head' must not be null");
         Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");

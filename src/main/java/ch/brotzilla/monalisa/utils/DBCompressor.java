@@ -39,18 +39,22 @@ public class DBCompressor {
         }
     }
     
-    private int updateGenes(RawGenome genome, Multimap<Integer, byte[]> genes) {
+    private int processGenes(RawGenome genome, Multimap<Integer, Entry> genes) {
         int collisions = 0;
+        genome.indexes = new int[genome.genes.length];
         outer: for (int i = 0; i < genome.genes.length; i++) {
-            final Integer crc = genome.crcs[i];
+            final int crc = genome.crcs[i];
             final byte[] gene = genome.genes[i];
-            final Collection<byte[]> knowns = genes.get(crc);
-            for (final byte[] known : knowns) {
-                if (Utils.equals(gene, known)) {
+            final Collection<Entry> knowns = genes.get(crc);
+            for (final Entry known : knowns) {
+                if (Utils.equals(gene, known.gene)) {
+                    genome.indexes[i] = known.index;
                     continue outer;
                 }
             }
-            knowns.add(gene);
+            final Entry e = new Entry(crc, gene);
+            genome.indexes[i] = e.index;
+            knowns.add(e);
             if (knowns.size() > 1) {
                 ++collisions;
             }
@@ -58,16 +62,17 @@ public class DBCompressor {
         return collisions;
     }
     
-    private void decodeGenomes(List<byte[]> input, List<RawGenome> genomes, Multimap<Integer, byte[]> genes) throws IOException {
+    private void processGenomes(List<byte[]> input, List<RawGenome> genomes, Multimap<Integer, Entry> genes) throws IOException {
         System.out.println("Decoding genomes, merging genes...");
         final int steps = input.size() / 20;
-        int collisions = 0;
+        int collisions = 0, totalGenes = 0;
         for (int i = 0; i < input.size(); i++) {
             final byte[] rawGenome = input.get(i);
             final RawGenome genome = Compression.decodeRawGenome(rawGenome);
+            totalGenes += genome.genes.length;
             genomes.add(genome);
             genome.computeCRCs();
-            collisions += updateGenes(genome, genes);
+            collisions += processGenes(genome, genes);
             genome.genes = null; // free some space 
             if (i > 0 && i % steps == 0) {
                 System.out.print(Math.round((100.0 / input.size() * i) * 10) / 10 + "% ");
@@ -78,7 +83,22 @@ public class DBCompressor {
         } else {
             System.out.println();
         }
-        System.out.println("Finished with " + collisions + " collisions.");
+        System.out.println("Found " + genes.size() + " distinct genes out of " + totalGenes + ". (Got " + collisions + " crc collisions)");
+        System.out.println("");
+    }
+    
+    private static class Entry {
+        
+        private static int nextIndex = 0;
+        
+        public final int index, crc;
+        public final byte[] gene;
+        
+        public Entry(int crc, byte[] gene) {
+            this.index = nextIndex++;
+            this.crc = crc;
+            this.gene = gene;
+        }
     }
 
     public DBCompressor(File dbFile, File output, boolean autoName) {
@@ -105,16 +125,16 @@ public class DBCompressor {
             final List<byte[]> rawGenomes = loadGenomes();
 
             final List<RawGenome> genomes = Lists.newArrayListWithCapacity(rawGenomes.size());
-            final Multimap<Integer, byte[]> genes = ArrayListMultimap.create();
+            final Multimap<Integer, Entry> genes = ArrayListMultimap.create();
 
-            decodeGenomes(rawGenomes, genomes, genes);
+            processGenomes(rawGenomes, genomes, genes);
             
             rawGenomes.clear(); // free some space
         }
     }
 
     public static void main(String[] args) throws IOException, SQLiteException {
-        final DBCompressor c = new DBCompressor(new File("./data/output/tari.mldb"), new File("./data/output/"), true);
+        final DBCompressor c = new DBCompressor(new File("./data/output/vaduz.mldb"), new File("./data/output/"), true);
         c.compress();
     }
 
