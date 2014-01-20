@@ -10,6 +10,16 @@ import ch.brotzilla.monalisa.db.schema.Tables;
 
 public class DatabaseSchema extends Schema {
 
+    public static class TblGenes extends Table {
+        
+        public static final Field fIndex = new Field("index", DataType.Integer, false, true);
+        public static final Field fData = new Field("data", DataType.Blob, false, false);
+        
+        public TblGenes() {
+            super("genes", fIndex, fData);
+        }
+    }
+    
     public static class TblGenomes extends Table {
 
         public static final Field fFitness = new Field("fitness", DataType.Real, false, false);
@@ -34,6 +44,7 @@ public class DatabaseSchema extends Schema {
         }
     }
     
+    public static final TblGenes tblGenes = new TblGenes();
     public static final TblGenomes tblGenomes = new TblGenomes();
     public static final TblFiles tblFiles = new TblFiles();
     
@@ -41,6 +52,6 @@ public class DatabaseSchema extends Schema {
     public static final Index idxFilesName = new Index("index_files_name", tblFiles, TblFiles.fId);
     
     public DatabaseSchema() {
-        super(new Tables(tblGenomes, tblFiles), new Indexes(idxGenomesFitness, idxFilesName));
+        super(new Tables(tblGenes, tblGenomes, tblFiles), new Indexes(idxGenomesFitness, idxFilesName));
     }
 }
