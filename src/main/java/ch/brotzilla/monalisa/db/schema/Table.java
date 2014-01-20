@@ -5,7 +5,7 @@ import com.google.common.base.Preconditions;
 public class Table implements Item {
     
     private final Fields fields;
-    private final String name, createTableQuery;
+    private final String name, createTableQuery, createTableIfNotExistsQuery;
     
     public Table(String name, Field... fields) {
         this(name, new Fields(fields));
@@ -21,6 +21,7 @@ public class Table implements Item {
         this.fields = fields;
         
         this.createTableQuery = Schema.CreateTable + " " + name + " (" + fields.getFieldDescriptions() + ")";
+        this.createTableIfNotExistsQuery = Schema.CreateTableIfNotExists + " " + name + " (" + fields.getFieldDescriptions() + ")";
     }
     
     public final Fields getFields() {
@@ -34,6 +35,10 @@ public class Table implements Item {
     
     public final String getCreateTableQuery() {
         return createTableQuery;
+    }
+    
+    public final String getCreateTableIfNotExistsQuery() {
+        return createTableIfNotExistsQuery;
     }
     
     @Override

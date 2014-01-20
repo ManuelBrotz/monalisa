@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 public abstract class Schema {
     
     public static final String CreateTable = "CREATE TABLE";
+    public static final String CreateTableIfNotExists = "CREATE TABLE IF NOT EXISTS";
     public static final String CreateIndex = "CREATE INDEX";
 
     private final Tables tables;
