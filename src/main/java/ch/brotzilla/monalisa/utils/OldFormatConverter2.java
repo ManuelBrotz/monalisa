@@ -25,7 +25,7 @@ import com.google.common.collect.Multimap;
 
 public class OldFormatConverter2 {
 
-    public static final String FileExtension = ".mlc";
+    public static final String FileExtension = ".new.mldb";
 
     protected final File dbFile, output;
 
@@ -38,12 +38,12 @@ public class OldFormatConverter2 {
         return name + FileExtension;
     }
 
-    protected static void loadDatabase(File dbFile, List<byte[]> genomes) throws IOException, SQLiteException {
-        try (final Database db = Database.openDatabase(dbFile)) {
-            System.out.println("Loading genomes...");
-            db.queryAllGenomesCompressed(genomes);
-            System.out.println("Loaded " + genomes.size() + " genomes.");
-        }
+    protected static void loadDatabase(Database db, List<byte[]> genomes, List<String> fileIds) throws IOException, SQLiteException {
+        System.out.println("Loading database...");
+        db.queryAllGenomesCompressed(genomes);
+        db.queryAllFileIds(fileIds);
+        System.out.println("Loaded " + genomes.size() + " genomes.");
+        System.out.println("Loaded " + fileIds.size() + " files.");
     }
 
     protected static int processGenes(GenomeEntry rawGenome, Multimap<Integer, IndexEntry> geneMap) {
@@ -69,19 +69,19 @@ public class OldFormatConverter2 {
         return collisions;
     }
 
-    protected static void processGenomes(List<byte[]> rawData, GenomeEntry[] rawGenomes, Multimap<Integer, IndexEntry> geneMap) throws IOException {
+    protected static void computeGeneMap(List<byte[]> rawData, GenomeEntry[] genomeEntries, Multimap<Integer, IndexEntry> geneMap) throws IOException {
         System.out.println("Decoding genomes, merging genes...");
         final int steps = rawData.size() / 20 > 0 ? rawData.size() / 20 : 1;
         int collisions = 0, totalGenes = 0;
         for (int i = 0; i < rawData.size(); i++) {
-            final byte[] raw = rawData.get(i);
-            final GenomeEntry rawGenome = decodeRawGenome(raw);
-            totalGenes += rawGenome.genes.length;
-            rawGenomes[i] = rawGenome;
-            rawGenome.computeCRCs();
-            collisions += processGenes(rawGenome, geneMap);
-            rawGenome.genes = null; // free some space
-            rawGenome.crcs = null; // free some more space
+            final byte[] rawGenome = rawData.get(i);
+            final GenomeEntry genomeEntry = decodeRawGenome(rawGenome);
+            totalGenes += genomeEntry.genes.length;
+            genomeEntries[i] = genomeEntry;
+            genomeEntry.computeCRCs();
+            collisions += processGenes(genomeEntry, geneMap);
+            genomeEntry.genes = null; // free some space
+            genomeEntry.crcs = null; // free some more space
             if (i > 0 && i % steps == 0) {
                 System.out.print(Math.round((100.0 / rawData.size() * i) * 10) / 10 + "% ");
             }
@@ -95,7 +95,7 @@ public class OldFormatConverter2 {
         System.out.println("");
     }
 
-    protected static IndexEntry[] getSortedIndex(Multimap<Integer, IndexEntry> geneMap) {
+    protected static IndexEntry[] computeSortedIndex(Multimap<Integer, IndexEntry> geneMap) {
         final int size = geneMap.size();
         final IndexEntry[] result = new IndexEntry[size];
         for (final IndexEntry e : geneMap.values()) {
@@ -291,6 +291,22 @@ public class OldFormatConverter2 {
         }
     }
 
+    protected static class DBConverter {
+
+        private final IndexEntry[] index;
+        private final GenomeEntry[] genomes;
+
+        public DBConverter(IndexEntry[] index, GenomeEntry[] genomes) {
+            Preconditions.checkNotNull(index, "The parameter 'index' must not be null");
+            Preconditions.checkArgument(index.length > 0, "The length of the parameter 'index' has to be greater than zero");
+            Preconditions.checkNotNull(genomes, "The parameter 'genomes' must not be null");
+            Preconditions.checkArgument(genomes.length > 0, "The length of the parameter 'genomes' has to be greater than zero");
+            this.index = index;
+            this.genomes = genomes;
+        }
+
+    }
+
     public OldFormatConverter2(File dbFile, File output, boolean autoName) {
         Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
         Preconditions.checkArgument(dbFile.isFile(), "The parameter 'dbFile' has to be a regular file (" + dbFile + ")");
@@ -311,22 +327,27 @@ public class OldFormatConverter2 {
 
     public void serialize() throws IOException, SQLiteException {
 
-        final List<byte[]> rawData = Lists.newArrayList();
-        loadDatabase(dbFile, rawData);
-        
-        final GenomeEntry[] genomeEntries = new GenomeEntry[rawData.size()];
-        final Multimap<Integer, IndexEntry> geneMap = ArrayListMultimap.create();
+        try (final Database db = Database.openDatabase(dbFile)) {
 
-        processGenomes(rawData, genomeEntries, geneMap);
+            final List<byte[]> rawData = Lists.newArrayList();
+            final List<String> fileIds = Lists.newArrayList();
+            loadDatabase(db, rawData, fileIds);
 
-        rawData.clear(); // free some space
+            final GenomeEntry[] genomeEntries = new GenomeEntry[rawData.size()];
+            final Multimap<Integer, IndexEntry> geneMap = ArrayListMultimap.create();
 
-        final IndexEntry[] geneEntries = getSortedIndex(geneMap);
+            computeGeneMap(rawData, genomeEntries, geneMap);
 
-        System.out.println("Writing file '" + output + "'...");
-        final DBSerializer serializer = new DBSerializer(geneEntries, genomeEntries);
-        serializer.serialize(output);
-        System.out.println("Finished.");
+            rawData.clear(); // free some space
+
+            final IndexEntry[] geneEntries = computeSortedIndex(geneMap);
+
+            System.out.println("Writing file '" + output + "'...");
+            final DBSerializer serializer = new DBSerializer(geneEntries, genomeEntries);
+            serializer.serialize(output);
+            System.out.println("Finished.");
+
+        }
     }
 
     public static void main(String[] args) throws IOException, SQLiteException {
