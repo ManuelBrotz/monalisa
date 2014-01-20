@@ -18,6 +18,7 @@ public class Database implements AutoCloseable {
     public static final DatabaseSchema Schema = new DatabaseSchema();
     public static final String SelectLatestGenomeQuery = "SELECT selected, data FROM genomes ORDER BY selected DESC LIMIT 1";
     public static final String SelectFileByIdQuery = "SELECT id, data FROM files WHERE id = ?1";
+    public static final String SelectAllFileIdsQuery = "SELECT id FROM files";
     public static final String SelectNumberOfGenomesQuery = "SELECT Count(selected) FROM genomes";
     public static final String SelectAllGenomesQuery = "SELECT selected, data FROM genomes ORDER BY selected ASC";
     public static final String InsertFileQuery = "INSERT INTO files VALUES (?1, ?2, ?3, ?4)";
@@ -25,7 +26,7 @@ public class Database implements AutoCloseable {
     
     protected final SQLiteConnection conn;
     
-    protected final SQLiteStatement selectLatestGenomeQuery, selectFileByIdQuery, selectNumberOfGenomesQuery, selectAllGenomesQuery;
+    protected final SQLiteStatement selectLatestGenomeQuery, selectNumberOfGenomesQuery, selectAllGenomesQuery, selectFileByIdQuery, selectAllFileIdsQuery;
     protected final SQLiteStatement insertFileQuery, insertGenomeQuery;
     
     protected Transaction transaction;
@@ -35,9 +36,10 @@ public class Database implements AutoCloseable {
         Preconditions.checkState(conn.isOpen(), "The connection to the database has to be open");
         this.conn = conn;
         this.selectLatestGenomeQuery = conn.prepare(SelectLatestGenomeQuery);
-        this.selectFileByIdQuery = conn.prepare(SelectFileByIdQuery);
         this.selectNumberOfGenomesQuery = conn.prepare(SelectNumberOfGenomesQuery);
         this.selectAllGenomesQuery = conn.prepare(SelectAllGenomesQuery);
+        this.selectFileByIdQuery = conn.prepare(SelectFileByIdQuery);
+        this.selectAllFileIdsQuery = conn.prepare(SelectAllFileIdsQuery);
         this.insertFileQuery = conn.prepare(InsertFileQuery);
         this.insertGenomeQuery = conn.prepare(InsertGenomeQuery);
     }
@@ -85,6 +87,17 @@ public class Database implements AutoCloseable {
             return Compression.decodeImageData(selectFileByIdQuery.columnBlob(1));
         }
         return null;
+    }
+    
+    public int queryAllFileIds(List<String> output) throws SQLiteException {
+        Preconditions.checkNotNull(output, "The parameter 'output' must not be null");
+        selectAllFileIdsQuery.reset();
+        int count = 0;
+        while (selectAllFileIdsQuery.step()) {
+            output.add(selectAllFileIdsQuery.columnString(0));
+            ++count;
+        }
+        return count;
     }
     
     public void insertFile(String id, String originalName, boolean compressed, byte[] data) throws SQLiteException {
