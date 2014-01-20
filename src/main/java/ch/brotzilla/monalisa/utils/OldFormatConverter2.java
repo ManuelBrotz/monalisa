@@ -23,7 +23,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
-public class DBCompressor {
+public class OldFormatConverter2 {
 
     public static final String FileExtension = ".mlc";
 
@@ -291,7 +291,7 @@ public class DBCompressor {
         }
     }
 
-    public DBCompressor(File dbFile, File output, boolean autoName) {
+    public OldFormatConverter2(File dbFile, File output, boolean autoName) {
         Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
         Preconditions.checkArgument(dbFile.isFile(), "The parameter 'dbFile' has to be a regular file (" + dbFile + ")");
         Preconditions.checkNotNull(output, "The parameter 'output' must not be null");
@@ -330,7 +330,7 @@ public class DBCompressor {
     }
 
     public static void main(String[] args) throws IOException, SQLiteException {
-        final DBCompressor c = new DBCompressor(new File("./data/output/vaduz.mldb"), new File("./data/output/"), true);
+        final OldFormatConverter2 c = new OldFormatConverter2(new File("./data/output/vaduz.mldb"), new File("./data/output/"), true);
         c.serialize();
     }
 
