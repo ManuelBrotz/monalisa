@@ -12,11 +12,12 @@ public class DatabaseSchema extends Schema {
 
     public static class TblGenes extends Table {
         
-        public static final Field fIndex = new Field("index", DataType.Integer, false, true);
+        public static final Field fIndex = new Field("index", DataType.Integer, false, true, true);
+        public static final Field fCrc = new Field("crc", DataType.Integer, false, false);
         public static final Field fData = new Field("data", DataType.Blob, false, false);
         
         public TblGenes() {
-            super("genes", fIndex, fData);
+            super("genes", fIndex, fCrc, fData);
         }
     }
     
