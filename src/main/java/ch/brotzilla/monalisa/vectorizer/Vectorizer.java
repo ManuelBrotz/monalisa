@@ -21,7 +21,7 @@ import ch.brotzilla.util.TickRate;
 
 public class Vectorizer {
 
-    private State state = State.Stopped;
+    private RunState state = RunState.Stopped;
 
     // created on construction
     private final List<VectorizerListener> listeners;
@@ -42,10 +42,6 @@ public class Vectorizer {
     private BlockingQueue<Genome> storageQueue;
     private ExecutorService storageThread;
 
-    public enum State {
-        Running, Stopping, Stopped
-    }
-
     public Vectorizer() {
         this.listeners = Lists.newArrayList();
         this.tickrate = new TickRate(60);
@@ -55,7 +51,7 @@ public class Vectorizer {
         return session != null && genomeFactory != null && evolutionContext != null && mutationStrategy != null;
     }
 
-    public State getState() {
+    public RunState getState() {
         return state;
     }
 
@@ -124,22 +120,19 @@ public class Vectorizer {
     }
 
     public void start() {
-        if (state != State.Stopped) {
+        if (state != RunState.Stopped) {
             throw new IllegalStateException("Unable to start vectorizer");
         }
         if (!isReady()) {
             throw new IllegalStateException("Vectorizer not ready");
         }
 
-        state = State.Running;
+        state = RunState.Running;
         tickrate.reset();
         rng = new MersenneTwister(session.getParams().getSeed());
 
-        if (polygonCache != null) {
-            removeListener(polygonCache.getListener());
-        }
         polygonCache = new PolygonCache(getWidth(), getHeight());
-        addListener(polygonCache.getListener());
+        polygonCache.start();
 
         storageQueue = Queues.newLinkedBlockingQueue();
         storageThread = Executors.newFixedThreadPool(1);
@@ -155,16 +148,17 @@ public class Vectorizer {
     }
 
     public void stop() {
-        if (state != State.Running) {
+        if (state != RunState.Running) {
             return;
         }
-        state = State.Stopping;
+        state = RunState.Stopping;
         try {
             try {
                 fireStopping();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            polygonCache.stop();
             storageThread.shutdown();
             workerThreads.shutdown();
             try {
@@ -178,7 +172,7 @@ public class Vectorizer {
                 e.printStackTrace();
             }
         } finally {
-            state = State.Stopped;
+            state = RunState.Stopped;
             storageThread = null;
             workerThreads = null;
             storageQueue = null;
@@ -187,7 +181,7 @@ public class Vectorizer {
     }
 
     public synchronized Genome submit(Genome genome) {
-        if (state != State.Running) {
+        if (state != RunState.Running) {
             return null;
         }
         final VectorizerContext vc = getVectorizerContext();
@@ -199,6 +193,7 @@ public class Vectorizer {
                 genome.numberOfMutations = numberOfMutations;
                 vc.setLatestGenome(genome);
                 storageQueue.offer(genome);
+                polygonCache.offer(genome);
                 fireImprovement(genome);
             }
             tickrate.tick();
@@ -242,7 +237,7 @@ public class Vectorizer {
     }
 
     private void checkStopped(String property) {
-        if (state != State.Stopped) {
+        if (state != RunState.Stopped) {
             throw new IllegalStateException("Property '" + property + "' cannot be changed while vectorizer is running");
         }
     }

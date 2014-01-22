@@ -15,8 +15,7 @@ import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.images.ImageType;
-import ch.brotzilla.monalisa.vectorizer.Vectorizer;
-import ch.brotzilla.monalisa.vectorizer.VectorizerListener;
+import ch.brotzilla.monalisa.vectorizer.RunState;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -27,48 +26,12 @@ public class PolygonCache {
 
     private final int width, height;
 
+    private RunState state = RunState.Stopped;
+
     private final BlockingQueue<Genome> queue = Queues.newLinkedBlockingQueue();
     private final ConcurrentMap<Gene, CacheEntry> temp = Maps.newConcurrentMap();
     private final ConcurrentMap<Gene, CacheEntry> cache = Maps.newConcurrentMap();
     private ExecutorService workerThread;
-
-    private VectorizerListener listener = new VectorizerListener() {
-
-        @Override
-        public void stopping(Vectorizer v) {
-            if (workerThread != null) {
-                workerThread.shutdownNow();
-                try {
-                    workerThread.awaitTermination(10, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                }
-                queue.clear();
-                temp.clear();
-                cache.clear();
-                workerThread = null;
-            }
-        }
-
-        @Override
-        public void stopped(Vectorizer v) {
-        }
-
-        @Override
-        public void started(Vectorizer v, Genome latest) {
-            if (workerThread == null) {
-                workerThread = Executors.newFixedThreadPool(1);
-                new WorkerThread(workerThread);
-            }
-            if (latest != null) {
-                queue.offer(latest);
-            }
-        }
-
-        @Override
-        public void improvement(Vectorizer v, Genome latest) {
-            queue.offer(latest);
-        }
-    };
 
     public PolygonCache(int width, int height) {
         Preconditions.checkArgument(width > 0, "The parameter 'width' has to be greater than zero");
@@ -77,10 +40,10 @@ public class PolygonCache {
         this.height = height;
     }
 
-    public VectorizerListener getListener() {
-        return listener;
+    public RunState getState() {
+        return state;
     }
-
+    
     public int getWidth() {
         return width;
     }
@@ -106,6 +69,43 @@ public class PolygonCache {
             }
         }
         return null;
+    }
+
+    public synchronized void start() {
+        if (state != RunState.Stopped) {
+            throw new IllegalStateException("Unable to activate polygon cache");
+        }
+        workerThread = Executors.newFixedThreadPool(1);
+        workerThread.submit(new WorkerThread(workerThread));
+        state = RunState.Running;
+    }
+
+    public synchronized void stop() {
+        if (state != RunState.Running) {
+            return;
+        }
+        state = RunState.Stopping;
+        try {
+            workerThread.shutdown();
+            try {
+                workerThread.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            queue.clear();
+            temp.clear();
+            cache.clear();
+            workerThread = null;
+        } finally {
+            state = RunState.Stopped;
+        }
+    }
+    
+    public boolean offer(Genome genome) {
+        if (genome == null || state != RunState.Running) {
+            return false;
+        }
+        return queue.offer(genome);
     }
 
     private class WorkerThread implements Runnable {
