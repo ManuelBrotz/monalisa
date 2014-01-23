@@ -2,18 +2,25 @@ package ch.brotzilla.monalisa.utils;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import ch.brotzilla.monalisa.db.Database;
 
@@ -25,7 +32,7 @@ import com.google.common.collect.Multimap;
 
 public class OldFormatConverter2 {
 
-    public static final String FileExtension = ".new.mldb";
+    public static final String FileExtension = ".mldb.zip";
 
     protected final File dbFile, output;
 
@@ -38,12 +45,12 @@ public class OldFormatConverter2 {
         return name + FileExtension;
     }
 
-    protected static void loadDatabase(Database db, List<byte[]> genomes, List<String> fileIds) throws IOException, SQLiteException {
+    protected static void loadDatabase(Database db, List<byte[]> genomes, List<Database.FileEntry> fileEntries) throws IOException, SQLiteException {
         System.out.println("Loading database...");
         db.queryAllGenomesCompressed(genomes);
-        db.queryAllFileIds(fileIds);
+        db.queryAllFiles(fileEntries);
         System.out.println("Loaded " + genomes.size() + " genomes.");
-        System.out.println("Loaded " + fileIds.size() + " files.");
+        System.out.println("Loaded " + fileEntries.size() + " files.");
     }
 
     protected static int processGenes(GenomeEntry rawGenome, Multimap<Integer, IndexEntry> geneMap) {
@@ -97,15 +104,10 @@ public class OldFormatConverter2 {
 
     protected static IndexEntry[] computeSortedIndex(Multimap<Integer, IndexEntry> geneMap) {
         final int size = geneMap.size();
-        final IndexEntry[] result = new IndexEntry[size];
-        for (final IndexEntry e : geneMap.values()) {
-            int index = e.index;
-            Preconditions.checkState(result[index] == null, "Internal error: the index " + index + " is already taken");
-            result[index] = e;
-        }
+        final IndexEntry[] result = geneMap.values().toArray(new IndexEntry[size]);
         Arrays.sort(result);
         for (int i = 0; i < result.length; i++) {
-            result[i].index = i;
+            result[i].index = i + 1;
         }
         return result;
     }
@@ -160,15 +162,12 @@ public class OldFormatConverter2 {
 
     protected static class IndexEntry implements Comparable<IndexEntry> {
 
-        private static int nextIndex = 0;
-
         public int index;
 
         public final int crc;
         public final byte[] gene;
 
         public IndexEntry(int crc, byte[] gene) {
-            this.index = nextIndex++;
             this.crc = crc;
             this.gene = gene;
         }
@@ -220,6 +219,14 @@ public class OldFormatConverter2 {
                 this.crcs = result;
             }
         }
+
+        public void serialize(OutputStream output) throws IOException {
+            output.write(head);
+            final DataOutputStream dout = new DataOutputStream(output);
+            for (final IndexEntry e : entries) {
+                dout.writeInt(e.index);
+            }
+        }
     }
 
     protected static class DBSerializer {
@@ -248,10 +255,6 @@ public class OldFormatConverter2 {
         }
 
         public DBSerializer(IndexEntry[] index, GenomeEntry[] genomes) {
-            Preconditions.checkNotNull(index, "The parameter 'index' must not be null");
-            Preconditions.checkArgument(index.length > 0, "The length of the parameter 'index' has to be greater than zero");
-            Preconditions.checkNotNull(genomes, "The parameter 'genomes' must not be null");
-            Preconditions.checkArgument(genomes.length > 0, "The length of the parameter 'genomes' has to be greater than zero");
             this.index = index;
             this.genomes = genomes;
         }
@@ -291,18 +294,45 @@ public class OldFormatConverter2 {
         }
     }
 
-    protected static class DBConverter {
+    protected static class ZipFileSerializer {
 
         private final IndexEntry[] index;
         private final GenomeEntry[] genomes;
+        private final Database.FileEntry[] files;
 
-        public DBConverter(IndexEntry[] index, GenomeEntry[] genomes) {
-            Preconditions.checkNotNull(index, "The parameter 'index' must not be null");
-            Preconditions.checkArgument(index.length > 0, "The length of the parameter 'index' has to be greater than zero");
-            Preconditions.checkNotNull(genomes, "The parameter 'genomes' must not be null");
-            Preconditions.checkArgument(genomes.length > 0, "The length of the parameter 'genomes' has to be greater than zero");
+        public ZipFileSerializer(IndexEntry[] index, GenomeEntry[] genomes, Database.FileEntry[] files) {
             this.index = index;
             this.genomes = genomes;
+            this.files = files;
+        }
+
+        public void serialize(File output) throws ZipException, IOException {
+            try (final FileOutputStream fout = new FileOutputStream(output)) {
+                try (final ZipOutputStream zout = new ZipOutputStream(new BufferedOutputStream(fout, 10 * 1024 * 1024))) {
+                    final long time = System.currentTimeMillis();
+                    zout.setLevel(9);
+                    for (final Database.FileEntry fe : files) {
+                        final ZipEntry ze = new ZipEntry("files/" + fe.id);
+                        zout.putNextEntry(ze);
+                        zout.write(fe.decode());
+                        zout.closeEntry();
+                    }
+                    for (final IndexEntry ie : index) {
+                        final ZipEntry ze = new ZipEntry("genes/" + ie.index);
+                        zout.putNextEntry(ze);
+                        zout.write(ie.gene);
+                        zout.closeEntry();
+                    }
+                    int i = 0;
+                    for (final GenomeEntry ge : genomes) {
+                        final ZipEntry ze = new ZipEntry("genomes/" + i++);
+                        zout.putNextEntry(ze);
+                        ge.serialize(zout);
+                        zout.closeEntry();
+                    }
+                    System.out.println("Time: " + (System.currentTimeMillis() - time) + " ms");
+                }
+            }
         }
 
     }
@@ -311,8 +341,16 @@ public class OldFormatConverter2 {
         Preconditions.checkNotNull(dbFile, "The parameter 'dbFile' must not be null");
         Preconditions.checkArgument(dbFile.isFile(), "The parameter 'dbFile' has to be a regular file (" + dbFile + ")");
         Preconditions.checkNotNull(output, "The parameter 'output' must not be null");
-        output = new File(output, autoName(dbFile));
-        Preconditions.checkArgument(!output.exists(), "The parameter 'output' already exists (" + output + ")");
+        if (autoName) {
+            output = new File(output, autoName(dbFile));
+        }
+        if (output.exists()) {
+            if (output.isFile()) {
+                output.delete();
+            } else {
+                throw new IllegalArgumentException("The parameter 'output' is invalid");
+            }
+        }
         this.dbFile = dbFile;
         this.output = output;
     }
@@ -327,32 +365,40 @@ public class OldFormatConverter2 {
 
     public void serialize() throws IOException, SQLiteException {
 
+        final List<byte[]> rawData = Lists.newArrayList();
+        final List<Database.FileEntry> fileEntries = Lists.newArrayList();
+
         try (final Database db = Database.openDatabase(dbFile)) {
-
-            final List<byte[]> rawData = Lists.newArrayList();
-            final List<String> fileIds = Lists.newArrayList();
-            loadDatabase(db, rawData, fileIds);
-
-            final GenomeEntry[] genomeEntries = new GenomeEntry[rawData.size()];
-            final Multimap<Integer, IndexEntry> geneMap = ArrayListMultimap.create();
-
-            computeGeneMap(rawData, genomeEntries, geneMap);
-
-            rawData.clear(); // free some space
-
-            final IndexEntry[] geneEntries = computeSortedIndex(geneMap);
-
-            System.out.println("Writing file '" + output + "'...");
-            final DBSerializer serializer = new DBSerializer(geneEntries, genomeEntries);
-            serializer.serialize(output);
-            System.out.println("Finished.");
-
+            loadDatabase(db, rawData, fileEntries);
         }
+
+        final GenomeEntry[] genomeEntries = new GenomeEntry[rawData.size()];
+        final Multimap<Integer, IndexEntry> geneMap = ArrayListMultimap.create();
+
+        computeGeneMap(rawData, genomeEntries, geneMap);
+
+        rawData.clear(); // free some space
+
+        final IndexEntry[] geneEntries = computeSortedIndex(geneMap);
+
+        System.out.println("Writing file '" + output + "'...");
+        final ZipFileSerializer serializer = new ZipFileSerializer(geneEntries, genomeEntries, fileEntries.toArray(new Database.FileEntry[fileEntries.size()]));
+        serializer.serialize(output);
+        System.out.println("Finished.");
     }
 
     public static void main(String[] args) throws IOException, SQLiteException {
-        final OldFormatConverter2 c = new OldFormatConverter2(new File("./data/output/vaduz.mldb"), new File("./data/output/"), true);
-        c.serialize();
+        final File output = new File("./data/output/");
+        final File[] dbs = output.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isFile() && pathname.getName().equals("crab.mldb");
+            }
+        });
+        for (final File db : dbs) {
+            final OldFormatConverter2 c = new OldFormatConverter2(db, output, true);
+            c.serialize();
+        }
     }
 
     private static void dumpPlainText(File output, IndexEntry[] index, GenomeEntry[] rawGenomes) throws IOException {

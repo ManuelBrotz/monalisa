@@ -29,7 +29,7 @@ public final class Field implements Item {
         this.isPrimaryKey = isPrimaryKey;
         this.isAutoincrement = isAutoincrement;
 
-        this.description = name + " " + type + (!isNullable ? " NOT NULL" : "") + (isPrimaryKey ? " PRIMARY KEY" : "") + (isAutoincrement ? " AUTOINCREMENT" : "");
+        this.description = name + " " + type + (!isNullable && !isAutoincrement ? " NOT NULL" : "") + (isPrimaryKey ? " PRIMARY KEY" : "") + (isAutoincrement ? " AUTOINCREMENT" : "");
     }
 
     public final DataType getType() {

@@ -12,9 +12,9 @@ public class DatabaseSchema extends Schema {
 
     public static class TblGenes extends Table {
         
-        public static final Field fIndex = new Field("index", DataType.Integer, false, true, true);
+        public static final Field fIndex = new Field("idx", DataType.Integer, false, true, true);
         public static final Field fCrc = new Field("crc", DataType.Integer, false, false);
-        public static final Field fData = new Field("data", DataType.Blob, false, false);
+        public static final Field fData = new Field("data", DataType.Blob, true, false);
         
         public TblGenes() {
             super("genes", fIndex, fCrc, fData);
@@ -26,7 +26,7 @@ public class DatabaseSchema extends Schema {
         public static final Field fFitness = new Field("fitness", DataType.Real, false, false);
         public static final Field fSelected = new Field("selected", DataType.Integer, false, true);
         public static final Field fPolygons = new Field("polygons", DataType.Integer, false, false);
-        public static final Field fData = new Field("data", DataType.Blob, false, false);
+        public static final Field fData = new Field("data", DataType.Blob, true, false);
 
         public TblGenomes() {
             super("genomes", fFitness, fSelected, fPolygons, fData);
@@ -49,10 +49,11 @@ public class DatabaseSchema extends Schema {
     public static final TblGenomes tblGenomes = new TblGenomes();
     public static final TblFiles tblFiles = new TblFiles();
     
+    public static final Index idxGenesCrc = new Index("index_genes_crc", tblGenes, TblGenes.fCrc);
     public static final Index idxGenomesFitness = new Index("index_genomes_fitness", tblGenomes, TblGenomes.fFitness);
     public static final Index idxFilesName = new Index("index_files_name", tblFiles, TblFiles.fId);
     
     public DatabaseSchema() {
-        super(new Tables(tblGenes, tblGenomes, tblFiles), new Indexes(idxGenomesFitness, idxFilesName));
+        super(new Tables(tblGenes, tblGenomes, tblFiles), new Indexes(idxGenesCrc, idxGenomesFitness, idxFilesName));
     }
 }
