@@ -23,13 +23,12 @@ public class DatabaseSchema extends Schema {
     
     public static class TblGenomes extends Table {
 
+        public static final Field fImprovements = new Field("improvements", DataType.Integer, false, true);
         public static final Field fFitness = new Field("fitness", DataType.Real, false, false);
-        public static final Field fSelected = new Field("selected", DataType.Integer, false, true);
-        public static final Field fPolygons = new Field("polygons", DataType.Integer, false, false);
         public static final Field fData = new Field("data", DataType.Blob, true, false);
 
         public TblGenomes() {
-            super("genomes", fFitness, fSelected, fPolygons, fData);
+            super("genomes", fImprovements, fFitness, fData);
         }
     }
     
@@ -37,11 +36,10 @@ public class DatabaseSchema extends Schema {
         
         public static final Field fId = new Field("id", DataType.Text, false, true);
         public static final Field fOriginalName = new Field("originalName", DataType.Text, true, false);
-        public static final Field fCompressed = new Field("compressed", DataType.Integer, false, false);
         public static final Field fData = new Field("data", DataType.Blob, true, false);
         
         public TblFiles() {
-            super("files", fId, fOriginalName, fCompressed, fData);
+            super("files", fId, fOriginalName, fData);
         }
     }
     
@@ -51,9 +49,8 @@ public class DatabaseSchema extends Schema {
     
     public static final Index idxGenesCrc = new Index("index_genes_crc", tblGenes, TblGenes.fCrc);
     public static final Index idxGenomesFitness = new Index("index_genomes_fitness", tblGenomes, TblGenomes.fFitness);
-    public static final Index idxFilesName = new Index("index_files_name", tblFiles, TblFiles.fId);
     
     public DatabaseSchema() {
-        super(new Tables(tblGenes, tblGenomes, tblFiles), new Indexes(idxGenesCrc, idxGenomesFitness, idxFilesName));
+        super(new Tables(tblGenes, tblGenomes, tblFiles), new Indexes(idxGenesCrc, idxGenomesFitness));
     }
 }
