@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import javax.naming.OperationNotSupportedException;
-
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
 import ch.brotzilla.monalisa.utils.Compression;
@@ -30,7 +28,7 @@ public class Database implements AutoCloseable {
     public static final String SelectAllGenomesQuery = "SELECT selected, data FROM genomes ORDER BY selected ASC";
     public static final String InsertFileQuery = "INSERT INTO files (id, originalName, data) VALUES (?1, ?2, ?3)";
     public static final String InsertGenomeQuery = "INSERT INTO genomes (improvements, fitness, data) VALUES (?1, ?2, ?3)";
-    public static final String InsertGeneQuery = "INSERT INTO genes (idx, crc, data) VALUES (?1, ?2, ?3)";
+    public static final String InsertGeneQuery = "INSERT INTO genes (id, crc, data) VALUES (?1, ?2, ?3)";
 
     protected final SQLiteConnection conn;
 

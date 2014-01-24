@@ -1,6 +1,7 @@
 package ch.brotzilla.monalisa.utils;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.zip.CRC32;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -50,60 +52,34 @@ public class OldFormatConverter2 {
         System.out.println("Loaded " + fileEntries.size() + " files.");
     }
 
-    protected static int processGenes(GenomeEntry rawGenome, Multimap<Integer, IndexEntry> geneMap) throws IOException {
-        int collisions = 0;
-        rawGenome.entries = new IndexEntry[rawGenome.genes.length];
-        outer: for (int i = 0; i < rawGenome.genes.length; i++) {
-            final int crc = rawGenome.crcs[i];
-            final GeneEntry gene = rawGenome.genes[i];
-            final Collection<IndexEntry> knowns = geneMap.get(crc);
-            for (final IndexEntry known : knowns) {
-                if (Utils.equals(gene.serialize(), known.gene.serialize())) {
-                    rawGenome.entries[i] = known;
-                    continue outer;
-                }
-            }
-            final IndexEntry e = new IndexEntry(crc, gene);
-            rawGenome.entries[i] = e;
-            knowns.add(e);
-            if (knowns.size() > 1) {
-                ++collisions;
-            }
-        }
-        return collisions;
-    }
+    protected static Multimap<Integer, IndexEntry> mergeGenes(GenomeEntry[] genomeEntries) throws IOException {
 
-    protected static void computeGeneMap(List<byte[]> rawData, GenomeEntry[] genomeEntries, Multimap<Integer, IndexEntry> geneMap) throws IOException {
-        System.out.println("Decoding genomes, merging genes...");
-        final int steps = rawData.size() / 20 > 0 ? rawData.size() / 20 : 1;
+        final Multimap<Integer, IndexEntry> geneMap = ArrayListMultimap.create();
+
+        System.out.print("Merging genes... ");
+
+        final int size = genomeEntries.length;
+        final Progress p = new Progress(size, 20);
         int collisions = 0, totalGenes = 0;
-        for (int i = 0; i < rawData.size(); i++) {
-            final byte[] rawGenome = rawData.get(i);
-            final GenomeEntry genomeEntry = decodeRawGenome(rawGenome);
+
+        for (final GenomeEntry genomeEntry : genomeEntries) {
             totalGenes += genomeEntry.genes.length;
-            genomeEntries[i] = genomeEntry;
-            genomeEntry.computeCRCs();
-            collisions += processGenes(genomeEntry, geneMap);
-            genomeEntry.genes = null; // free some space
-            genomeEntry.crcs = null; // free some more space
-            if (i > 0 && i % steps == 0) {
-                System.out.print(Math.round((100.0 / rawData.size() * i) * 10) / 10 + "% ");
-            }
+            collisions += genomeEntry.mergeGenes(geneMap);
+            p.step();
         }
-        if ((rawData.size() - 1) % steps != 0) {
-            System.out.println("100%");
-        } else {
-            System.out.println();
-        }
+
+        p.finish();
         System.out.println("Found " + geneMap.size() + " distinct genes out of " + totalGenes + ". (Got " + collisions + " crc collisions)");
-        System.out.println("");
+
+        return geneMap;
     }
 
     protected static IndexEntry[] computeSortedIndex(Multimap<Integer, IndexEntry> geneMap) {
         final int size = geneMap.size();
         final IndexEntry[] result = geneMap.values().toArray(new IndexEntry[size]);
+        System.out.println("Sorting index...");
         Arrays.sort(result);
-        for (int i = 0; i < result.length; i++) {
+        for (int i = 0; i < size; i++) {
             result[i].index = i + 1;
         }
         return result;
@@ -150,11 +126,52 @@ public class OldFormatConverter2 {
         return new GenomeEntry(background, fitness, numberOfImprovements, numberOfMutations, genes);
     }
 
-    protected static GenomeEntry decodeRawGenome(byte[] rawData) throws IOException {
-        if (rawData == null || rawData.length == 0)
-            return null;
+    protected static GenomeEntry decodeRawGenome(byte[] rawGenome) throws IOException {
+        final ByteArrayInputStream bin = new ByteArrayInputStream(rawGenome);
+        final GZIPInputStream gzin = new GZIPInputStream(bin);
+        final DataInputStream din = new DataInputStream(gzin);
+        return deserializeRawGenome(din);
+    }
 
-        return deserializeRawGenome(Compression.din(rawData));
+    protected static GenomeEntry[] decodeRawGenomes(List<byte[]> rawGenomes) throws IOException {
+        final GenomeEntry[] result = new GenomeEntry[rawGenomes.size()];
+        final Progress p = new Progress(rawGenomes.size(), 20);
+        System.out.print("Decoding genomes... ");
+        for (int i = 0; i < rawGenomes.size(); i++) {
+            result[i] = decodeRawGenome(rawGenomes.get(i));
+            p.step();
+        }
+        p.finish();
+        return result;
+    }
+    
+    protected static class Progress {
+        
+        private final int size, frac;
+        private int pos = 0;
+        
+        public Progress(int size, int steps) {
+            this.size = size;
+            this.frac = Math.max(1, steps < size ? size / steps : 1);
+        }
+        
+        public void step() {
+            if (pos >= size) {
+                return;
+            }
+            if (pos > 0 && pos % frac == 0) {
+                System.out.print(Math.round((100.0 / size * pos) * 10) / 10 + "% ");
+            }
+            ++pos;
+        }
+        
+        public void finish() {
+            if ((size - 1) % frac != 0) {
+                System.out.println("100%");
+            } else {
+                System.out.println();
+            }
+        }
     }
 
     protected static class IndexEntry implements Comparable<IndexEntry> {
@@ -253,11 +270,21 @@ public class OldFormatConverter2 {
         public final int numberOfImprovements;
         public final int numberOfMutations;
 
-        public GeneEntry[] genes;
-        public int[] crcs;
-        public IndexEntry[] entries;
+        public final IndexEntry[] entries;
 
+        private GeneEntry[] genes;
         private byte[] serialized = null;
+
+        private int[] computeCRCs() throws IOException {
+            final int[] result = new int[genes.length];
+            final CRC32 crc = new CRC32();
+            for (int i = 0; i < genes.length; i++) {
+                crc.reset();
+                crc.update(genes[i].serialize());
+                result[i] = (int) (crc.getValue() & 0xFFFFFFFF);
+            }
+            return result;
+        }
 
         public GenomeEntry(int background, double fitness, int numberOfImprovements, int numberOfMutations, GeneEntry[] genes) {
             Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
@@ -266,19 +293,33 @@ public class OldFormatConverter2 {
             this.numberOfImprovements = numberOfImprovements;
             this.numberOfMutations = numberOfMutations;
             this.genes = genes;
+            this.entries = new IndexEntry[genes.length];
         }
 
-        public void computeCRCs() throws IOException {
-            if (genes != null & crcs == null) {
-                final int[] result = new int[genes.length];
-                final CRC32 crc = new CRC32();
-                for (int i = 0; i < genes.length; i++) {
-                    crc.reset();
-                    crc.update(genes[i].serialize());
-                    result[i] = (int) (crc.getValue() & 0xFFFFFFFF);
-                }
-                this.crcs = result;
+        public int mergeGenes(Multimap<Integer, IndexEntry> geneMap) throws IOException {
+            if (genes == null) {
+                throw new IllegalStateException("Cannot merge genes");
             }
+            final int[] crcs = computeCRCs();
+            int collisions = 0;
+            outer: for (int i = 0; i < genes.length; i++) {
+                final int crc = crcs[i];
+                final GeneEntry gene = genes[i];
+                final Collection<IndexEntry> knowns = geneMap.get(crc);
+                for (final IndexEntry known : knowns) {
+                    if (Utils.equals(gene.serialize(), known.gene.serialize())) {
+                        entries[i] = known;
+                        continue outer;
+                    }
+                }
+                final IndexEntry e = new IndexEntry(crc, gene);
+                entries[i] = e;
+                knowns.add(e);
+                if (knowns.size() > 1) {
+                    ++collisions;
+                }
+            }
+            return collisions;
         }
 
         public void serialize(DataOutputStream dout) throws IOException {
@@ -331,7 +372,7 @@ public class OldFormatConverter2 {
         }
 
         public abstract String getFileExtension();
-        
+
         public abstract void serialize(File output) throws Exception;
     }
 
@@ -371,18 +412,19 @@ public class OldFormatConverter2 {
             output.writeInt(chunks.length); // number of chunks
             for (final IndexEntry[] chunk : chunks) {
                 output.writeInt(chunk.length); // number of entries in chunk
-                output.writeInt(chunk[0].gene.serialize().length); // size of each entry
+                output.writeInt(chunk[0].gene.serialize().length); // size of
+                                                                   // each entry
                 for (final IndexEntry e : chunk) {
                     output.write(e.gene.serialize());
                 }
             }
-            
+
             final GenomeEntry[] genomes = getGenomes();
             output.writeInt(genomes.length); // number of genomes
             for (final GenomeEntry genome : genomes) {
                 output.write(genome.serialize());
             }
-            
+
             final Database.FileEntry[] files = getFiles();
             output.writeInt(files.length); // number of files
             for (final Database.FileEntry file : files) {
@@ -449,7 +491,7 @@ public class OldFormatConverter2 {
         }
 
     }
-    
+
     protected static class SqliteSerializer extends Serializer {
 
         public SqliteSerializer(IndexEntry[] index, GenomeEntry[] genomes, FileEntry[] files) {
@@ -481,7 +523,7 @@ public class OldFormatConverter2 {
                 }
             }
         }
-        
+
     }
 
     protected static class SqlJetSerializer extends Serializer {
@@ -556,25 +598,22 @@ public class OldFormatConverter2 {
 
     public void serialize() throws Exception {
 
-        final List<byte[]> rawData = Lists.newArrayList();
+        final List<byte[]> rawGenomes = Lists.newArrayList();
         final List<Database.FileEntry> fileEntries = Lists.newArrayList();
 
         try (final Database db = Database.openDatabase(dbFile)) {
-            loadDatabase(db, rawData, fileEntries);
+            loadDatabase(db, rawGenomes, fileEntries);
         }
 
-        final GenomeEntry[] genomeEntries = new GenomeEntry[rawData.size()];
-        final Multimap<Integer, IndexEntry> geneMap = ArrayListMultimap.create();
+        final GenomeEntry[] genomeEntries = decodeRawGenomes(rawGenomes);
+        rawGenomes.clear(); // free some space
 
-        computeGeneMap(rawData, genomeEntries, geneMap);
+        final Multimap<Integer, IndexEntry> geneMap = mergeGenes(genomeEntries);
+        final IndexEntry[] indexEntries = computeSortedIndex(geneMap);
 
-        rawData.clear(); // free some space
-
-        final IndexEntry[] geneEntries = computeSortedIndex(geneMap);
-
-        final Serializer serializer = new SqliteSerializer(geneEntries, genomeEntries, fileEntries.toArray(new Database.FileEntry[fileEntries.size()]));
+        final Serializer serializer = new SqliteSerializer(indexEntries, genomeEntries, fileEntries.toArray(new Database.FileEntry[fileEntries.size()]));
         final File output = getOutputFile(serializer.getFileExtension());
-        
+
         System.out.println("Writing file '" + output + "'...");
         if (output.exists()) {
             if (output.isFile()) {
@@ -588,8 +627,9 @@ public class OldFormatConverter2 {
     }
 
     public static void main(String[] args) throws Exception {
+        final File input = new File("./data/output/backups/");
         final File output = new File("./data/output/");
-        final File[] dbs = output.listFiles(new FileFilter() {
+        final File[] dbs = input.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
                 return pathname.isFile() && pathname.getName().endsWith(".mldb");
