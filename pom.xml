@@ -9,8 +9,8 @@
 	<url>https://github.com/ManuelBrotz/monalisa</url>
 	<repositories>
 		<repository>
-			<id>java.net</id>
-			<url>http://download.java.net/maven/2</url>
+			<id>tmate</id>
+			<url>http://maven.tmatesoft.com/content/repositories/releases</url>
 		</repository>
 	</repositories>
 	<build>
@@ -121,6 +121,11 @@
 			<artifactId>sqlite4java-win32-x86</artifactId>
 			<version>0.282</version>
 			<type>dll</type>
+		</dependency>
+		<dependency>
+			<groupId>org.tmatesoft.sqljet</groupId>
+			<artifactId>sqljet</artifactId>
+			<version>1.1.10</version>
 		</dependency>
 	</dependencies>
 </project>
