@@ -2,12 +2,15 @@ package ch.brotzilla.monalisa.images;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import ch.brotzilla.monalisa.db.Database;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -205,6 +208,13 @@ public class ImageData {
         Preconditions.checkNotNull(convertTo, "The parameter 'convertTo' must not be null");
         final BufferedImage converted = convertTo.convertBufferedImage(image);
         return createFrom(converted);
+    }
+    
+    public static ImageData createFrom(Database.FileEntry entry) throws IOException {
+        Preconditions.checkNotNull(entry, "The parameter 'entry' must not be null");
+        try (final ByteArrayInputStream bin = new ByteArrayInputStream(entry.getData()); final DataInputStream din = new DataInputStream(bin)) {
+            return deserialize(din);
+        }
     }
 
     public static BufferedImage createBufferedImage(ImageData data) {
