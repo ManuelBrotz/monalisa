@@ -2,6 +2,7 @@ package ch.brotzilla.monalisa.db;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.almworks.sqlite4java.SQLiteBackup;
@@ -91,40 +92,40 @@ public class Database implements AutoCloseable {
         return null;
     }
 
-    public int queryAllGenes(List<GeneEntry> output) throws SQLiteException {
-        Preconditions.checkNotNull(output, "The parameter 'output' must not be null");
+    public List<GeneEntry> queryAllGenes(List<GeneEntry> output) throws SQLiteException {
+        if (output == null) {
+            output = new ArrayList<GeneEntry>();
+        }
         check(selectAllGenesQuery);
         selectAllGenesQuery.reset();
-        int count = 0;
         while (selectAllGenesQuery.step()) {
             output.add(new GeneEntry(selectAllGenesQuery.columnInt(0), selectAllGenesQuery.columnInt(1), selectAllGenesQuery.columnBlob(2)));
-            ++count;
         }
-        return count;
+        return output;
     }
 
-    public int queryAllGenomes(List<GenomeEntry> output) throws SQLiteException {
-        Preconditions.checkNotNull(output, "The parameter 'output' must not be null");
+    public List<GenomeEntry> queryAllGenomes(List<GenomeEntry> output) throws SQLiteException {
+        if (output == null) {
+            output = new ArrayList<GenomeEntry>();
+        }
         check(selectAllGenomesQuery);
         selectAllGenomesQuery.reset();
-        int count = 0;
         while (selectAllGenomesQuery.step()) {
             output.add(new GenomeEntry(selectAllGenomesQuery.columnInt(0), selectAllGenomesQuery.columnDouble(1), selectAllGenomesQuery.columnBlob(2)));
-            ++count;
         }
-        return count;
+        return output;
     }
 
-    public int queryAllFiles(List<FileEntry> output) throws SQLiteException {
-        Preconditions.checkNotNull(output, "The parameter 'output' must not be null");
+    public List<FileEntry> queryAllFiles(List<FileEntry> output) throws SQLiteException {
+        if (output == null) {
+            output = new ArrayList<FileEntry>();
+        }
         check(selectAllFilesQuery);
         selectAllFilesQuery.reset();
-        int count = 0;
         while (selectAllFilesQuery.step()) {
             output.add(new FileEntry(selectAllFilesQuery.columnString(0), selectAllFilesQuery.columnString(1), selectAllFilesQuery.columnBlob(2)));
-            ++count;
         }
-        return count;
+        return output;
     }
 
     public FileEntry queryFileById(String id) throws SQLiteException {
@@ -269,83 +270,6 @@ public class Database implements AutoCloseable {
         @Override
         public void close() throws SQLiteException {
             leave();
-        }
-    }
-
-    public static class GeneEntry {
-
-        private final int id, crc;
-        private final byte[] data;
-
-        public GeneEntry(int id, int crc, byte[] data) {
-            Preconditions.checkArgument(id > 0, "The parameter 'id' has to be greater than zero");
-            Preconditions.checkNotNull(data, "The parameter 'data' must not be null");
-            this.id = id;
-            this.crc = crc;
-            this.data = data;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public int getCrc() {
-            return crc;
-        }
-
-        public byte[] getData() {
-            return data;
-        }
-    }
-
-    public static class GenomeEntry {
-
-        private final int improvements;
-        private final double fitness;
-        private final byte[] data;
-
-        public GenomeEntry(int improvements, double fitness, byte[] data) {
-            Preconditions.checkArgument(improvements >= 0, "The parameter 'improvements' has to be greater than or equal to zero");
-            Preconditions.checkNotNull(data, "The parameter 'data' must not be null");
-            this.improvements = improvements;
-            this.fitness = fitness;
-            this.data = data;
-        }
-
-        public int getImprovements() {
-            return improvements;
-        }
-
-        public double getFitness() {
-            return fitness;
-        }
-
-        public byte[] getData() {
-            return data;
-        }
-    }
-
-    public static class FileEntry {
-
-        private final String id, originalName;
-        private final byte[] data;
-
-        public FileEntry(String id, String originalName, byte[] data) {
-            this.id = id;
-            this.originalName = originalName;
-            this.data = data;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getOriginalName() {
-            return originalName;
-        }
-
-        public byte[] getData() {
-            return data;
         }
     }
 }
