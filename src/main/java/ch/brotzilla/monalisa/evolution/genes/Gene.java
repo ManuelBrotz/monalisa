@@ -91,6 +91,14 @@ public class Gene {
         graphics.fillPolygon(x, y, x.length);
     }
     
+    public boolean isHashed() {
+        return hashed;
+    }
+    
+    public int getHashCode() {
+        return hash;
+    }
+    
     @Override
     public boolean equals(Object value) {
         if (value instanceof Gene) {
