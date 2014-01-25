@@ -3,6 +3,7 @@ package ch.brotzilla.monalisa.io;
 import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -13,6 +14,7 @@ import org.w3c.dom.svg.SVGDocument;
 
 import ch.brotzilla.monalisa.db.Database;
 import ch.brotzilla.monalisa.db.Database.Transaction;
+import ch.brotzilla.monalisa.db.FileEntry;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.ImageData;
 import ch.brotzilla.monalisa.images.ImageType;
@@ -34,7 +36,8 @@ public class SessionManager {
     protected final File databaseFile;
 
     protected final VectorizerContext vectorizerContext;
-
+    protected final GeneIndex geneIndex;
+    
     public SessionManager(Params params) throws IOException, SQLiteException {
         Preconditions.checkNotNull(params, "The parameter 'params' must not be null");
         
@@ -49,10 +52,13 @@ public class SessionManager {
             this.sessionName = extractSessionName(params.getSessionToResume());
             this.databaseFile = params.getSessionToResume().getAbsoluteFile();
             try (final Database db = Database.openDatabase(databaseFile)) {
-                targetImage = db.queryImage("target-image");
+                geneIndex = new GeneIndex();
+                geneIndex.populate(db.queryAllGenes(null));
+                targetImage = ImageData.createFrom(db.queryFileById("target-image"));
                 Preconditions.checkNotNull(targetImage, "Database contains no target image");
                 Preconditions.checkState(targetImage.getType() == ImageType.ARGB, "Target image type is not supported (" + targetImage.getType() + ")");
-                importanceMap = db.queryImage("importance-map");
+                final FileEntry im = db.queryFileById("importance-map");
+                importanceMap = im != null ? ImageData.createFrom(im) : null;
                 numberOfGenomes = db.queryNumberOfGenomes();
                 latestGenome = db.queryLatestGenome();
             }
@@ -69,9 +75,9 @@ public class SessionManager {
             latestGenome = null;
             try (final Database db = Database.createDatabase(databaseFile)) {
                 try (final Transaction t = db.begin()) {
-                    db.insertImage("target-image", params.getTargetImageFile().getAbsolutePath(), targetImage);
+                    db.insertFile("target-image", params.getTargetImageFile().getAbsolutePath(), ImageData.serialize(targetImage));
                     if (importanceMap != null) {
-                        db.insertImage("importance-map", params.getImportanceMapFile().getAbsolutePath(), importanceMap);
+                        db.insertFile("importance-map", params.getImportanceMapFile().getAbsolutePath(), ImageData.serialize(importanceMap));
                     }
                 }
             }
