@@ -2,12 +2,14 @@ package ch.brotzilla.monalisa.evolution.genes;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.zip.CRC32;
 
+import ch.brotzilla.monalisa.db.GeneEntry;
 import ch.brotzilla.monalisa.utils.Utils;
 
 import com.google.common.base.Preconditions;
@@ -96,11 +98,11 @@ public class Gene {
             if (hashed && v.hashed && hash != v.hash) {
                 return false;
             }
+            if (!Utils.equals(color, v.color))
+                return false;
             if (!Utils.equals(x, v.x))
                 return false;
             if (!Utils.equals(y, v.y))
-                return false;
-            if (!Utils.equals(color, v.color))
                 return false;
             return true;
         }
@@ -112,19 +114,16 @@ public class Gene {
         if (hashed) {
             return hash;
         }
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
-        final DataOutputStream dos = new DataOutputStream(bos);
         try {
-            serialize(this, dos);
-            dos.flush();
+            final byte[] data = serialize(this);
             final CRC32 crc = new CRC32();
-            crc.update(bos.toByteArray());
-            this.hash = (int) (crc.getValue() & 0xFFFFFFFF);
-            this.hashed = true;
+            crc.update(data);
+            hash = (int) (crc.getValue() & 0xFFFFFFFF);
+            hashed = true;
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-        return this.hash;
+        return hash;
     }
 
     @Override
@@ -158,6 +157,21 @@ public class Gene {
         return new Gene(x, y, color, false);
     }
     
+    public static Gene deserialize(byte[] data) throws IOException {
+        Preconditions.checkNotNull(data, "The parameter 'data' must not be null");
+        try (final ByteArrayInputStream bin = new ByteArrayInputStream(data); final DataInputStream din = new DataInputStream(bin)) {
+            return deserialize(din);
+        }
+    }
+    
+    public static Gene deserialize(GeneEntry entry) throws IOException {
+        Preconditions.checkNotNull(entry, "The parameter 'entry' must not be null");
+        final Gene result = deserialize(entry.getData());
+        result.hash = entry.getCrc();
+        result.hashed = true;
+        return result;
+    }
+    
     public static void serialize(Gene gene, DataOutputStream out) throws IOException {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         Preconditions.checkNotNull(out, "The parameter 'out' must not be null");
@@ -173,6 +187,13 @@ public class Gene {
             Preconditions.checkState(gene.x[i] == (short) gene.x[i] && gene.y[i] == (short) gene.y[i], "Unable to serialize gene, coordinate out of bounds");
             out.writeShort(gene.x[i]);
             out.writeShort(gene.y[i]);
+        }
+    }
+    
+    public static byte[] serialize(Gene gene) throws IOException {
+        try (final ByteArrayOutputStream bout = new ByteArrayOutputStream(); final DataOutputStream dout = new DataOutputStream(bout)) {
+            serialize(gene, dout);
+            return bout.toByteArray();
         }
     }
     
