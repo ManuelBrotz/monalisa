@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import ch.brotzilla.monalisa.db.Database;
+import ch.brotzilla.monalisa.db.FileEntry;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -217,7 +217,7 @@ public class ImageData {
         return createFrom(converted);
     }
     
-    public static ImageData createFrom(Database.FileEntry entry) throws IOException {
+    public static ImageData createFrom(FileEntry entry) throws IOException {
         Preconditions.checkNotNull(entry, "The parameter 'entry' must not be null");
         try (final ByteArrayInputStream bin = new ByteArrayInputStream(entry.getData()); final DataInputStream din = new DataInputStream(bin)) {
             return deserialize(din);
