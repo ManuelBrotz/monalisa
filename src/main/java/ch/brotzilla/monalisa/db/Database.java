@@ -344,7 +344,7 @@ public class Database implements AutoCloseable {
             return originalName;
         }
 
-        public byte[] getData() throws IOException {
+        public byte[] getData() {
             return data;
         }
     }
