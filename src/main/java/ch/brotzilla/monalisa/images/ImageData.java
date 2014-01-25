@@ -97,7 +97,7 @@ public class ImageData {
             digest = null;
         }
         final StringBuilder b = new StringBuilder();
-        b.append("{\"width\": " + width + ", \"height\": " + height + ", \"type\": \"" + type + "\", \"digest\": \"");
+        b.append("{\"width\": " + width + ", \"height\": " + height + ", \"type\": \"" + type + "\", \"md5\": \"");
         if (digest != null) {
             for (int i = 0; i < digest.length; i++) {
                 b.append(Strings.padStart(Integer.toHexString(digest[i] & 0xFF), 2, '0'));
@@ -132,6 +132,13 @@ public class ImageData {
             break;
         default:
             throw new IllegalArgumentException("Unable to serialize image data due to unsupported image type: " + data.getType());
+        }
+    }
+    
+    public static byte[] serialize(ImageData data) throws IOException {
+        try (final ByteArrayOutputStream bout = new ByteArrayOutputStream(); final DataOutputStream dout = new DataOutputStream(bout)) {
+            serialize(data, dout);
+            return bout.toByteArray();
         }
     }
     
