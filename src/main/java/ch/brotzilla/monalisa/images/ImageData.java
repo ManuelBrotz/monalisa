@@ -255,7 +255,7 @@ public class ImageData {
             }
             break;
         default:
-            throw new IllegalStateException("Unable to calculate md5 hash for image data due to unknown type: " + data.type);
+            throw new IllegalStateException("Unable to calculate message digest for image data due to unknown type: " + data.type);
         }
         final MessageDigest m = MessageDigest.getInstance(algorithm);
         return m.digest(bout.toByteArray());
