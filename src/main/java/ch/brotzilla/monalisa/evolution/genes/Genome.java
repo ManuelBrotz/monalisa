@@ -15,42 +15,57 @@ import com.google.gson.Gson;
 public class Genome {
 
     public final Color background;
-    public final Gene[] genes;
+    public final Gene[][] genes;
     public double fitness;
     public int numberOfMutations, numberOfImprovements;
 
-    public Genome(Color background, Gene[] genes, boolean copy) {
+    public Genome(Color background, Gene[][] genes, boolean copy) {
         Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
         this.background = background;
         if (copy) {
-            this.genes = new Gene[genes.length];
-            System.arraycopy(genes, 0, this.genes, 0, genes.length);
+            this.genes = Utils.copyGenes(genes);
         } else {
             this.genes = genes;
         }
     }
     
-    public Genome(Color background, Gene[] genes) {
+    public Genome(Color background, Gene[][] genes) {
         this(background, genes, true);
     }
 
     public Genome(Genome source) {
         this(Preconditions.checkNotNull(source, "The parameter 'source' must not be null").background, source.genes, true);
     }
+    
+    public Gene[] getCurrentLayer() {
+        return genes[genes.length-1];
+    }
 
     public void renderGenes(Graphics2D graphics) {
         Preconditions.checkNotNull(graphics, "The parameter 'graphics' must not be null");
-        for (final Gene gene : genes) {
-            if (gene != null) {
-                gene.render(graphics);
+        for (final Gene[] layer : genes) {
+            for (final Gene gene : layer) {
+                if (gene != null) {
+                    gene.render(graphics);
+                }
             }
         }
     }
 
+    public int countPolygons() {
+        int result = 0;
+        for (final Gene[] layer : genes) {
+            result += layer.length;
+        }
+        return result;
+    }
+    
     public int countPoints() {
         int result = 0;
-        for (final Gene gene : genes) {
-            result += gene.x.length;
+        for (final Gene[] layer : genes) {
+            for (final Gene gene : layer) {
+                result += gene.x.length;
+            }
         }
         return result;
     }
@@ -58,13 +73,15 @@ public class Genome {
     public BoundingBox computeBoundingBox() {
         int xmin = Integer.MAX_VALUE, xmax = Integer.MIN_VALUE;
         int ymin = Integer.MAX_VALUE, ymax = Integer.MIN_VALUE;
-        for (Gene g : genes) {
-            for (int i = 0; i < g.x.length; i++) {
-                final int x = g.x[i], y = g.y[i];
-                if (x < xmin) xmin = x;
-                if (x > xmax) xmax = x;
-                if (y < ymin) ymin = y;
-                if (y > ymax) ymax = y;
+        for (final Gene[] layer : genes) {
+            for (Gene g : layer) {
+                for (int i = 0; i < g.x.length; i++) {
+                    final int x = g.x[i], y = g.y[i];
+                    if (x < xmin) xmin = x;
+                    if (x > xmax) xmax = x;
+                    if (y < ymin) ymin = y;
+                    if (y > ymax) ymax = y;
+                }
             }
         }
         return new BoundingBox(xmin, ymin, xmax, ymax);
@@ -103,37 +120,60 @@ public class Genome {
     public static Genome deserialize(DataInputStream in) throws IOException {
         Preconditions.checkNotNull(in, "The parameter 'in' must not be null");
         final byte version = in.readByte();
-        Preconditions.checkState(version == 0, "Unable to deserialize genome, version not supported");
+        Preconditions.checkState(version == 0 || version == 1, "Unable to deserialize genome, version not supported");
         final Color background = readColor(in);
         final double fitness = in.readDouble();
         final int numberOfImprovements = in.readInt();
         final int numberOfMutations = in.readInt();
-        in.readInt(); // unused
-        final int length = in.readInt();
-        Preconditions.checkState(length > 0, "Unable to deserialize genome, too few genes");
-        final Gene[] genes = new Gene[length];
-        for (int i = 0; i < length; i++) {
-            genes[i] = Gene.deserialize(in);
+        if (version == 0) {
+            in.readInt(); // unused (for compatibility)
         }
-        final Genome result = new Genome(background, genes, false);
-        result.fitness = fitness;
-        result.numberOfImprovements = numberOfImprovements;
-        result.numberOfMutations = numberOfMutations;
-        return result;
+        final int length = in.readInt();
+        Preconditions.checkState(length > 0, "Unable to deserialize genome, too few " + (version == 0 ? "genomes" : "layers"));
+        if (version == 0) {
+            final Gene[] genes = new Gene[length];
+            for (int i = 0; i < length; i++) {
+                genes[i] = Gene.deserialize(in);
+            }
+            final Genome result = new Genome(background, new Gene[][] {genes}, false);
+            result.fitness = fitness;
+            result.numberOfImprovements = numberOfImprovements;
+            result.numberOfMutations = numberOfMutations;
+            return result;
+        } else {
+            Preconditions.checkArgument(version == 1, "Unable to deserialize genome, internal error");
+            final Gene[][] genes = new Gene[length][];
+            for (int i = 0; i < length; i++) {
+                final int layerSize = in.readInt();
+                Preconditions.checkArgument(layerSize > 0, "Unable to deserialize genome, invalid layer size");
+                genes[i] = new Gene[layerSize];
+                for (int j = 0; j < layerSize; j++) {
+                    genes[i][j] = Gene.deserialize(in);
+                }
+            }
+            final Genome result = new Genome(background, genes, false);
+            result.fitness = fitness;
+            result.numberOfImprovements = numberOfImprovements;
+            result.numberOfMutations = numberOfMutations;
+            return result;
+        }
     }
     
     public static void serialize(Genome genome, DataOutputStream out) throws IOException {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(out, "The parameter 'out' must not be null");
-        out.writeByte(0); // version of serialization format
+        out.writeByte(1); // version of serialization format
         writeColor(genome.background, out);
         out.writeDouble(genome.fitness);
         out.writeInt(genome.numberOfImprovements);
         out.writeInt(genome.numberOfMutations);
-        out.writeInt(0); // unused
         out.writeInt(genome.genes.length);
-        for (final Gene g : genome.genes) {
-            Gene.serialize(g, out);
+        for (final Gene[] layer : genome.genes) {
+            Preconditions.checkNotNull(layer, "Unable to serialize genome, null layers are not allowed");
+            out.writeInt(layer.length);
+            for (final Gene g : layer) {
+                Gene.serialize(g, out);
+            }
         }
     }
     

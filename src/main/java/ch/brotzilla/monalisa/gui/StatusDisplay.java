@@ -121,9 +121,9 @@ public class StatusDisplay extends JPanel {
         } else {
             generatedValue.setText(genome.numberOfMutations + "");
             selectedValue.setText(genome.numberOfImprovements + "");
-            polygonsValue.setText(genome.genes.length + "");
+            polygonsValue.setText(genome.countPolygons() + "");
             final int cp = genome.countPoints();
-            final double ppp = (double) cp / genome.genes.length;
+            final double ppp = (double) cp / genome.countPolygons();
             pointsValue.setText(cp + " (" + pppf.format(ppp) + ")");
             fitnessValue.setText(ff.format(genome.fitness));
         }

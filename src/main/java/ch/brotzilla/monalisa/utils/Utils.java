@@ -96,6 +96,39 @@ public class Utils {
         }
         return genes;
     }
+    
+    public static Gene[][] copyGenes(Gene[][] genes) {
+        Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
+        Preconditions.checkArgument(genes.length > 0, "The length of the parameter 'genes' has to be greater than zero");
+        final int layers = genes.length;
+        final Gene[][] result = new Gene[layers][];
+        for (int i = 0; i < layers; i++) {
+            Preconditions.checkNotNull(genes[i], "The parameter 'genes[" + i + "]' must not contain null");
+            final int size = genes[i].length;
+            Preconditions.checkArgument(size > 0, "The length of the parameter 'genes[" + i + "]' has to be greater than zero");
+            result[i] = new Gene[size];
+            System.arraycopy(genes[i], 0, result[i], 0, size);
+        }
+        return result;
+    }
+
+    public static Gene[][] copyGenesReplaceLastLayer(Gene[][] genes, Gene[] layer) {
+        Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
+        Preconditions.checkArgument(genes.length > 0, "The length of the parameter 'genes' has to be greater than zero");
+        Preconditions.checkNotNull(layer, "The parameter 'layer' must not be null");
+        Preconditions.checkArgument(layer.length > 0, "The length of the parameter 'layer' has to be greater than zero");
+        final int layers = genes.length;
+        final Gene[][] result = new Gene[layers][];
+        for (int i = 0; i < layers-1; i++) {
+            Preconditions.checkNotNull(genes[i], "The parameter 'genes[" + i + "]' must not contain null");
+            final int size = genes[i].length;
+            Preconditions.checkArgument(size > 0, "The length of the parameter 'genes[" + i + "]' has to be greater than zero");
+            result[i] = new Gene[size];
+            System.arraycopy(genes[i], 0, result[i], 0, size);
+        }
+        result[layers-1] = layer;
+        return result;
+    }
 
     public static double computeSimpleFitness(Genome genome, int[] inputData, int[] importanceMap, int[] targetData) {
         Preconditions.checkNotNull(inputData, "The parameter 'inputData' must not be null");
@@ -122,7 +155,7 @@ public class Utils {
             final int db = ib - tb;
             sum += ((da * da) + (dr * dr) + (dg * dg) + (db * db)) * (256 - importanceMap[i]);
         }
-        sum = sum + (sum / 20000f) * genome.genes.length + (sum / 200000f) * genome.countPoints();
+        sum = sum + (sum / 20000f) * genome.countPolygons() + (sum / 200000f) * genome.countPoints();
         return sum;
     }
     
@@ -212,7 +245,7 @@ public class Utils {
     public static boolean equals(int[] a, int[] b) {
         if (a == null && b == null)
             return true;
-        if (a == null && b != null || a != null && b == null)
+        if (a == null ^ b == null)
             return false;
         if (a.length != b.length)
             return false;
@@ -224,10 +257,25 @@ public class Utils {
         return true;
     }
     
+    public static <T> boolean equals(T[] a, T[] b) {
+        if (a == null && b == null)
+            return true;
+        if (a == null ^ b == null)
+            return false;
+        if (a.length != b.length)
+            return false;
+        final int length = a.length;
+        for (int i = 0; i < length; i++) {
+            if (a[i] != b[i] && !equals(a[i], b[i]))
+                return false;
+        }
+        return true;
+    }
+    
     public static <T> boolean equals(T a, T b) {
         if (a == null && b == null)
             return true;
-        if (a == null && b != null || a != null && b == null)
+        if (a == null ^ b == null)
             return false;
         return a.equals(b);
     }

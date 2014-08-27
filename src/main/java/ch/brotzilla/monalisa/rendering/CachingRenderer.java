@@ -61,6 +61,7 @@ public class CachingRenderer {
     
     public void render(Genome genome) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
+        Preconditions.checkArgument(genome.genes.length == 1, "Multi layer genomes are not supported");
         final Graphics2D g = image.getGraphics();
         if (genome.background == null) {
             g.setBackground(TRANSPARENT);
@@ -68,7 +69,7 @@ public class CachingRenderer {
             g.setBackground(genome.background);
         }
         g.clearRect(0, 0, image.getWidth(), image.getHeight());
-        for (final Gene gene : genome.genes) {
+        for (final Gene gene : genome.getCurrentLayer()) {
             CacheEntry entry = cache.get(gene);
             if (entry != null) {
                 g.drawImage(entry.getImage(), entry.getX(), entry.getY(), null);

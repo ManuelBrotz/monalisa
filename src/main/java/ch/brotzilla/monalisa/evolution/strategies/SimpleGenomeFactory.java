@@ -2,6 +2,7 @@ package ch.brotzilla.monalisa.evolution.strategies;
 
 import com.google.common.base.Preconditions;
 
+import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.utils.Utils;
@@ -30,7 +31,7 @@ public class SimpleGenomeFactory implements GenomeFactory {
 
     @Override
     public Genome createGenome(MersenneTwister rng, VectorizerContext vc, EvolutionContext ec) {
-        return new Genome(null, Utils.createRandomGenes(rng, vc, ec, minGenes, maxGenes));
+        return new Genome(null, new Gene[][] {Utils.createRandomGenes(rng, vc, ec, minGenes, maxGenes)});
     }
 
 }

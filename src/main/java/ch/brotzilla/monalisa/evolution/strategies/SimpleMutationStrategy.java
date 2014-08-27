@@ -72,14 +72,15 @@ public class SimpleMutationStrategy implements MutationStrategy {
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
-        final int index = evolutionContext.getGeneIndexSelector().select(rng, input.genes.length);
-        final Gene selected = input.genes[index];
+        final Gene[] layer = input.getCurrentLayer();
+        final int index = evolutionContext.getGeneIndexSelector().select(rng, layer.length);
+        final Gene selected = layer[index];
         Gene mutated = selected;
         while (mutated == selected) {
             mutated = mutateGene(rng, vectorizerContext, evolutionContext, selected);
         }
         final Genome result = new Genome(input);
-        result.genes[index] = mutated; 
+        result.getCurrentLayer()[index] = mutated; 
         return result;
     }
     

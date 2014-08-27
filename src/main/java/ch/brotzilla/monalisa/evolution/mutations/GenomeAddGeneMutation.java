@@ -17,10 +17,11 @@ public class GenomeAddGeneMutation extends BasicMutation implements GenomeMutati
     @Override
     public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
         final Gene gene = Utils.createRandomGene(rng, vectorizerContext, evolutionContext);
-        final Gene[] genes = new Gene[input.genes.length + 1];
-        System.arraycopy(input.genes, 0, genes, 0, input.genes.length);
-        genes[genes.length - 1] = gene;
-        return new Genome(input.background, genes);
+        final Gene[] inputLayer = input.getCurrentLayer();
+        final Gene[] newLayer = new Gene[inputLayer.length + 1];
+        System.arraycopy(inputLayer, 0, newLayer, 0, inputLayer.length);
+        newLayer[newLayer.length - 1] = gene;
+        return new Genome(input.background, Utils.copyGenesReplaceLastLayer(input.genes, newLayer), false);
     }
 
 }

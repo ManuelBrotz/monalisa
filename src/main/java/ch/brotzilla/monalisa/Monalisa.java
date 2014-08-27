@@ -189,7 +189,7 @@ public class Monalisa {
             } else if (input.equals("status")) {
                 final VectorizerContext vc = vectorizer.getVectorizerContext();
                 final Genome genome = vc.getLatestGenome();
-                System.out.println("Mutations: " + vc.getNumberOfMutations() + ", Improvements: " + vc.getNumberOfImprovements() + ", Polygons: " + genome.genes.length + ", Points: "
+                System.out.println("Mutations: " + vc.getNumberOfMutations() + ", Improvements: " + vc.getNumberOfImprovements() + ", Polygons: " + genome.countPolygons() + ", Points: "
                         + genome.countPoints() + ", Fitness: " + ff.format(genome.fitness));
             } else if (input.equals("rate")) {
                 System.out.println(rf.format(vectorizer.getTickRate().getTickRate()) + " images/sec");
