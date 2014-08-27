@@ -128,11 +128,14 @@ public class MainWindow extends JFrame {
         if (currentGenome != null) {
             renderer.render(currentGenome);
         }
+        
+        setTitle("Monalisa - " + sessionManager.getSessionName());
 
         setLayout(new BorderLayout());
 
         this.menuBar = new JMenuBar();
         menuBar.add(buildFileMenu());
+        menuBar.add(buildImageMenu());
         setJMenuBar(menuBar);
 
         this.tabbedPane = new JTabbedPane();
@@ -205,6 +208,15 @@ public class MainWindow extends JFrame {
             }
         });
 
+        menu.add(hideItem);
+        menu.add(exitItem);
+
+        return menu;
+    }
+
+    private JMenu buildImageMenu() {
+        final JMenu menu = new JMenu("Image");
+
         final JMenuItem exportClippedSVGItem = new JMenuItem("Export clipped SVG...");
         exportClippedSVGItem.addActionListener(new ExportSVGListener(this, true));
 
@@ -216,10 +228,8 @@ public class MainWindow extends JFrame {
 
         menu.add(exportClippedSVGItem);
         menu.add(exportSVGItem);
-        menu.add(exportTargetImageItem);
         menu.addSeparator();
-        menu.add(hideItem);
-        menu.add(exitItem);
+        menu.add(exportTargetImageItem);
 
         return menu;
     }

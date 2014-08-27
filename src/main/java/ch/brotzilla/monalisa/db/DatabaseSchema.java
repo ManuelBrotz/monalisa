@@ -34,13 +34,27 @@ public class DatabaseSchema extends Schema {
         }
     }
     
+    public static class TblSettings extends Table {
+        
+        public static final Field fId = new Field("id", DataType.Text, false, true);
+        public static final Field fValue = new Field("value", DataType.Blob, true, false);
+        
+        public TblSettings() {
+            super("settings", fId, fValue);
+        }
+    }
+    
     public static final TblGenomes tblGenomes = new TblGenomes();
     public static final TblFiles tblFiles = new TblFiles();
+    public static final TblSettings tblSettings = new TblSettings();
     
     public static final Index idxGenomesFitness = new Index("index_genomes_fitness", tblGenomes, TblGenomes.fFitness);
     public static final Index idxFilesName = new Index("index_files_name", tblFiles, TblFiles.fId);
+    public static final Index idxSettingsId = new Index("index_settings_id", tblSettings, TblSettings.fId);
     
     public DatabaseSchema() {
-        super(new Tables(tblGenomes, tblFiles), new Indexes(idxGenomesFitness, idxFilesName));
+        super(new Tables(tblGenomes, tblFiles, tblSettings), 
+                new Indexes(idxGenomesFitness, idxFilesName, idxSettingsId)
+        );
     }
 }
