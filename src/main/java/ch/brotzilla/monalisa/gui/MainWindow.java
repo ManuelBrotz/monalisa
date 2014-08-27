@@ -15,6 +15,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.filechooser.FileFilter;
@@ -210,13 +211,75 @@ public class MainWindow extends JFrame {
         final JMenuItem exportSVGItem = new JMenuItem("Export SVG...");
         exportSVGItem.addActionListener(new ExportSVGListener(this, false));
 
+        final JMenuItem exportTargetImageItem = new JMenuItem("Export original image...");
+        exportTargetImageItem.addActionListener(new ExportTargetImageListener(this));
+
         menu.add(exportClippedSVGItem);
         menu.add(exportSVGItem);
+        menu.add(exportTargetImageItem);
         menu.addSeparator();
         menu.add(hideItem);
         menu.add(exitItem);
 
         return menu;
+    }
+
+    private static class ExportTargetImageListener implements ActionListener {
+
+        private final MainWindow window;
+
+        private File checkFileName(File file) {
+            if (file == null)
+                return null;
+            if (file.getName().toLowerCase().endsWith(".png")) {
+                return file;
+            }
+            return new File(file.getParent(), file.getName() + ".png");
+        }
+
+        private ExportTargetImageListener(MainWindow window) {
+            this.window = Preconditions.checkNotNull(window, "The parameter 'window' must not be null");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final JFileChooser chooser = new JFileChooser();
+            chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+            chooser.setDialogTitle("Export original image...");
+            chooser.setSelectedFile(new File(window.sessionManager.getSessionName() + ".png"));
+            chooser.setFileFilter(new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return f.isDirectory() || f.getName().toLowerCase().endsWith(".png");
+                }
+                @Override
+                public String getDescription() {
+                    return "PNG Images";
+                }
+            });
+            final int result = chooser.showDialog(window, "Export");
+            if (result == JFileChooser.APPROVE_OPTION) {
+                final File file = checkFileName(chooser.getSelectedFile());
+                if (file != null) {
+                    if (file.isFile()) {
+                        int answer = JOptionPane.showOptionDialog(
+                                window,
+                                "The file '" + file.getName() + "' already exists!\n\nDo you want to replace that file?", 
+                                "Replace file?", 
+                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, 
+                                null, new String[] {"Cancel", "Replace"}, "Cancel");
+                        if (answer == 0) {
+                            return;
+                        }
+                    }
+                    try {
+                        window.sessionManager.exportTargetImage(file, false, true);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     private static class ExportSVGListener implements ActionListener {
@@ -248,7 +311,6 @@ public class MainWindow extends JFrame {
                 public boolean accept(File f) {
                     return f.isDirectory() || f.getName().toLowerCase().endsWith(".svg");
                 }
-
                 @Override
                 public String getDescription() {
                     return "SVG Images";
@@ -259,10 +321,18 @@ public class MainWindow extends JFrame {
                 final File file = checkFileName(chooser.getSelectedFile());
                 if (file != null) {
                     if (file.isFile()) {
-                        
+                        int answer = JOptionPane.showOptionDialog(
+                                window,
+                                "The file '" + file.getName() + "' already exists!\n\nDo you want to replace that file?", 
+                                "Replace file?", 
+                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, 
+                                null, new String[] {"Cancel", "Replace"}, "Cancel");
+                        if (answer == 0) {
+                            return;
+                        }
                     }
                     try {
-                        window.sessionManager.exportSVG(window.currentGenome, file, clipped, false);
+                        window.sessionManager.exportSVG(window.currentGenome, file, clipped, false, true);
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }

@@ -112,7 +112,7 @@ public class SessionManager {
         return Database.openDatabase(databaseFile);
     }
     
-    public File exportSVG(Genome genome, File target, boolean clipped, boolean autoName) throws IOException {
+    public File exportSVG(Genome genome, File target, boolean clipped, boolean autoName, boolean replaceIfExists) throws IOException {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(target, "The parameter 'target' must not be null");
         if (autoName) {
@@ -126,8 +126,8 @@ public class SessionManager {
             exportFile = target;
         }
         
-        if (exportFile.exists())
-            throw new IllegalArgumentException("File already exists: " + exportFile);
+        if (exportFile.exists() && !replaceIfExists)
+            throw new IOException("File already exists: " + exportFile);
         
         final DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
         final SVGDocument doc = (SVGDocument) impl.createDocument(SVGDOMImplementation.SVG_NAMESPACE_URI, "svg", null);
@@ -145,6 +145,27 @@ public class SessionManager {
         genome.renderGenes(svg);
 
         svg.stream(exportFile.toString());
+        
+        return exportFile;
+    }
+    
+    public File exportTargetImage(File target, boolean autoName, boolean replaceIfExists) throws IOException {
+        Preconditions.checkNotNull(target, "The parameter 'target' must not be null");
+        if (autoName) {
+            Preconditions.checkArgument(target.isDirectory(), "The parameter 'target' has to be a directory");
+        }
+        
+        final File exportFile;
+        if (autoName) {
+            exportFile = new File(target, sessionName + ".png");
+        } else {
+            exportFile = target;
+        }
+
+        if (exportFile.exists() && !replaceIfExists)
+            throw new IOException("File already exists: " + exportFile);
+        
+        ImageIO.write(ImageData.createBufferedImage(vectorizerContext.getTargetImage()), "PNG", exportFile);
         
         return exportFile;
     }

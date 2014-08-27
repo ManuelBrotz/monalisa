@@ -102,8 +102,8 @@ public class Monalisa {
 
         if (params.getExportLatest() != null) {
             try {
-                session.exportSVG(latestGenome, params.getExportLatest(), false, true);
-                session.exportSVG(latestGenome, params.getExportLatest(), true, true);
+                session.exportSVG(latestGenome, params.getExportLatest(), false, true, true);
+                session.exportSVG(latestGenome, params.getExportLatest(), true, true, true);
             } catch (Exception e) {
                 System.out.println("Failed exporting latest genome as svg document.");
                 e.printStackTrace();
