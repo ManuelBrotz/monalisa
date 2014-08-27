@@ -37,7 +37,7 @@ public class PolygonCache {
         @Override
         public void stopping(Vectorizer v) {
             if (workerThread != null) {
-                workerThread.shutdownNow();
+                workerThread.shutdown();
                 try {
                     workerThread.awaitTermination(10, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
