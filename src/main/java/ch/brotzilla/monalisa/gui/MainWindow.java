@@ -23,6 +23,7 @@ import javax.swing.filechooser.FileFilter;
 import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.Monalisa;
+import ch.brotzilla.monalisa.db.Database;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.gui.StatusDisplay.Orientation;
 import ch.brotzilla.monalisa.images.Image;
@@ -129,7 +130,7 @@ public class MainWindow extends JFrame {
             renderer.render(currentGenome);
         }
         
-        setTitle("Monalisa - " + sessionManager.getSessionName());
+        updateWindowTitle(sessionManager.getSessionName());
 
         setLayout(new BorderLayout());
 
@@ -187,11 +188,18 @@ public class MainWindow extends JFrame {
             currentImageDisplay.repaint();
         }
     }
+    
+    private void updateWindowTitle(String sessionName) {
+        setTitle("Monalisa" + (sessionName != null && !sessionName.trim().isEmpty() ? " - " + sessionName.trim() : ""));
+    }
 
     private JMenu buildFileMenu() {
         final JMenu menu = new JMenu("File");
 
-        final JMenuItem exitItem = new JMenuItem("Exit");
+        final JMenuItem renameSessionItem = new JMenuItem("Rename Session");
+        renameSessionItem.addActionListener(new RenameSessionAction(this));
+        
+        final JMenuItem exitItem = new JMenuItem("Exit Application");
         exitItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -200,7 +208,7 @@ public class MainWindow extends JFrame {
             }
         });
 
-        final JMenuItem hideItem = new JMenuItem("Hide");
+        final JMenuItem hideItem = new JMenuItem("Hide Window");
         hideItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -208,6 +216,8 @@ public class MainWindow extends JFrame {
             }
         });
 
+        menu.add(renameSessionItem);
+        menu.addSeparator();
         menu.add(hideItem);
         menu.add(exitItem);
 
@@ -217,14 +227,14 @@ public class MainWindow extends JFrame {
     private JMenu buildImageMenu() {
         final JMenu menu = new JMenu("Image");
 
-        final JMenuItem exportClippedSVGItem = new JMenuItem("Export clipped SVG...");
-        exportClippedSVGItem.addActionListener(new ExportSVGListener(this, true));
+        final JMenuItem exportClippedSVGItem = new JMenuItem("Export Clipped SVG...");
+        exportClippedSVGItem.addActionListener(new ExportSVGAction(this, true));
 
         final JMenuItem exportSVGItem = new JMenuItem("Export SVG...");
-        exportSVGItem.addActionListener(new ExportSVGListener(this, false));
+        exportSVGItem.addActionListener(new ExportSVGAction(this, false));
 
-        final JMenuItem exportTargetImageItem = new JMenuItem("Export original image...");
-        exportTargetImageItem.addActionListener(new ExportTargetImageListener(this));
+        final JMenuItem exportTargetImageItem = new JMenuItem("Export Original Image...");
+        exportTargetImageItem.addActionListener(new ExportTargetImageAction(this));
 
         menu.add(exportClippedSVGItem);
         menu.add(exportSVGItem);
@@ -233,8 +243,35 @@ public class MainWindow extends JFrame {
 
         return menu;
     }
+    
+    private static class RenameSessionAction implements ActionListener {
 
-    private static class ExportTargetImageListener implements ActionListener {
+        private final MainWindow window;
+        
+        private RenameSessionAction(MainWindow window) {
+            this.window = Preconditions.checkNotNull(window, "The parameter 'window' must not be null");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final String result = (String) JOptionPane.showInputDialog(
+                    window, "Enter the new session name:", "Rename Session",
+                    JOptionPane.PLAIN_MESSAGE, null, null,
+                    window.sessionManager.getSessionName()
+                    );
+            if (result != null && !result.trim().isEmpty()) {
+                try (final Database db = window.sessionManager.connect()) {
+                    db.updateSetting("session-name", result.trim());
+                    window.updateWindowTitle(result.trim());
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showConfirmDialog(window, "Unable to set session name!");
+                }
+            }
+        }
+    }
+
+    private static class ExportTargetImageAction implements ActionListener {
 
         private final MainWindow window;
 
@@ -247,7 +284,7 @@ public class MainWindow extends JFrame {
             return new File(file.getParent(), file.getName() + ".png");
         }
 
-        private ExportTargetImageListener(MainWindow window) {
+        private ExportTargetImageAction(MainWindow window) {
             this.window = Preconditions.checkNotNull(window, "The parameter 'window' must not be null");
         }
 
@@ -292,7 +329,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private static class ExportSVGListener implements ActionListener {
+    private static class ExportSVGAction implements ActionListener {
 
         private final MainWindow window;
         private final boolean clipped;
@@ -306,7 +343,7 @@ public class MainWindow extends JFrame {
             return new File(file.getParent(), file.getName() + ".svg");
         }
 
-        private ExportSVGListener(MainWindow window, boolean clipped) {
+        private ExportSVGAction(MainWindow window, boolean clipped) {
             this.window = Preconditions.checkNotNull(window, "The parameter 'window' must not be null");
             this.clipped = clipped;
         }

@@ -46,9 +46,14 @@ public class SessionManager {
         final Genome latestGenome;
         
         if (this.sessionResumed) {
-            this.sessionName = extractSessionName(params.getSessionToResume());
             this.databaseFile = params.getSessionToResume().getAbsoluteFile();
             try (final Database db = Database.openDatabase(databaseFile)) {
+                final String dbSessionName = db.querySetting("session-name");
+                if (dbSessionName.isEmpty()) {
+                    this.sessionName = extractSessionName(params.getSessionToResume());
+                } else {
+                    this.sessionName = dbSessionName;
+                }
                 targetImage = db.queryImage("target-image");
                 Preconditions.checkNotNull(targetImage, "Database contains no target image");
                 Preconditions.checkState(targetImage.getType() == ImageType.ARGB, "Target image type is not supported (" + targetImage.getType() + ")");
