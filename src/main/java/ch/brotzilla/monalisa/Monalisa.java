@@ -127,7 +127,7 @@ public class Monalisa {
             public void improvement(Vectorizer v, Genome latest) {
                 if (mainWindow != null) {
                     mainWindow.submit(latest);
-                    mainWindow.getStatusDisplay().updateRateAndCache(v.getTickRate().getTickRate(), v.getPolygonCache().getSize());
+                    mainWindow.getStatusDisplay().updateRateAndCache(v.getTickRate().getTickRate(), 0);
                 }
             }
             @Override
@@ -194,7 +194,7 @@ public class Monalisa {
             } else if (input.equals("rate")) {
                 System.out.println(rf.format(vectorizer.getTickRate().getTickRate()) + " images/sec");
             } else if (input.equals("cache")) {
-                System.out.println("Number of cached polygons: " + vectorizer.getPolygonCache().getSize());
+                System.out.println("Number of cached polygons: <not available>"/* + vectorizer.getPolygonCache().getSize()*/);
             } else {
                 System.out.println("Unknown command: " + input);
             }

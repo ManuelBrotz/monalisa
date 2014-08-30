@@ -29,7 +29,8 @@ import ch.brotzilla.monalisa.gui.StatusDisplay.Orientation;
 import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.io.SessionManager;
-import ch.brotzilla.monalisa.rendering.SimpleRenderer;
+import ch.brotzilla.monalisa.rendering.LayeredRenderer;
+import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 @SuppressWarnings("serial")
@@ -39,7 +40,7 @@ public class MainWindow extends JFrame {
     protected final SessionManager sessionManager;
     protected final Image inputImage, currentImage;
     protected final Image importanceMap;
-    protected final SimpleRenderer renderer;
+    protected final Renderer renderer;
 
     protected final JMenuBar menuBar;
 
@@ -125,7 +126,7 @@ public class MainWindow extends JFrame {
             this.importanceMap = null;
         }
 
-        this.renderer = new SimpleRenderer(currentImage, false);
+        this.renderer = new LayeredRenderer(currentImage, false);
         if (currentGenome != null) {
             renderer.render(currentGenome);
         }

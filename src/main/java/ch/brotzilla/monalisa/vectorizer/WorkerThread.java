@@ -6,7 +6,8 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.rendering.CachingRenderer;
+import ch.brotzilla.monalisa.rendering.LayeredRenderer;
+import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.util.MersenneTwister;
 
@@ -30,7 +31,7 @@ public class WorkerThread extends BasicThread {
         final int[] importanceMapData = vc.getImportanceMapData();
         
         final MersenneTwister rng = new MersenneTwister(v.nextSeed());
-        final CachingRenderer renderer = new CachingRenderer(getOwner().getPolygonCache(), vc.getWidth(), vc.getHeight(), true);
+        final Renderer renderer = new LayeredRenderer(vc.getWidth(), vc.getHeight(), true);
 
         Genome genome = vc.getLatestGenome();
         if (genome == null) {
