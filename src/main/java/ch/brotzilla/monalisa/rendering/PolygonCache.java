@@ -33,7 +33,6 @@ public class PolygonCache {
     private ExecutorService workerThread;
 
     private VectorizerListener listener = new VectorizerListener() {
-
         @Override
         public void stopping(Vectorizer v) {
             if (workerThread != null) {
@@ -48,11 +47,9 @@ public class PolygonCache {
                 workerThread = null;
             }
         }
-
         @Override
         public void stopped(Vectorizer v) {
         }
-
         @Override
         public void started(Vectorizer v, Genome latest) {
             if (workerThread == null) {
@@ -63,10 +60,12 @@ public class PolygonCache {
                 queue.offer(latest);
             }
         }
-
         @Override
-        public void improvement(Vectorizer v, Genome latest) {
+        public void improved(Vectorizer v, Genome latest) {
             queue.offer(latest);
+        }
+        @Override
+        public void update(Vectorizer v) {
         }
     };
 
