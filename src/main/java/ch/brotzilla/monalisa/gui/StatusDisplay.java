@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.vectorizer.Vectorizer;
 import ch.brotzilla.util.MatrixLayout;
 
 @SuppressWarnings("serial")
@@ -66,7 +67,7 @@ public class StatusDisplay extends JPanel {
         cacheName = new JLabel("Cached:");
         cacheValue = new JLabel("0");
         rateName = new JLabel("Rate:");
-        rateValue = new JLabel("0/s");
+        rateValue = new JLabel("0.00/s");
         
         switch (orientation) {
         case Horizontal:
@@ -129,8 +130,15 @@ public class StatusDisplay extends JPanel {
         }
     }
     
-    public void updateRateAndCache(double rate, int cache) {
-        rateValue.setText(rf.format(rate) + "/s");
-        cacheValue.setText(cache + "");
+    public void update(Vectorizer v) {
+        if (v == null) {
+            generatedValue.setText("0");
+            selectedValue.setText("0");
+            rateValue.setText("0.00/s");
+        } else {
+            generatedValue.setText(v.getVectorizerContext().getNumberOfMutations() + "");
+            selectedValue.setText(v.getVectorizerContext().getNumberOfImprovements() + "");
+            rateValue.setText(rf.format(v.getTickRate().getTickRate()) + "/s");
+        }
     }
 }

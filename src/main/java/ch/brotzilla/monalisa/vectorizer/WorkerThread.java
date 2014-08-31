@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutorService;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
-import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
+import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.rendering.LayeredRenderer;
 import ch.brotzilla.monalisa.rendering.Renderer;
@@ -23,9 +23,13 @@ public class WorkerThread extends BasicThread {
         }
         
         final VectorizerContext vc = v.getVectorizerContext();
-        final GenomeFactory gf = v.getGenomeFactory();
         final EvolutionContext ec = v.getEvolutionContext();
-        final MutationStrategy strategy = v.getMutationStrategy();
+        final EvolutionStrategy es = v.getEvolutionStrategy();
+        final GenomeFactory gf = es.getGenomeFactory();
+        
+        if (gf == null) {
+            throw new IllegalStateException("GenomeFactory must not be null");
+        }
         
         final int[] targetImageData = vc.getTargetImageData();
         final int[] importanceMapData = vc.getImportanceMapData();
@@ -42,7 +46,7 @@ public class WorkerThread extends BasicThread {
         }
         while (genome != null && !getExecutor().isShutdown()) {
             try {
-                final Genome mutated = strategy.apply(rng, vc, ec, genome);
+                final Genome mutated = es.apply(rng, vc, ec, genome);
                 if (mutated == null) {
                     throw new IllegalStateException("MutationStrategy must not return null");
                 } else if (mutated == genome) {

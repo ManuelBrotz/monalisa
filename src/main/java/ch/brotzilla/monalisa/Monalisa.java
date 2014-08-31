@@ -7,12 +7,11 @@ import java.text.DecimalFormat;
 import java.util.Scanner;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
+import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.selectors.BiasedIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.evolution.strategies.SimpleGenomeFactory;
-import ch.brotzilla.monalisa.evolution.strategies.SimpleMutationStrategy;
+import ch.brotzilla.monalisa.evolution.strategies.LayeredEvolutionStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.utils.Params;
@@ -35,8 +34,8 @@ public class Monalisa {
     protected final DecimalFormat ff = new DecimalFormat("#,###,###,###,##0.######");
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
 
-    protected MutationStrategy setupMutationStrategy() {
-        return new SimpleMutationStrategy();
+    protected EvolutionStrategy setupEvolutionStrategy() {
+        return new LayeredEvolutionStrategy();
     }
 
     protected EvolutionContext setupEvolutionContext() {
@@ -113,8 +112,7 @@ public class Monalisa {
         this.vectorizer = new Vectorizer();
         vectorizer.setSession(this.session);
         vectorizer.setEvolutionContext(setupEvolutionContext());
-        vectorizer.setGenomeFactory(new SimpleGenomeFactory(20, 50));
-        vectorizer.setMutationStrategy(setupMutationStrategy());
+        vectorizer.setEvolutionStrategy(setupEvolutionStrategy());
         
         vectorizer.addListener(new VectorizerListener() {
             @Override
@@ -124,10 +122,16 @@ public class Monalisa {
                 }
             }
             @Override
-            public void improvement(Vectorizer v, Genome latest) {
+            public void improved(Vectorizer v, Genome latest) {
                 if (mainWindow != null) {
                     mainWindow.submit(latest);
-                    mainWindow.getStatusDisplay().updateRateAndCache(v.getTickRate().getTickRate(), 0);
+                    mainWindow.getStatusDisplay().update(v);
+                }
+            }
+            @Override
+            public void update(Vectorizer v) {
+                if (mainWindow != null) {
+                    mainWindow.getStatusDisplay().update(v);
                 }
             }
             @Override

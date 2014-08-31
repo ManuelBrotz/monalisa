@@ -11,8 +11,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
-import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
+import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.GenomeFilter;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.util.MersenneTwister;
@@ -21,6 +21,7 @@ import ch.brotzilla.util.TickRate;
 public class Vectorizer {
 
     private State state = State.Stopped;
+    private long lastUpdateFired;
 
     // created on construction
     private final List<VectorizerListener> listeners;
@@ -31,15 +32,14 @@ public class Vectorizer {
 
     // supplied by the user
     private SessionManager session;
-    private GenomeFactory genomeFactory;
     private EvolutionContext evolutionContext;
-    private MutationStrategy mutationStrategy;
+    private EvolutionStrategy evolutionStrategy;
 
     // created on startup
     private ExecutorService workerThreads;
     private BlockingQueue<Genome> storageQueue;
     private ExecutorService storageThread;
-
+    
     public enum State {
         Running, Stopping, Stopped
     }
@@ -50,7 +50,7 @@ public class Vectorizer {
     }
 
     public boolean isReady() {
-        return session != null && genomeFactory != null && evolutionContext != null && mutationStrategy != null;
+        return session != null && evolutionContext != null && evolutionStrategy != null;
     }
 
     public State getState() {
@@ -82,15 +82,6 @@ public class Vectorizer {
         this.session = value;
     }
 
-    public GenomeFactory getGenomeFactory() {
-        return genomeFactory;
-    }
-
-    public void setGenomeFactory(GenomeFactory value) {
-        checkStopped("GenomeFactory");
-        this.genomeFactory = value;
-    }
-
     public EvolutionContext getEvolutionContext() {
         return evolutionContext;
     }
@@ -100,13 +91,13 @@ public class Vectorizer {
         this.evolutionContext = value;
     }
 
-    public MutationStrategy getMutationStrategy() {
-        return mutationStrategy;
+    public EvolutionStrategy getEvolutionStrategy() {
+        return evolutionStrategy;
     }
 
-    public void setMutationStrategy(MutationStrategy value) {
-        checkStopped("MutationStrategy");
-        this.mutationStrategy = value;
+    public void setEvolutionStrategy(EvolutionStrategy value) {
+        checkStopped("EvolutionStrategy");
+        this.evolutionStrategy = value;
     }
 
     public synchronized int nextSeed() {
@@ -126,6 +117,7 @@ public class Vectorizer {
         }
 
         state = State.Running;
+        lastUpdateFired = -1;
         tickrate.reset();
         rng = new MersenneTwister(session.getParams().getSeed());
 
@@ -179,17 +171,26 @@ public class Vectorizer {
             return null;
         }
         final VectorizerContext vc = getVectorizerContext();
+        final GenomeFilter filter = getEvolutionStrategy().getGenomeFilter();
         final Genome latest = vc.getLatestGenome();
         if (genome != null && genome != latest) {
             final int numberOfMutations = vc.incNumberOfMutations();
             if (latest == null || genome.fitness < latest.fitness) {
+                if (filter != null) {
+                    genome = filter.apply(genome);
+                }
                 genome.numberOfImprovements = vc.incNumberOfImprovements();
                 genome.numberOfMutations = numberOfMutations;
                 vc.setLatestGenome(genome);
                 storageQueue.offer(genome);
-                fireImprovement(genome);
+                fireImproved(genome);
+                lastUpdateFired = System.currentTimeMillis();
             }
             tickrate.tick();
+        }
+        if (lastUpdateFired < 0 || System.currentTimeMillis() - lastUpdateFired >= 1000) {
+            lastUpdateFired = System.currentTimeMillis();
+            fireUpdate();
         }
         return vc.getLatestGenome();
     }
@@ -211,9 +212,15 @@ public class Vectorizer {
         }
     }
 
-    private void fireImprovement(Genome latest) {
+    private void fireImproved(Genome latest) {
         for (VectorizerListener l : listeners) {
-            l.improvement(this, latest);
+            l.improved(this, latest);
+        }
+    }
+
+    private void fireUpdate() {
+        for (VectorizerListener l : listeners) {
+            l.update(this);
         }
     }
 

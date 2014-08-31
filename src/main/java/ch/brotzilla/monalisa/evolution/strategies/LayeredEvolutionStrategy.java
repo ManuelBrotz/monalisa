@@ -2,12 +2,15 @@ package ch.brotzilla.monalisa.evolution.strategies;
 
 import com.google.common.base.Preconditions;
 
+import ch.brotzilla.monalisa.evolution.filters.SplitLayerFilter;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
+import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
+import ch.brotzilla.monalisa.evolution.intf.GenomeFilter;
 import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.intf.IndexSelector;
-import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
+import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.mutations.GeneAddPointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneAlphaChannelMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneColorBrighterMutation;
@@ -24,7 +27,7 @@ import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
-public class SimpleMutationStrategy implements MutationStrategy {
+public class LayeredEvolutionStrategy implements EvolutionStrategy {
     
     protected static final IndexSelector defaultMutationSelector = new BasicIndexSelector();
     
@@ -53,6 +56,9 @@ public class SimpleMutationStrategy implements MutationStrategy {
     protected static final BasicTableSelector<GenomeMutation> genomeMutations = 
             new BasicTableSelector<GenomeMutation>(defaultMutationSelector, genomeAddGene, genomeRemoveGene, genomeSwapGenes);
 
+    protected static final GenomeFactory genomeFactory = new SimpleGenomeFactory(10, 10);
+    protected static final GenomeFilter genomeFilter = new SplitLayerFilter(10, 600000);
+    
     protected Gene mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
@@ -92,7 +98,17 @@ public class SimpleMutationStrategy implements MutationStrategy {
         return mutated;
     }
     
-    public SimpleMutationStrategy() {}
+    public LayeredEvolutionStrategy() {}
+    
+    @Override
+    public GenomeFactory getGenomeFactory() {
+        return genomeFactory;
+    }
+    
+    @Override
+    public GenomeFilter getGenomeFilter() {
+        return genomeFilter;
+    }
     
     @Override
     public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {

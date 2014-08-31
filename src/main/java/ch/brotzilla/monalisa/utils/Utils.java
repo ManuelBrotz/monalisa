@@ -45,6 +45,7 @@ public class Utils {
     public static Point computeCentroid(int[] x, int[] y, Point output) {
         Preconditions.checkNotNull(x, "The parameter 'x' must not be null");
         Preconditions.checkNotNull(y, "The parameter 'y' must not be null");
+        Preconditions.checkArgument(x.length == 3 && y.length == 3, "The length of the parameters 'x' and 'y' has to be equal to 3");
         final int cx = Math.round((x[0] + x[1] + x[2]) / 3f);
         final int cy = Math.round((y[0] + y[1] + y[2]) / 3f);
         if (output != null) {
@@ -163,6 +164,33 @@ public class Utils {
         final SimpleRenderer renderer = new SimpleRenderer(width, height, true);
         renderer.render(genome);
         return computeSimpleFitness(genome, inputData, importanceMap, renderer.getBuffer());
+    }
+    
+    public static Genome splitCurrentLayerIntoNewLayer(Genome genome, int sizeOfNewLayer) {
+        Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
+        Preconditions.checkArgument(sizeOfNewLayer > 0, "The parameter 'sizeOfNewLayer' has to be greater than zero");
+        
+        final Gene[][] genes = genome.genes;
+        final Gene[] currentLayer = genome.getCurrentLayer();
+        final int currentSize = currentLayer.length;
+        Preconditions.checkArgument(currentSize > sizeOfNewLayer, "The size of the current layer of the parameter 'genome' has to be greater than the parameter 'sizeOfNewLayer'");
+        
+        final Gene[] newLayer = new Gene[currentSize - sizeOfNewLayer];
+        System.arraycopy(currentLayer, 0, newLayer, 0, currentSize - sizeOfNewLayer);
+        
+        final Gene[] newCurrentLayer = new Gene[sizeOfNewLayer];
+        System.arraycopy(currentLayer, currentSize - sizeOfNewLayer, newCurrentLayer, 0, sizeOfNewLayer);
+        
+        final Gene[][] newGenes = new Gene[genes.length + 1][];
+        for (int l = 0; l < genes.length - 1; l++) {
+            newGenes[l] = new Gene[genes[l].length];
+            System.arraycopy(genes[l], 0, newGenes[l], 0, genes[l].length);
+        }
+        
+        newGenes[newGenes.length - 2] = newLayer;
+        newGenes[newGenes.length - 1] = newCurrentLayer;
+        
+        return new Genome(genome.background, newGenes);
     }
 
     public static int[] decodeColor(int argb, int[] output) {

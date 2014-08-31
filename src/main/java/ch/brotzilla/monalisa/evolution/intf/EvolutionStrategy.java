@@ -5,8 +5,12 @@ import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
-public interface MutationStrategy {
+public interface EvolutionStrategy {
 
+    GenomeFactory getGenomeFactory();
+    
+    GenomeFilter getGenomeFilter();
+    
     Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input);
     
 }
