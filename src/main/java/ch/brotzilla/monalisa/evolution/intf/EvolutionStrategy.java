@@ -7,6 +7,8 @@ import ch.brotzilla.util.MersenneTwister;
 
 public interface EvolutionStrategy {
 
+    RendererFactory getRendererFactory();
+    
     GenomeFactory getGenomeFactory();
     
     GenomeFilter getGenomeFilter();

@@ -177,7 +177,7 @@ public class Vectorizer {
             final int numberOfMutations = vc.incNumberOfMutations();
             if (latest == null || genome.fitness < latest.fitness) {
                 if (filter != null) {
-                    genome = filter.apply(genome);
+                    genome = Preconditions.checkNotNull(filter.apply(genome), "GenomeFilter must not return null");
                 }
                 genome.numberOfImprovements = vc.incNumberOfImprovements();
                 genome.numberOfMutations = numberOfMutations;

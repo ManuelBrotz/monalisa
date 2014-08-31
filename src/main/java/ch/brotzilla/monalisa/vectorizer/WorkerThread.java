@@ -6,7 +6,6 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.rendering.LayeredRenderer;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.util.MersenneTwister;
@@ -26,16 +25,20 @@ public class WorkerThread extends BasicThread {
         final EvolutionContext ec = v.getEvolutionContext();
         final EvolutionStrategy es = v.getEvolutionStrategy();
         final GenomeFactory gf = es.getGenomeFactory();
+        final Renderer renderer = es.getRendererFactory().createRenderer(vc, ec);
         
         if (gf == null) {
             throw new IllegalStateException("GenomeFactory must not be null");
+        }
+        
+        if (renderer == null) {
+            throw new IllegalStateException("RendererFactory must not return null");
         }
         
         final int[] targetImageData = vc.getTargetImageData();
         final int[] importanceMapData = vc.getImportanceMapData();
         
         final MersenneTwister rng = new MersenneTwister(v.nextSeed());
-        final Renderer renderer = new LayeredRenderer(vc.getWidth(), vc.getHeight(), true);
 
         Genome genome = vc.getLatestGenome();
         if (genome == null) {

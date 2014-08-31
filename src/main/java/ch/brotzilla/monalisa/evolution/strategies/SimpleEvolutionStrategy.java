@@ -10,6 +10,7 @@ import ch.brotzilla.monalisa.evolution.intf.GenomeFilter;
 import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.intf.IndexSelector;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.mutations.GeneAddPointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneAlphaChannelMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneColorBrighterMutation;
@@ -23,6 +24,8 @@ import ch.brotzilla.monalisa.evolution.mutations.GenomeRemoveGeneMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
 import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
+import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
@@ -55,6 +58,12 @@ public class SimpleEvolutionStrategy implements EvolutionStrategy {
     protected static final BasicTableSelector<GenomeMutation> genomeMutations = 
             new BasicTableSelector<GenomeMutation>(defaultMutationSelector, genomeAddGene, genomeRemoveGene, genomeSwapGenes);
     
+    protected static final RendererFactory rendererFactory = new RendererFactory() {
+        @Override
+        public Renderer createRenderer(VectorizerContext vc, EvolutionContext ec) {
+            return new SimpleRenderer(vc.getWidth(), vc.getHeight(), true);
+        }
+    };
     protected static final GenomeFactory genomeFactory = new SimpleGenomeFactory(10, 20);
     
     protected Gene mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
@@ -98,6 +107,11 @@ public class SimpleEvolutionStrategy implements EvolutionStrategy {
     
     public SimpleEvolutionStrategy() {}
     
+    @Override
+    public RendererFactory getRendererFactory() {
+        return rendererFactory;
+    }
+
     @Override
     public GenomeFactory getGenomeFactory() {
         return genomeFactory;

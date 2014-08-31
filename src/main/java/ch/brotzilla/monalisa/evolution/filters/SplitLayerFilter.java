@@ -43,7 +43,6 @@ public class SplitLayerFilter implements GenomeFilter {
             startTime = System.currentTimeMillis();
             final Genome result = Utils.splitCurrentLayerIntoNewLayer(genome, genesPerLayer);
             result.fitness = genome.fitness;
-            printMsg(result);
             return result;
         }
         
