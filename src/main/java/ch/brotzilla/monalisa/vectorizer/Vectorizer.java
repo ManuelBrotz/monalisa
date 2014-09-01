@@ -171,14 +171,18 @@ public class Vectorizer {
             return null;
         }
         final VectorizerContext vc = getVectorizerContext();
+        final EvolutionContext ev = getEvolutionContext();
         final GenomeFilter filter = getEvolutionStrategy().getGenomeFilter();
         final Genome latest = vc.getLatestGenome();
         if (genome != null && genome != latest) {
             final int numberOfMutations = vc.incNumberOfMutations();
-            if (latest == null || genome.fitness < latest.fitness) {
-                if (filter != null) {
-                    genome = Preconditions.checkNotNull(filter.apply(genome), "GenomeFilter must not return null");
+            if (filter != null) {
+                genome = filter.apply(rng, vc, ev, genome);
+                if (genome == null) {
+                    return vc.getLatestGenome();
                 }
+            }
+            if (latest == null || genome.fitness < latest.fitness || genome.overrideFitnessFlag) {
                 genome.numberOfImprovements = vc.incNumberOfImprovements();
                 genome.numberOfMutations = numberOfMutations;
                 vc.setLatestGenome(genome);

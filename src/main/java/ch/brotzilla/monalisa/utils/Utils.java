@@ -58,29 +58,30 @@ public class Utils {
 
     public static Gene createRandomGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
+        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
         final int width = vectorizerContext.getWidth(), height = vectorizerContext.getHeight(), xborder = evolutionContext.getBorderX(), yborder = evolutionContext.getBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
         final int[] inputData = vectorizerContext.getTargetImage().getBuffer(), x = new int[3], y = new int[3];
-        final Point c = new Point();
         x[0] = rng.nextInt(bwidth) - xborder;
         x[1] = rng.nextInt(bwidth) - xborder;
         x[2] = rng.nextInt(bwidth) - xborder;
         y[0] = rng.nextInt(bheight) - yborder;
         y[1] = rng.nextInt(bheight) - yborder;
         y[2] = rng.nextInt(bheight) - yborder;
-        Utils.computeCentroid(x, y, c);
+        final Point c = Utils.computeCentroid(x, y, null);
         if (c.x >= 0 && c.x < width && c.y >= 0 && c.y < height) {
             final int color = inputData[c.y * width + c.x];
             final int alpha = rng.nextInt(256) << 24;
             return new Gene(x, y, (color & 0x00FFFFFF) | alpha);
         }
-        final int a = rng.nextInt(256), r = rng.nextInt(256), g = rng.nextInt(256), b = rng.nextInt(256);
-        return new Gene(x, y, new Color(r, g, b, a));
+        return createRandomGene(rng, vectorizerContext, evolutionContext);
     }
 
     public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, int minGenes, int maxGenes) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
+        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");
         Preconditions.checkArgument(maxGenes >= minGenes, "The parameter 'maxGenes' must be greater than or equal to 'minGenes'");
         final int length;
@@ -98,6 +99,46 @@ public class Utils {
         return genes;
     }
     
+    public static Genome appendGeneToCurrentLayer(Genome genome, MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext) {
+        Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
+        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
+        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        final Gene gene = Utils.createRandomGene(rng, vectorizerContext, evolutionContext);
+        final Gene[] inputLayer = genome.getCurrentLayer();
+        final Gene[] newLayer = new Gene[inputLayer.length + 1];
+        System.arraycopy(inputLayer, 0, newLayer, 0, inputLayer.length);
+        newLayer[newLayer.length - 1] = gene;
+        return new Genome(genome.background, Utils.copyGenesReplaceLastLayer(genome.genes, newLayer), false);
+    }
+
+    public static Genome splitCurrentLayerIntoNewLayer(Genome genome, int sizeOfNewLayer) {
+        Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
+        Preconditions.checkArgument(sizeOfNewLayer > 0, "The parameter 'sizeOfNewLayer' has to be greater than zero");
+        
+        final Gene[][] genes = genome.genes;
+        final Gene[] currentLayer = genome.getCurrentLayer();
+        final int currentSize = currentLayer.length;
+        Preconditions.checkArgument(currentSize > sizeOfNewLayer, "The size of the current layer of the parameter 'genome' has to be greater than the parameter 'sizeOfNewLayer'");
+        
+        final Gene[] newLayer = new Gene[currentSize - sizeOfNewLayer];
+        System.arraycopy(currentLayer, 0, newLayer, 0, currentSize - sizeOfNewLayer);
+        
+        final Gene[] newCurrentLayer = new Gene[sizeOfNewLayer];
+        System.arraycopy(currentLayer, currentSize - sizeOfNewLayer, newCurrentLayer, 0, sizeOfNewLayer);
+        
+        final Gene[][] newGenes = new Gene[genes.length + 1][];
+        for (int l = 0; l < genes.length - 1; l++) {
+            newGenes[l] = new Gene[genes[l].length];
+            System.arraycopy(genes[l], 0, newGenes[l], 0, genes[l].length);
+        }
+        
+        newGenes[newGenes.length - 2] = newLayer;
+        newGenes[newGenes.length - 1] = newCurrentLayer;
+        
+        return new Genome(genome.background, newGenes);
+    }
+    
     public static Gene[][] copyGenes(Gene[][] genes) {
         Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
         Preconditions.checkArgument(genes.length > 0, "The length of the parameter 'genes' has to be greater than zero");
@@ -110,6 +151,24 @@ public class Utils {
             result[i] = new Gene[size];
             System.arraycopy(genes[i], 0, result[i], 0, size);
         }
+        return result;
+    }
+
+    public static Gene[][] copyGenesAppendLayer(Gene[][] genes, Gene[] layer) {
+        Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
+        Preconditions.checkArgument(genes.length > 0, "The length of the parameter 'genes' has to be greater than zero");
+        Preconditions.checkNotNull(layer, "The parameter 'layer' must not be null");
+        Preconditions.checkArgument(layer.length > 0, "The length of the parameter 'layer' has to be greater than zero");
+        final int layers = genes.length;
+        final Gene[][] result = new Gene[layers + 1][];
+        for (int i = 0; i < layers; i++) {
+            Preconditions.checkNotNull(genes[i], "The parameter 'genes[" + i + "]' must not contain null");
+            final int size = genes[i].length;
+            Preconditions.checkArgument(size > 0, "The length of the parameter 'genes[" + i + "]' has to be greater than zero");
+            result[i] = new Gene[size];
+            System.arraycopy(genes[i], 0, result[i], 0, size);
+        }
+        result[layers] = layer;
         return result;
     }
 
@@ -166,33 +225,6 @@ public class Utils {
         return computeSimpleFitness(genome, inputData, importanceMap, renderer.getBuffer());
     }
     
-    public static Genome splitCurrentLayerIntoNewLayer(Genome genome, int sizeOfNewLayer) {
-        Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
-        Preconditions.checkArgument(sizeOfNewLayer > 0, "The parameter 'sizeOfNewLayer' has to be greater than zero");
-        
-        final Gene[][] genes = genome.genes;
-        final Gene[] currentLayer = genome.getCurrentLayer();
-        final int currentSize = currentLayer.length;
-        Preconditions.checkArgument(currentSize > sizeOfNewLayer, "The size of the current layer of the parameter 'genome' has to be greater than the parameter 'sizeOfNewLayer'");
-        
-        final Gene[] newLayer = new Gene[currentSize - sizeOfNewLayer];
-        System.arraycopy(currentLayer, 0, newLayer, 0, currentSize - sizeOfNewLayer);
-        
-        final Gene[] newCurrentLayer = new Gene[sizeOfNewLayer];
-        System.arraycopy(currentLayer, currentSize - sizeOfNewLayer, newCurrentLayer, 0, sizeOfNewLayer);
-        
-        final Gene[][] newGenes = new Gene[genes.length + 1][];
-        for (int l = 0; l < genes.length - 1; l++) {
-            newGenes[l] = new Gene[genes[l].length];
-            System.arraycopy(genes[l], 0, newGenes[l], 0, genes[l].length);
-        }
-        
-        newGenes[newGenes.length - 2] = newLayer;
-        newGenes[newGenes.length - 1] = newCurrentLayer;
-        
-        return new Genome(genome.background, newGenes);
-    }
-
     public static int[] decodeColor(int argb, int[] output) {
         final int a = (argb >> 24) & 0x000000FF;
         final int r = (argb >> 16) & 0x000000FF;

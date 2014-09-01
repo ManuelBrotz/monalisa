@@ -13,6 +13,6 @@ public interface EvolutionStrategy {
     
     GenomeFilter getGenomeFilter();
     
-    Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input);
+    Genome mutate(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input);
     
 }

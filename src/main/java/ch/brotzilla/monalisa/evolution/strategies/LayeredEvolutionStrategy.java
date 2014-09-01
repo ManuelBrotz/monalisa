@@ -2,7 +2,7 @@ package ch.brotzilla.monalisa.evolution.strategies;
 
 import com.google.common.base.Preconditions;
 
-import ch.brotzilla.monalisa.evolution.filters.SplitLayerFilter;
+import ch.brotzilla.monalisa.evolution.filters.LayeredStrategyFilter;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
@@ -49,7 +49,7 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
     protected static final BasicTableSelector<GeneMutation> geneColorMutations = 
             new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAlphaChannel, geneColorChannel, geneBrighterColor, geneDarkerColor);
 
-    protected static final BasicTableSelector<GeneMutation> geneDefaultMutations = 
+    protected static final BasicTableSelector<GeneMutation> geneRareMutations = 
             new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAddPoint, geneRemovePoint, geneSwapPoints);
         
     protected static final GenomeAddGeneMutation genomeAddGene = new GenomeAddGeneMutation();
@@ -57,7 +57,7 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
     protected static final GenomeSwapGenesMutation genomeSwapGenes = new GenomeSwapGenesMutation();
 
     protected static final BasicTableSelector<GenomeMutation> genomeMutations = 
-            new BasicTableSelector<GenomeMutation>(defaultMutationSelector, genomeAddGene, genomeRemoveGene, genomeSwapGenes);
+            new BasicTableSelector<GenomeMutation>(defaultMutationSelector, /* genomeAddGene, genomeRemoveGene, */ genomeSwapGenes);
 
     protected static final RendererFactory rendererFactory = new RendererFactory() {
         @Override
@@ -65,21 +65,22 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
             return new LayeredRenderer(vc.getWidth(), vc.getHeight(), true);
         }
     };
-    protected static final GenomeFactory genomeFactory = new SimpleGenomeFactory(10, 10);
-    protected static final GenomeFilter genomeFilter = new SplitLayerFilter(10, 600000);
+    protected static final GenomeFactory genomeFactory = new SimpleGenomeFactory(5, 5);
+    protected static final GenomeFilter genomeFilter = new LayeredStrategyFilter(rendererFactory);
     
     protected Gene mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
-        if (rng.nextBoolean(0.75f)) {
+        final float p = rng.nextFloat();
+        if (p < 0.75f) {
             return geneImportantMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
         }
-        if (rng.nextBoolean(0.25f)) {
+        if (p < 0.95f) {
             return geneColorMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
         }
-        return geneDefaultMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
+        return geneRareMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
     }
     
     protected Genome mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
@@ -90,9 +91,9 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
         final Gene[] layer = input.getCurrentLayer();
         final int index = evolutionContext.getGeneIndexSelector().select(rng, layer.length);
         final Gene selected = layer[index];
-        Gene mutated = selected;
-        while (mutated == selected) {
-            mutated = mutateGene(rng, vectorizerContext, evolutionContext, selected);
+        final Gene mutated  = mutateGene(rng, vectorizerContext, evolutionContext, selected);
+        if (mutated == selected) {
+            return input;
         }
         final Genome result = new Genome(input);
         result.getCurrentLayer()[index] = mutated; 
@@ -100,11 +101,7 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
     }
     
     protected Genome mutateGenome(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
-        Genome mutated = input;
-        while (mutated == input) {
-            mutated = genomeMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
-        }
-        return mutated;
+        return genomeMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
     }
     
     public LayeredEvolutionStrategy() {}
@@ -125,7 +122,7 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
     }
     
     @Override
-    public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
+    public Genome mutate(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
@@ -133,13 +130,16 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
         final int count = 1 + rng.nextInt(2);
         Genome result = input;
         for (int i = 0; i < count; i++) {
-            if (rng.nextBoolean(0.95f)) {
-                result = mutateGene(rng, vectorizerContext, evolutionContext, result);
-            } else {
-                result = mutateGenome(rng, vectorizerContext, evolutionContext, result);
+            Genome mutated = result;
+            while (mutated == result) {
+                if (rng.nextBoolean(0.99f)) {
+                    mutated = mutateGene(rng, vectorizerContext, evolutionContext, result);
+                } else {
+                    mutated = mutateGenome(rng, vectorizerContext, evolutionContext, result);
+                }
             }
+            result = mutated;
         }
         return result;
     }
-    
 }

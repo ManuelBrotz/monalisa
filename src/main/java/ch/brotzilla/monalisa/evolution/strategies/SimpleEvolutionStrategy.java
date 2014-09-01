@@ -64,17 +64,18 @@ public class SimpleEvolutionStrategy implements EvolutionStrategy {
             return new SimpleRenderer(vc.getWidth(), vc.getHeight(), true);
         }
     };
-    protected static final GenomeFactory genomeFactory = new SimpleGenomeFactory(10, 20);
+    protected static final GenomeFactory genomeFactory = new SimpleGenomeFactory(5, 5);
     
     protected Gene mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
-        if (rng.nextBoolean(0.75f)) {
+        final float p = rng.nextFloat();
+        if (p < 0.75f) {
             return geneImportantMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
         }
-        if (rng.nextBoolean(0.25f)) {
+        if (p < 0.99f) {
             return geneColorMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
         }
         return geneDefaultMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
@@ -88,9 +89,9 @@ public class SimpleEvolutionStrategy implements EvolutionStrategy {
         final Gene[] layer = input.getCurrentLayer();
         final int index = evolutionContext.getGeneIndexSelector().select(rng, layer.length);
         final Gene selected = layer[index];
-        Gene mutated = selected;
-        while (mutated == selected) {
-            mutated = mutateGene(rng, vectorizerContext, evolutionContext, selected);
+        final Gene mutated  = mutateGene(rng, vectorizerContext, evolutionContext, selected);
+        if (mutated == selected) {
+            return input;
         }
         final Genome result = new Genome(input);
         result.getCurrentLayer()[index] = mutated; 
@@ -98,11 +99,7 @@ public class SimpleEvolutionStrategy implements EvolutionStrategy {
     }
     
     protected Genome mutateGenome(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
-        Genome mutated = input;
-        while (mutated == input) {
-            mutated = genomeMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
-        }
-        return mutated;
+        return genomeMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
     }
     
     public SimpleEvolutionStrategy() {}
@@ -123,7 +120,7 @@ public class SimpleEvolutionStrategy implements EvolutionStrategy {
     }
     
     @Override
-    public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
+    public Genome mutate(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
@@ -131,13 +128,16 @@ public class SimpleEvolutionStrategy implements EvolutionStrategy {
         final int count = 1 + rng.nextInt(2);
         Genome result = input;
         for (int i = 0; i < count; i++) {
-            if (rng.nextBoolean(0.95f)) {
-                result = mutateGene(rng, vectorizerContext, evolutionContext, result);
-            } else {
-                result = mutateGenome(rng, vectorizerContext, evolutionContext, result);
+            Genome mutated = result;
+            while (mutated == result) {
+                if (rng.nextBoolean(0.99f)) {
+                    mutated = mutateGene(rng, vectorizerContext, evolutionContext, result);
+                } else {
+                    mutated = mutateGenome(rng, vectorizerContext, evolutionContext, result);
+                }
             }
+            result = mutated;
         }
         return result;
     }
-    
 }

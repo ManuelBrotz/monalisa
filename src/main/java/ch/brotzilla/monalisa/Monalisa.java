@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
-import ch.brotzilla.monalisa.evolution.selectors.BiasedIndexSelector;
+import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.evolution.strategies.LayeredEvolutionStrategy;
@@ -41,7 +41,7 @@ public class Monalisa {
     protected EvolutionContext setupEvolutionContext() {
         final EvolutionContext c = new EvolutionContext();
         c.setBorder(50, 50);
-        c.setGeneIndexSelector(new BiasedIndexSelector(4));
+        c.setGeneIndexSelector(new BasicIndexSelector());
         c.setPointMutationRange(new GaussianRangeSelector(15));
         c.setColorChannelMutationRange(new GaussianRangeSelector(10));
         return c;

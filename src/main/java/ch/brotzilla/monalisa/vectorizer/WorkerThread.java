@@ -49,7 +49,7 @@ public class WorkerThread extends BasicThread {
         }
         while (genome != null && !getExecutor().isShutdown()) {
             try {
-                final Genome mutated = es.apply(rng, vc, ec, genome);
+                final Genome mutated = es.mutate(rng, vc, ec, genome);
                 if (mutated == null) {
                     throw new IllegalStateException("MutationStrategy must not return null");
                 } else if (mutated == genome) {

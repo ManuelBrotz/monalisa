@@ -5,7 +5,10 @@ import com.google.common.base.Preconditions;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFilter;
+import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.utils.Utils;
+import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.util.MersenneTwister;
 
 public class SplitLayerFilter implements GenomeFilter {
 
@@ -31,21 +34,21 @@ public class SplitLayerFilter implements GenomeFilter {
     }
 
     @Override
-    public Genome apply(Genome genome) {
+    public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
         if (startNumberOfGenes == -1) {
-            startNumberOfGenes = genome.countPolygons();
+            startNumberOfGenes = input.countPolygons();
             startTime = System.currentTimeMillis();
-            return genome;
+            return input;
         }
         
-        if (genome.countPolygons() >= startNumberOfGenes + (genesPerLayer * 2) && System.currentTimeMillis() - startTime >= timePerLayer) {
-            startNumberOfGenes = genome.countPolygons();
+        if (input.countPolygons() >= startNumberOfGenes + (genesPerLayer * 2) && System.currentTimeMillis() - startTime >= timePerLayer) {
+            startNumberOfGenes = input.countPolygons();
             startTime = System.currentTimeMillis();
-            final Genome result = Utils.splitCurrentLayerIntoNewLayer(genome, genesPerLayer);
-            result.fitness = genome.fitness;
+            final Genome result = Utils.splitCurrentLayerIntoNewLayer(input, genesPerLayer);
+            result.fitness = input.fitness;
             return result;
         }
         
-        return genome;
+        return input;
     }
 }

@@ -30,7 +30,5 @@ public abstract class BasicMutation implements Mutation {
     public String getDescription() {
         return description;
     }
-
-    
     
 }
