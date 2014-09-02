@@ -75,7 +75,7 @@ public class Utils {
             final int color = inputData[c.y * width + c.x];
             final int alpha = rng.nextInt(256) << 24;
             final Gene result = new Gene(x, y, (color & 0x00FFFFFF) | alpha);
-            if (hasAcceptableAngles(result, 15.0d)) {
+            if (hasAcceptableAlpha(result, 10, 245) && hasAcceptableAngles(result, 15.0d) && hasAcceptablePointToLineDistances(result, 5.0d)) {
                 return result;
             }
         }
@@ -194,6 +194,15 @@ public class Utils {
         return result;
     }
     
+    public static boolean hasAcceptableAlpha(Gene gene, int minAlpha, int maxAlpha) {
+        Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
+        Preconditions.checkArgument(minAlpha >= 0, "The parameter 'minAlpha' has to be greater than or equal to zero");
+        Preconditions.checkArgument(maxAlpha <= 255, "The parameter 'maxAlpha' has to be less than or equal to 255");
+        Preconditions.checkArgument(minAlpha < maxAlpha, "The parameter 'minAlpha' has to be less than the parameter 'maxAlpha'");
+        final int alpha = gene.color[0];
+        return (alpha >= minAlpha) && (alpha <= maxAlpha);
+    }
+    
     public static boolean hasAcceptableAngles(Gene gene, double minAngleInDegrees) {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         Preconditions.checkArgument(minAngleInDegrees >= 0, "The parameter 'minAngleInDegrees' has to be greater than or equal to zero");
@@ -211,6 +220,31 @@ public class Utils {
             double angle = Math.toDegrees(Geometry.computeAngle(p0, p1, p2));
             if (angle < minAngleInDegrees) {
                 return false;
+            }
+        }
+        return true;
+    }
+    
+    public static boolean hasAcceptablePointToLineDistances(Gene gene, double minDistance) {
+        Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
+        Preconditions.checkArgument(minDistance >= 0, "The parameter 'minDistance' has to be greater than or equal to zero");
+        final int len = gene.x.length;
+        final int last = len - 1;
+        final int lines = len - 2;
+        final int[] x = gene.x, y = gene.y;
+        for (int pointIndex = 0; pointIndex < len; pointIndex++) {
+            int lineIndex = (pointIndex == last) ? 0 : pointIndex + 1;
+            for (int line = 0; line < lines; line++) {
+                final int px = x[pointIndex];
+                final int py = y[pointIndex];
+                final int x0 = x[lineIndex];
+                final int y0 = y[lineIndex];
+                final int x1 = x[lineIndex == last ? 0 : lineIndex + 1];
+                final int y1 = y[lineIndex == last ? 0 : lineIndex + 1];
+                if (Geometry.distance(x0, y0, x1, y1, px, py) < minDistance) {
+                    return false;
+                }
+                lineIndex = (lineIndex == last) ? 0 : lineIndex + 1;
             }
         }
         return true;

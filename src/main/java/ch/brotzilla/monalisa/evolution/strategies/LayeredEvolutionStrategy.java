@@ -93,7 +93,7 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
         final int index = evolutionContext.getGeneIndexSelector().select(rng, layer.length);
         final Gene selected = layer[index];
         final Gene mutated  = mutateGene(rng, vectorizerContext, evolutionContext, selected);
-        if (mutated == null || mutated == selected || !Utils.hasAcceptableAngles(mutated, 15.0d) || Utils.isSelfIntersecting(mutated)) {
+        if (mutated == null || mutated == selected || !Utils.hasAcceptableAlpha(mutated, 10, 245) || !Utils.hasAcceptableAngles(mutated, 15.0d) || !Utils.hasAcceptablePointToLineDistances(mutated, 5.0d) || Utils.isSelfIntersecting(mutated)) {
             return input;
         }
         final Genome result = new Genome(input);
