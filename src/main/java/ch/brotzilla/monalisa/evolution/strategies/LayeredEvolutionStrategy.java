@@ -27,6 +27,7 @@ import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
 import ch.brotzilla.monalisa.rendering.LayeredRenderer;
 import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
@@ -92,7 +93,7 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
         final int index = evolutionContext.getGeneIndexSelector().select(rng, layer.length);
         final Gene selected = layer[index];
         final Gene mutated  = mutateGene(rng, vectorizerContext, evolutionContext, selected);
-        if (mutated == selected) {
+        if (mutated == null || mutated == selected || !Utils.hasAcceptableAngles(mutated, 15.0d) || Utils.isSelfIntersecting(mutated)) {
             return input;
         }
         final Genome result = new Genome(input);

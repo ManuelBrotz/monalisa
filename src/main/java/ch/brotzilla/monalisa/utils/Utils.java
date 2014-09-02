@@ -14,6 +14,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.util.Geometry;
 import ch.brotzilla.util.MersenneTwister;
 import ch.brotzilla.util.TextReader;
 
@@ -73,7 +74,10 @@ public class Utils {
         if (c.x >= 0 && c.x < width && c.y >= 0 && c.y < height) {
             final int color = inputData[c.y * width + c.x];
             final int alpha = rng.nextInt(256) << 24;
-            return new Gene(x, y, (color & 0x00FFFFFF) | alpha);
+            final Gene result = new Gene(x, y, (color & 0x00FFFFFF) | alpha);
+            if (hasAcceptableAngles(result, 15.0d)) {
+                return result;
+            }
         }
         return createRandomGene(rng, vectorizerContext, evolutionContext);
     }
@@ -188,6 +192,54 @@ public class Utils {
         }
         result[layers-1] = layer;
         return result;
+    }
+    
+    public static boolean hasAcceptableAngles(Gene gene, double minAngleInDegrees) {
+        Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
+        Preconditions.checkArgument(minAngleInDegrees >= 0, "The parameter 'minAngleInDegrees' has to be greater than or equal to zero");
+        final int[] x = gene.x, y = gene.y;
+        final int len = x.length;
+        final int last = len - 1;
+        final double[] p0 = new double[] {0, 0, 0}, p1 = new double[] {0, 0, 0}, p2 = new double[] {0, 0, 0};
+        for (int i = 0; i < len; i++) {
+            p0[0] = x[i];
+            p0[1] = y[i];
+            p1[0] = (i == 0) ? x[last] : x[i - 1];
+            p1[1] = (i == 0) ? y[last] : y[i - 1];
+            p2[0] = (i == last) ? x[0] : x[i + 1];
+            p2[1] = (i == last) ? y[0] : y[i + 1];
+            double angle = Math.toDegrees(Geometry.computeAngle(p0, p1, p2));
+            if (angle < minAngleInDegrees) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static boolean isSelfIntersecting(Gene gene) {
+        Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
+        final int len = gene.x.length;
+        if (len < 4) {
+            return false;
+        }
+        final int last = len - 1;
+        final int[] x = gene.x, y = gene.y;
+        for (int lineA = 0; lineA < len - 2; lineA++) {
+            for (int lineB = lineA + 2; lineB < len; lineB++) {
+                if (lineA == 0 && lineB == last) {
+                    break;
+                }
+                final int ax1 = x[lineA], ay1 = y[lineA];
+                final int ax2 = x[lineA + 1], ay2 = y[lineA + 1];
+                final int bx1 = x[lineB], by1 = y[lineB];
+                final int bx2 = x[lineB == last ? 0 : lineB + 1];
+                final int by2 = y[lineB == last ? 0 : lineB + 1];
+                if (Geometry.isLineIntersectingLine(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static double computeSimpleFitness(Genome genome, int[] inputData, int[] importanceMap, int[] targetData) {
