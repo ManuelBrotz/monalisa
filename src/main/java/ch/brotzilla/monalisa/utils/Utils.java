@@ -56,7 +56,60 @@ public class Utils {
         }
         return new Point(cx, cy);
     }
+    
+    public static BoundingBox computeBoundingBox(Gene gene, int xEnlargement, int yEnlargement) {
+        Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
+        return computeBoundingBox(gene.x, gene.y, xEnlargement, yEnlargement);
+    }
 
+    public static BoundingBox computeBoundingBox(int[] x, int[] y, int xEnlargement, int yEnlargement) {
+        Preconditions.checkNotNull(x, "The parameter 'x' must not be null");
+        Preconditions.checkNotNull(y, "The parameter 'y' must not be null");
+        Preconditions.checkArgument(x.length == y.length, "The length of the parameters 'x' and 'y' has to be equal");
+        final int len = x.length;
+        int xmin = Integer.MAX_VALUE, xmax = Integer.MIN_VALUE, ymin = Integer.MAX_VALUE, ymax = Integer.MIN_VALUE;
+        for (int i = 0; i < len; i++) {
+            final int px = x[i], py = y[i];
+            if (px < xmin) xmin = px;
+            if (px > xmax) xmax = px;
+            if (py < ymin) ymin = py;
+            if (py > ymax) ymax = py;
+        }
+        xmin -= xEnlargement;
+        xmax += xEnlargement;
+        ymin -= yEnlargement;
+        ymax += yEnlargement;
+        return new BoundingBox(xmin, ymin, xmax, ymax);
+    }
+
+    public static BoundingBox computeBoundingBox(Gene gene, double xEnlargementFactor, double yEnlargementFactor) {
+        Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
+        return computeBoundingBox(gene.x, gene.y, xEnlargementFactor, yEnlargementFactor);
+    }
+
+    public static BoundingBox computeBoundingBox(int[] x, int[] y, double xEnlargementFactor, double yEnlargementFactor) {
+        Preconditions.checkNotNull(x, "The parameter 'x' must not be null");
+        Preconditions.checkNotNull(y, "The parameter 'y' must not be null");
+        Preconditions.checkArgument(x.length == y.length, "The length of the parameters 'x' and 'y' has to be equal");
+        final int len = x.length;
+        int xmin = Integer.MAX_VALUE, xmax = Integer.MIN_VALUE, ymin = Integer.MAX_VALUE, ymax = Integer.MIN_VALUE;
+        for (int i = 0; i < len; i++) {
+            final int px = x[i], py = y[i];
+            if (px < xmin) xmin = px;
+            if (px > xmax) xmax = px;
+            if (py < ymin) ymin = py;
+            if (py > ymax) ymax = py;
+        }
+        final int w = xmax - xmin, h = ymax - ymin;
+        final double nw = (xmax - xmin) * xEnlargementFactor, nh = (ymax - ymin) * yEnlargementFactor;
+        final double dw = (nw - w) / 2d, dh = (nh - h) / 2d;
+        xmin -= dw;
+        xmax += dw;
+        ymin -= dh;
+        ymax += dh;
+        return new BoundingBox(xmin, ymin, xmax, ymax);
+    }
+    
     public static Gene createRandomGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
@@ -75,7 +128,10 @@ public class Utils {
             final int color = inputData[c.y * width + c.x];
             final int alpha = rng.nextInt(256) << 24;
             final Gene result = new Gene(x, y, (color & 0x00FFFFFF) | alpha);
-            if (hasAcceptableAlpha(result, 10, 245) && hasAcceptableAngles(result, 15.0d) && hasAcceptablePointToLineDistances(result, 5.0d)) {
+            if (hasAcceptableAlpha(result, 10, 245) 
+                    && hasAcceptableCoordinates(result, vectorizerContext, evolutionContext) 
+                    && hasAcceptableAngles(result, 15.0d) 
+                    && hasAcceptablePointToLineDistances(result, 5.0d)) {
                 return result;
             }
         }
@@ -250,6 +306,24 @@ public class Utils {
         return true;
     }
     
+    public static boolean hasAcceptableCoordinates(Gene gene, VectorizerContext vectorizerContext, EvolutionContext evolutionContext) {
+        Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
+        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
+        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        final int len = gene.x.length;
+        final int[] x = gene.x, y = gene.y;
+        final int w = vectorizerContext.getWidth(), h = vectorizerContext.getHeight();
+        final int bx = evolutionContext.getBorderX(), by = evolutionContext.getBorderY();
+        final int xmin = -bx, xmax = w + bx, ymin = -by, ymax = h + by;
+        for (int i = 0; i < len; i++) {
+            final int px = x[i], py = y[i];
+            if (px < xmin || px > xmax || py < ymin || py > ymax) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     public static boolean isSelfIntersecting(Gene gene) {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         final int len = gene.x.length;
@@ -299,9 +373,11 @@ public class Utils {
             final int dr = ir - tr;
             final int dg = ig - tg;
             final int db = ib - tb;
-            sum += ((da * da) + (dr * dr) + (dg * dg) + (db * db)) * (256 - importanceMap[i]);
+//            sum += ((da * da) + (dr * dr) + (dg * dg) + (db * db)) * (256 - importanceMap[i]);
+            sum += ((da * da * 3) + (dr * dr) + (dg * dg) + (db * db)) * (256 - importanceMap[i]);
         }
-        sum = sum + (sum / 20000f) * genome.countPolygons() + (sum / 200000f) * genome.countPoints();
+//        sum = sum + (sum / 20000f) * genome.countPolygons() + (sum / 200000f) * genome.countPoints();
+        sum = sum + (sum * genome.countPoints() * 0.000005d);
         return sum;
     }
     

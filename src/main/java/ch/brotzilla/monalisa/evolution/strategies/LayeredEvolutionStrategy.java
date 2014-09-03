@@ -17,6 +17,7 @@ import ch.brotzilla.monalisa.evolution.mutations.GeneAlphaChannelMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneColorBrighterMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneColorChannelMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneColorDarkerMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneDilateMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenePointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneRemovePointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneSwapPointsMutation;
@@ -36,6 +37,7 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
     protected static final IndexSelector defaultMutationSelector = new BasicIndexSelector();
     
     protected static final GenePointMutation geneMovePoint = new GenePointMutation();
+    protected static final GeneDilateMutation geneDilate = new GeneDilateMutation();
     protected static final GeneAddPointMutation geneAddPoint = new GeneAddPointMutation();
     protected static final GeneRemovePointMutation geneRemovePoint = new GeneRemovePointMutation();
     protected static final GeneSwapPointsMutation geneSwapPoints = new GeneSwapPointsMutation();
@@ -45,7 +47,7 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
     protected static final GeneColorDarkerMutation geneDarkerColor = new GeneColorDarkerMutation();
 
     protected static final BasicTableSelector<GeneMutation> geneImportantMutations = 
-            new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneMovePoint);
+            new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneMovePoint, geneDilate);
     
     protected static final BasicTableSelector<GeneMutation> geneColorMutations = 
             new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAlphaChannel, geneColorChannel, geneBrighterColor, geneDarkerColor);
@@ -93,7 +95,12 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
         final int index = evolutionContext.getGeneIndexSelector().select(rng, layer.length);
         final Gene selected = layer[index];
         final Gene mutated  = mutateGene(rng, vectorizerContext, evolutionContext, selected);
-        if (mutated == null || mutated == selected || !Utils.hasAcceptableAlpha(mutated, 10, 245) || !Utils.hasAcceptableAngles(mutated, 15.0d) || !Utils.hasAcceptablePointToLineDistances(mutated, 5.0d) || Utils.isSelfIntersecting(mutated)) {
+        if (mutated == null || mutated == selected 
+                || !Utils.hasAcceptableAlpha(mutated, 10, 245)
+                || !Utils.hasAcceptableCoordinates(mutated, vectorizerContext, evolutionContext)
+                || !Utils.hasAcceptableAngles(mutated, 15.0d) 
+                || !Utils.hasAcceptablePointToLineDistances(mutated, 5.0d) 
+                || Utils.isSelfIntersecting(mutated)) {
             return input;
         }
         final Genome result = new Genome(input);

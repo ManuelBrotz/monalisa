@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
+
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
@@ -40,7 +41,7 @@ public class Monalisa {
 
     protected EvolutionContext setupEvolutionContext() {
         final EvolutionContext c = new EvolutionContext();
-        c.setBorder(50, 50);
+        c.setBorder(session.getWidth() / 2, session.getHeight() / 2);
         c.setGeneIndexSelector(new BasicIndexSelector());
         c.setPointMutationRange(new GaussianRangeSelector(15));
         c.setColorChannelMutationRange(new GaussianRangeSelector(10));

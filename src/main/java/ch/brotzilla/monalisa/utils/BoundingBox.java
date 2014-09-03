@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 
 public class BoundingBox {
 
-    private final int xmin, xmax, ymin, ymax;
+    private final int xmin, xmax, ymin, ymax, width, height;
     
     public BoundingBox(int xmin, int ymin, int xmax, int ymax) {
         Preconditions.checkArgument(xmin <= xmax, "The parameter 'xmin' has to be less than or equal to the paramter 'xmax'");
@@ -13,6 +13,8 @@ public class BoundingBox {
         this.xmax = xmax;
         this.ymin = ymin;
         this.ymax = ymax;
+        this.width = xmax - xmin;
+        this.height = ymax - ymin;
     }
 
     public int getXMin() {
@@ -32,10 +34,19 @@ public class BoundingBox {
     }
     
     public int getWidth() {
-        return xmax - xmin;
+        return width;
     }
     
     public int getHeight() {
-        return ymax - ymin;
+        return height;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder b = new StringBuilder();
+        b.append("{xmin = ").append(xmin).append(", xmax = ").append(xmax)
+         .append(", ymin = ").append(ymin).append(", ymax = ").append(ymax)
+         .append(", width = ").append(width).append(", height = ").append(height).append("}");
+        return b.toString();
     }
 }
