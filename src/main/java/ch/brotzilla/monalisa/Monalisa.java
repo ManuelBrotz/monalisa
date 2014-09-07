@@ -12,7 +12,7 @@ import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.evolution.strategies.LayeredEvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.strategies.ProgressiveEvolutionStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.utils.Params;
@@ -36,7 +36,7 @@ public class Monalisa {
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
 
     protected EvolutionStrategy setupEvolutionStrategy() {
-        return new LayeredEvolutionStrategy();
+        return new ProgressiveEvolutionStrategy();
     }
 
     protected EvolutionContext setupEvolutionContext() {

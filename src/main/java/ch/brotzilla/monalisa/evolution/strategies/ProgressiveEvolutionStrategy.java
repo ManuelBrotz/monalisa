@@ -32,7 +32,7 @@ import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
-public class LayeredEvolutionStrategy implements EvolutionStrategy {
+public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
     
     protected static final IndexSelector defaultMutationSelector = new BasicIndexSelector();
     
@@ -112,7 +112,7 @@ public class LayeredEvolutionStrategy implements EvolutionStrategy {
         return genomeMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
     }
     
-    public LayeredEvolutionStrategy() {}
+    public ProgressiveEvolutionStrategy() {}
     
     @Override
     public RendererFactory getRendererFactory() {
