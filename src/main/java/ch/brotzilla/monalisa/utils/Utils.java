@@ -114,7 +114,7 @@ public class Utils {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
-        final int width = vectorizerContext.getWidth(), height = vectorizerContext.getHeight(), xborder = evolutionContext.getBorderX(), yborder = evolutionContext.getBorderY();
+        final int width = vectorizerContext.getWidth(), height = vectorizerContext.getHeight(), xborder = evolutionContext.getOuterBorderX(), yborder = evolutionContext.getOuterBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
         final int[] inputData = vectorizerContext.getTargetImage().getBuffer(), x = new int[3], y = new int[3];
         x[0] = rng.nextInt(bwidth) - xborder;
@@ -313,15 +313,46 @@ public class Utils {
         final int len = gene.x.length;
         final int[] x = gene.x, y = gene.y;
         final int w = vectorizerContext.getWidth(), h = vectorizerContext.getHeight();
-        final int bx = evolutionContext.getBorderX(), by = evolutionContext.getBorderY();
-        final int xmin = -bx, xmax = w + bx, ymin = -by, ymax = h + by;
         for (int i = 0; i < len; i++) {
             final int px = x[i], py = y[i];
-            if (px < xmin || px > xmax || py < ymin || py > ymax) {
+            if (px < 0 || px >= w || py < 0 || py >= h) {
                 return false;
             }
         }
         return true;
+//        final int ibx = evolutionContext.getInnerBorderX(), iby = evolutionContext.getInnerBorderY();
+//        final int ixmin = ibx, ixmax = w - ibx, iymin = iby, iymax = h - iby;
+//        int countOut = 0, countIn = 0;
+//        for (int i = 0; i < len; i++) {
+//            final int px = x[i], py = y[i];
+//            if (px < 0 || px >= w || py < 0 || py >= h) {
+//                ++countOut;
+//                if (countOut > 2) {
+//                    return false;
+//                }
+//            }
+//            if (px >= ixmin && px < ixmax && py >= iymin && py < iymax) {
+//                ++countIn;
+//            }
+//        }
+//        return (countOut <= 2) && (countIn >= 2);
+        
+        
+//        final int obx = evolutionContext.getOuterBorderX(), oby = evolutionContext.getOuterBorderY();
+//        final int ibx = evolutionContext.getInnerBorderX(), iby = evolutionContext.getInnerBorderY();
+//        final int oxmin = -obx, oxmax = w + obx, oymin = -oby, oymax = h + oby;
+//        final int ixmin = ibx, ixmax = w - ibx, iymin = iby, iymax = h - iby;
+//        int count = 0;
+//        for (int i = 0; i < len; i++) {
+//            final int px = x[i], py = y[i];
+//            if (px < oxmin || px > oxmax || py < oymin || py > oymax) {
+//                return false;
+//            }
+//            if (px >= ixmin && px < ixmax && py >= iymin && py < iymax) {
+//                ++count;
+//            }
+//        }
+//        return count >= 1;
     }
     
     public static boolean isSelfIntersecting(Gene gene) {

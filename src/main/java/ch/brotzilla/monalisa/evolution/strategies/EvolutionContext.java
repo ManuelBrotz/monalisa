@@ -9,7 +9,7 @@ public class EvolutionContext {
 
     private IndexSelector geneIndexSelector;
     private RangeSelector pointMutationRange, colorChannelMutationRange;
-    protected int borderX, borderY;
+    protected int outerBorderX, outerBorderY, innerBorderX, innerBorderY;
 
     public EvolutionContext() {
     }
@@ -44,30 +44,57 @@ public class EvolutionContext {
         return this;
     }
 
-    public int getBorderX() {
-        return borderX;
+    public int getOuterBorderX() {
+        return outerBorderX;
     }
 
-    public EvolutionContext setBorderX(int value) {
+    public EvolutionContext setOuterBorderX(int value) {
         Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
-        this.borderX = value;
+        this.outerBorderX = value;
         return this;
     }
 
-    public int getBorderY() {
-        return borderY;
+    public int getOuterBorderY() {
+        return outerBorderY;
     }
 
-    public EvolutionContext setBorderY(int value) {
+    public EvolutionContext setOuterBorderY(int value) {
         Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
-        this.borderY = value;
+        this.outerBorderY = value;
         return this;
     }
 
-    public EvolutionContext setBorder(int borderX, int borderY) {
+    public EvolutionContext setOuterBorder(int borderX, int borderY) {
         Preconditions.checkArgument(borderX >= 0 && borderY >= 0, "The parameters 'borderX' and 'borderY' have to be greater than or equal to zero");
-        this.borderX = borderX;
-        this.borderY = borderY;
+        this.outerBorderX = borderX;
+        this.outerBorderY = borderY;
+        return this;
+    }
+
+    public int getInnerBorderX() {
+        return innerBorderX;
+    }
+
+    public EvolutionContext setInnerBorderX(int value) {
+        Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
+        this.innerBorderX = value;
+        return this;
+    }
+
+    public int getInnerBorderY() {
+        return innerBorderY;
+    }
+
+    public EvolutionContext setInnerBorderY(int value) {
+        Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
+        this.innerBorderY = value;
+        return this;
+    }
+
+    public EvolutionContext setInnerBorder(int borderX, int borderY) {
+        Preconditions.checkArgument(borderX >= 0 && borderY >= 0, "The parameters 'borderX' and 'borderY' have to be greater than or equal to zero");
+        this.innerBorderX = borderX;
+        this.innerBorderY = borderY;
         return this;
     }
     
