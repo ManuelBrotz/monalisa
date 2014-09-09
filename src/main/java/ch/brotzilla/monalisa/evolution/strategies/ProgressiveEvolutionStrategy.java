@@ -2,7 +2,6 @@ package ch.brotzilla.monalisa.evolution.strategies;
 
 import com.google.common.base.Preconditions;
 
-import ch.brotzilla.monalisa.evolution.filters.LayeredStrategyFilter;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
@@ -10,7 +9,7 @@ import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFilter;
 import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.intf.IndexSelector;
-import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.mutations.GeneAddPointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneAlphaChannelMutation;
@@ -32,7 +31,7 @@ import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
-public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
+public class ProgressiveEvolutionStrategy implements MutationStrategy {
     
     protected static final IndexSelector defaultMutationSelector = new BasicIndexSelector();
     

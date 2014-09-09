@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
@@ -35,7 +35,7 @@ public class Monalisa {
     protected final DecimalFormat ff = new DecimalFormat("#,###,###,###,##0.######");
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
 
-    protected EvolutionStrategy setupEvolutionStrategy() {
+    protected MutationStrategy setupEvolutionStrategy() {
         return new ProgressiveEvolutionStrategy();
     }
 

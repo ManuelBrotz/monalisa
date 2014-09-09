@@ -11,7 +11,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFilter;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.SessionManager;
@@ -33,7 +33,7 @@ public class Vectorizer {
     // supplied by the user
     private SessionManager session;
     private EvolutionContext evolutionContext;
-    private EvolutionStrategy evolutionStrategy;
+    private MutationStrategy evolutionStrategy;
 
     // created on startup
     private ExecutorService workerThreads;
@@ -91,11 +91,11 @@ public class Vectorizer {
         this.evolutionContext = value;
     }
 
-    public EvolutionStrategy getEvolutionStrategy() {
+    public MutationStrategy getEvolutionStrategy() {
         return evolutionStrategy;
     }
 
-    public void setEvolutionStrategy(EvolutionStrategy value) {
+    public void setEvolutionStrategy(MutationStrategy value) {
         checkStopped("EvolutionStrategy");
         this.evolutionStrategy = value;
     }
@@ -174,14 +174,11 @@ public class Vectorizer {
         final EvolutionContext ev = getEvolutionContext();
         final GenomeFilter filter = getEvolutionStrategy().getGenomeFilter();
         final Genome latest = vc.getLatestGenome();
-        if (genome != null && genome != latest) {
+        if (filter != null && genome != null) {
+            genome = filter.apply(rng, vc, ev, genome);
+        }
+        if (genome != null) {
             final int numberOfMutations = vc.incNumberOfMutations();
-            if (filter != null) {
-                genome = filter.apply(rng, vc, ev, genome);
-                if (genome == null) {
-                    return vc.getLatestGenome();
-                }
-            }
             if (latest == null || genome.fitness < latest.fitness || genome.overrideFitnessFlag) {
                 genome.numberOfImprovements = vc.incNumberOfImprovements();
                 genome.numberOfMutations = numberOfMutations;

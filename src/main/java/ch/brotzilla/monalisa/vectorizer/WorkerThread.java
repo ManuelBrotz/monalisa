@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutorService;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
-import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Utils;
@@ -23,7 +23,7 @@ public class WorkerThread extends BasicThread {
         
         final VectorizerContext vc = v.getVectorizerContext();
         final EvolutionContext ec = v.getEvolutionContext();
-        final EvolutionStrategy es = v.getEvolutionStrategy();
+        final MutationStrategy es = v.getEvolutionStrategy();
         final GenomeFactory gf = es.getGenomeFactory();
         final Renderer renderer = es.getRendererFactory().createRenderer(vc, ec);
         
