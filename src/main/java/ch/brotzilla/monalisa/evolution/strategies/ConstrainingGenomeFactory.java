@@ -9,11 +9,11 @@ import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
-public class SimpleGenomeFactory implements GenomeFactory {
-    
+public class ConstrainingGenomeFactory implements GenomeFactory {
+
     private final int minGenes, maxGenes;
 
-    public SimpleGenomeFactory(int minGenes, int maxGenes) {
+    public ConstrainingGenomeFactory(int minGenes, int maxGenes) {
         Preconditions.checkArgument(minGenes >= 0, "The parameter 'minGenes' has to be greater than or equal to zero");
         Preconditions.checkArgument(maxGenes > 0, "The parameter 'maxGenes' has to be greater than zero");
         Preconditions.checkArgument(maxGenes >= minGenes, "The parameter 'maxGenes' has to be greater than or equal to the parameter 'minGenes'");
@@ -31,7 +31,14 @@ public class SimpleGenomeFactory implements GenomeFactory {
     
     @Override
     public Gene createGene(MersenneTwister rng, VectorizerContext vc, EvolutionContext ec) {
-        return Utils.createRandomGene(rng, vc, ec);
+        Gene result = Utils.createRandomGene(rng, vc, ec);
+        while (!(Utils.hasAcceptableAlpha(result, 10, 245) 
+                && Utils.hasAcceptableCoordinates(result, vc, ec) 
+                && Utils.hasAcceptableAngles(result, 15.0d) 
+                && Utils.hasAcceptablePointToLineDistances(result, 5.0d))) {
+            result = Utils.createRandomGene(rng, vc, ec);
+        }
+        return result;
     }
 
     @Override

@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
@@ -127,23 +128,18 @@ public class Utils {
         if (c.x >= 0 && c.x < width && c.y >= 0 && c.y < height) {
             final int color = inputData[c.y * width + c.x];
             final int alpha = rng.nextInt(256) << 24;
-            final Gene result = new Gene(x, y, (color & 0x00FFFFFF) | alpha);
-            if (hasAcceptableAlpha(result, 10, 245) 
-                    && hasAcceptableCoordinates(result, vectorizerContext, evolutionContext) 
-                    && hasAcceptableAngles(result, 15.0d) 
-                    && hasAcceptablePointToLineDistances(result, 5.0d)) {
-                return result;
-            }
+            return new Gene(x, y, (color & 0x00FFFFFF) | alpha);
         }
         return createRandomGene(rng, vectorizerContext, evolutionContext);
     }
 
-    public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, int minGenes, int maxGenes) {
+    public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, int minGenes, int maxGenes, GenomeFactory genomeFactory) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");
         Preconditions.checkArgument(maxGenes >= minGenes, "The parameter 'maxGenes' must be greater than or equal to 'minGenes'");
+        Preconditions.checkNotNull(genomeFactory, "The parameter 'genomeFactory' must not be null");
         final int length;
         if (minGenes == maxGenes) {
             length = minGenes;
@@ -154,7 +150,7 @@ public class Utils {
         Preconditions.checkState(length <= maxGenes);
         final Gene[] genes = new Gene[length];
         for (int i = 0; i < length; i++) {
-            genes[i] = createRandomGene(rng, vectorizerContext, evolutionContext);
+            genes[i] = genomeFactory.createGene(rng, vectorizerContext, evolutionContext);
         }
         return genes;
     }

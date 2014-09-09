@@ -23,15 +23,11 @@ public class WorkerThread extends BasicThread {
         
         final VectorizerContext vc = v.getVectorizerContext();
         final EvolutionContext ec = v.getEvolutionContext();
-        final MutationStrategy es = v.getEvolutionStrategy();
-        final GenomeFactory gf = es.getGenomeFactory();
-        final Renderer renderer = es.getRendererFactory().createRenderer(vc, ec);
+        final MutationStrategy ms = v.getMutationStrategy();
+        final GenomeFactory gf = v.getGenomeFactory();
+        final Renderer re = v.getRendererFactory().createRenderer(vc, ec);
         
-        if (gf == null) {
-            throw new IllegalStateException("GenomeFactory must not be null");
-        }
-        
-        if (renderer == null) {
+        if (re == null) {
             throw new IllegalStateException("RendererFactory must not return null");
         }
         
@@ -49,14 +45,14 @@ public class WorkerThread extends BasicThread {
         }
         while (genome != null && !getExecutor().isShutdown()) {
             try {
-                final Genome mutated = es.mutate(rng, vc, ec, genome);
+                final Genome mutated = ms.mutate(rng, vc, ec, genome);
                 if (mutated == null) {
                     throw new IllegalStateException("MutationStrategy must not return null");
                 } else if (mutated == genome) {
                     continue;
                 }
-                renderer.render(mutated);
-                mutated.fitness = Utils.computeSimpleFitness(mutated, targetImageData, importanceMapData, renderer.getBuffer());
+                re.render(mutated);
+                mutated.fitness = Utils.computeSimpleFitness(mutated, targetImageData, importanceMapData, re.getBuffer());
                 genome = v.submit(mutated);
             } catch (Exception e) {
                 e.printStackTrace();

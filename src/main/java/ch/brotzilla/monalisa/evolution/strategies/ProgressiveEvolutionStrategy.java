@@ -4,149 +4,125 @@ import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
+import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
-import ch.brotzilla.monalisa.evolution.intf.GenomeFilter;
-import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
-import ch.brotzilla.monalisa.evolution.intf.IndexSelector;
-import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
-import ch.brotzilla.monalisa.evolution.mutations.GeneAddPointMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GeneAlphaChannelMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GeneColorBrighterMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GeneColorChannelMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GeneColorDarkerMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GeneDilateMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GenePointMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GeneRemovePointMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GeneSwapPointsMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GenomeAddGeneMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GenomeRemoveGeneMutation;
-import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
-import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
-import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
-import ch.brotzilla.monalisa.rendering.LayeredRenderer;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
-public class ProgressiveEvolutionStrategy implements MutationStrategy {
-    
-    protected static final IndexSelector defaultMutationSelector = new BasicIndexSelector();
-    
-    protected static final GenePointMutation geneMovePoint = new GenePointMutation();
-    protected static final GeneDilateMutation geneDilate = new GeneDilateMutation();
-    protected static final GeneAddPointMutation geneAddPoint = new GeneAddPointMutation();
-    protected static final GeneRemovePointMutation geneRemovePoint = new GeneRemovePointMutation();
-    protected static final GeneSwapPointsMutation geneSwapPoints = new GeneSwapPointsMutation();
-    protected static final GeneAlphaChannelMutation geneAlphaChannel = new GeneAlphaChannelMutation();
-    protected static final GeneColorChannelMutation geneColorChannel = new GeneColorChannelMutation();
-    protected static final GeneColorBrighterMutation geneBrighterColor = new GeneColorBrighterMutation();
-    protected static final GeneColorDarkerMutation geneDarkerColor = new GeneColorDarkerMutation();
+public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
 
-    protected static final BasicTableSelector<GeneMutation> geneImportantMutations = 
-            new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneMovePoint, geneDilate);
+    protected final RendererFactory rendererFactory;
+    protected final GenomeFactory genomeFactory;
+    protected Renderer renderer;
     
-    protected static final BasicTableSelector<GeneMutation> geneColorMutations = 
-            new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAlphaChannel, geneColorChannel, geneBrighterColor, geneDarkerColor);
+    protected int initialLayerSize = 1;
+    protected int maxLayerSize = 15;
+    protected int timeBetweenNewPolygons = 60000;
+    protected int timeForFinalOptimization = 5 * 60000; 
+    
+    protected long timeLastPolygonAdded = -1;
+    protected long timeStartFinalOptimization = -1;
+    
+    protected int minPolygonsToAccept = -1;
+    
+    public ProgressiveEvolutionStrategy(RendererFactory rendererFactory, GenomeFactory genomeFactory) {
+        Preconditions.checkNotNull(rendererFactory, "The parameter 'rendererFactory' must not be null");
+        Preconditions.checkNotNull(genomeFactory, "The parameter 'genomeFactory' must not be null");
+        this.rendererFactory = rendererFactory;
+        this.genomeFactory = genomeFactory;
+    }
+    
+    public int getInitialLayerSize() {
+        return initialLayerSize;
+    }
+    
+    public void setInitialLayerSize(int value) {
+        Preconditions.checkArgument(value > 0, "The parameter 'value' has to be greater than zero");
+        Preconditions.checkArgument(value < getMaxLayerSize(), "The parameter 'value' has to be less than getMaxLayerSize()");
+        this.initialLayerSize = value;
+    }
+    
+    public int getMaxLayerSize() {
+        return maxLayerSize;
+    }
+    
+    public void setMaxLayerSize(int value) {
+        Preconditions.checkArgument(value > getInitialLayerSize(), "The parameter 'value' has to be greater than getInitialLayerSize()");
+        this.maxLayerSize = value;
+    }
+    
+    public void setLayerSizes(int initialLayerSize, int maxLayerSize) {
+        Preconditions.checkArgument(initialLayerSize > 0, "The parameter 'initialLayerSize' has to be greater than zero");
+        Preconditions.checkArgument(initialLayerSize < maxLayerSize, "The parameter 'initialLayerSize' has to be less than the parameter 'maxLayerSize'");
+        this.initialLayerSize = initialLayerSize;
+        this.maxLayerSize = maxLayerSize;
+    }
+    
+    public int getTimeBetweenNewPolygons() {
+        return timeBetweenNewPolygons;
+    }
+    
+    public void setTimeBetweenNewPolygons(int value) {
+        Preconditions.checkArgument(value > 0, "The parameter 'value' has to be greater than zero");
+        this.timeBetweenNewPolygons = value;
+    }
+    
+    public int getTimeForFinalOptimization() {
+        return timeForFinalOptimization;
+    }
+    
+    public void setTimeForFinalOptimization(int value) {
+        Preconditions.checkArgument(value >= 0, "The parameter 'value' has to be greater than or equal to zero");
+        this.timeForFinalOptimization = value;
+    }
 
-    protected static final BasicTableSelector<GeneMutation> geneRareMutations = 
-            new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAddPoint, geneRemovePoint, geneSwapPoints);
-        
-    protected static final GenomeAddGeneMutation genomeAddGene = new GenomeAddGeneMutation();
-    protected static final GenomeRemoveGeneMutation genomeRemoveGene = new GenomeRemoveGeneMutation();
-    protected static final GenomeSwapGenesMutation genomeSwapGenes = new GenomeSwapGenesMutation();
-
-    protected static final BasicTableSelector<GenomeMutation> genomeMutations = 
-            new BasicTableSelector<GenomeMutation>(defaultMutationSelector, /* genomeAddGene, genomeRemoveGene, */ genomeSwapGenes);
-
-    protected static final RendererFactory rendererFactory = new RendererFactory() {
-        @Override
-        public Renderer createRenderer(VectorizerContext vc, EvolutionContext ec) {
-            return new LayeredRenderer(vc.getWidth(), vc.getHeight(), true);
-        }
-    };
-    protected static final GenomeFactory genomeFactory = new SimpleGenomeFactory(5, 5);
-    protected static final GenomeFilter genomeFilter = new LayeredStrategyFilter(rendererFactory);
-    
-    protected Gene mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
-        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
-        Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
-        final float p = rng.nextFloat();
-        if (p < 0.75f) {
-            return geneImportantMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
-        }
-        if (p < 0.95f) {
-            return geneColorMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
-        }
-        return geneRareMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
-    }
-    
-    protected Genome mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
-        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
-        Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
-        final Gene[] layer = input.getCurrentLayer();
-        final int index = evolutionContext.getGeneIndexSelector().select(rng, layer.length);
-        final Gene selected = layer[index];
-        final Gene mutated  = mutateGene(rng, vectorizerContext, evolutionContext, selected);
-        if (mutated == null || mutated == selected 
-                || !Utils.hasAcceptableAlpha(mutated, 10, 245)
-                || !Utils.hasAcceptableCoordinates(mutated, vectorizerContext, evolutionContext)
-                || !Utils.hasAcceptableAngles(mutated, 15.0d) 
-                || !Utils.hasAcceptablePointToLineDistances(mutated, 5.0d) 
-                || Utils.isSelfIntersecting(mutated)) {
-            return input;
-        }
-        final Genome result = new Genome(input);
-        result.getCurrentLayer()[index] = mutated; 
-        return result;
-    }
-    
-    protected Genome mutateGenome(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
-        return genomeMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
-    }
-    
-    public ProgressiveEvolutionStrategy() {}
-    
     @Override
-    public RendererFactory getRendererFactory() {
-        return rendererFactory;
-    }
-    
-    @Override
-    public GenomeFactory getGenomeFactory() {
-        return genomeFactory;
-    }
-    
-    @Override
-    public GenomeFilter getGenomeFilter() {
-        return genomeFilter;
-    }
-    
-    @Override
-    public Genome mutate(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
-        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
-        Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
-        final int count = 1 + rng.nextInt(2);
+    public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
         Genome result = input;
-        for (int i = 0; i < count; i++) {
-            Genome mutated = result;
-            while (mutated == result) {
-                if (rng.nextBoolean(0.99f)) {
-                    mutated = mutateGene(rng, vectorizerContext, evolutionContext, result);
-                } else {
-                    mutated = mutateGenome(rng, vectorizerContext, evolutionContext, result);
-                }
+        
+        if (minPolygonsToAccept > 0 && input.countPolygons() < minPolygonsToAccept) {
+            return null;
+        }
+        
+        if (input.getCurrentLayer().length < maxLayerSize) {
+            if (timeLastPolygonAdded < 0) {
+                timeLastPolygonAdded = System.currentTimeMillis();
+                System.out.println("New Polygon will be added in " + timeBetweenNewPolygons + " ms.");
+            } else if (System.currentTimeMillis() - timeLastPolygonAdded >= timeBetweenNewPolygons) {
+                timeLastPolygonAdded = -1;
+                result = Utils.appendGeneToCurrentLayer(result, rng, vectorizerContext, evolutionContext);
+                minPolygonsToAccept = result.countPolygons();
+//                Preconditions.checkState(result != null, "Internal error");
+//                Preconditions.checkState(result != input, "Internal error");
+//                Preconditions.checkState(result.genes.length == input.genes.length, "Internal error");
+//                Preconditions.checkState(result.getCurrentLayer().length == input.getCurrentLayer().length + 1, "Internal error");
+                System.out.println("New polygon added.");
             }
-            result = mutated;
+        } else {
+            if (timeStartFinalOptimization < 0) {
+                timeStartFinalOptimization = System.currentTimeMillis();
+                System.out.println("Final optimization will last for " + timeForFinalOptimization + " ms.");
+            } else if (System.currentTimeMillis() - timeStartFinalOptimization >= timeForFinalOptimization) {
+                timeStartFinalOptimization = -1;
+                final Gene[] newLayer = Utils.createRandomGenes(rng, vectorizerContext, evolutionContext, initialLayerSize, initialLayerSize, genomeFactory);
+                result = new Genome(result.background, Utils.copyGenesAppendLayer(result.genes, newLayer));
+                minPolygonsToAccept = result.countPolygons();
+                System.out.println("Final optimization done. New layer added.");
+            }
+        }
+        
+        if (result != input) {
+            result.overrideFitnessFlag = true;
+            if (renderer == null) {
+                renderer = rendererFactory.createRenderer(vectorizerContext, evolutionContext);
+            }
+            renderer.render(result);
+            result.fitness = Utils.computeSimpleFitness(result, vectorizerContext.getTargetImageData(), vectorizerContext.getImportanceMapData(), renderer.getBuffer());
         }
         return result;
     }
+
 }

@@ -11,8 +11,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
-import ch.brotzilla.monalisa.evolution.intf.GenomeFilter;
+import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.util.MersenneTwister;
@@ -28,12 +30,15 @@ public class Vectorizer {
     private final TickRate tickrate;
 
     // created on startup
-    private MersenneTwister rng;
+    private MersenneTwister seeds, rng;
 
     // supplied by the user
     private SessionManager session;
     private EvolutionContext evolutionContext;
-    private MutationStrategy evolutionStrategy;
+    private EvolutionStrategy evolutionStrategy;
+    private MutationStrategy mutationStrategy;
+    private GenomeFactory genomeFactory;
+    private RendererFactory rendererFactory;
 
     // created on startup
     private ExecutorService workerThreads;
@@ -50,7 +55,12 @@ public class Vectorizer {
     }
 
     public boolean isReady() {
-        return session != null && evolutionContext != null && evolutionStrategy != null;
+        return session != null 
+                && evolutionContext != null 
+                && mutationStrategy != null 
+                && evolutionStrategy != null
+                && genomeFactory != null
+                && rendererFactory != null;
     }
 
     public State getState() {
@@ -91,19 +101,47 @@ public class Vectorizer {
         this.evolutionContext = value;
     }
 
-    public MutationStrategy getEvolutionStrategy() {
+    public EvolutionStrategy getEvolutionStrategy() {
         return evolutionStrategy;
     }
 
-    public void setEvolutionStrategy(MutationStrategy value) {
+    public void setEvolutionStrategy(EvolutionStrategy value) {
         checkStopped("EvolutionStrategy");
         this.evolutionStrategy = value;
     }
 
+    public MutationStrategy getMutationStrategy() {
+        return mutationStrategy;
+    }
+
+    public void setMutationStrategy(MutationStrategy value) {
+        checkStopped("MutationStrategy");
+        this.mutationStrategy = value;
+    }
+
+    public GenomeFactory getGenomeFactory() {
+        return genomeFactory;
+    }
+
+    public void setGenomeFactory(GenomeFactory value) {
+        checkStopped("GenomeFactory");
+        this.genomeFactory = value;
+    }
+
+    public RendererFactory getRendererFactory() {
+        return rendererFactory;
+    }
+
+    public void setRendererFactory(RendererFactory value) {
+        checkStopped("RendererFactory");
+        this.rendererFactory = value;
+    }
+
     public synchronized int nextSeed() {
-        int seed = rng.nextInt();
+        Preconditions.checkNotNull(seeds, "No seeds available");
+        int seed = seeds.nextInt();
         while (seed == 0) {
-            seed = rng.nextInt();
+            seed = seeds.nextInt();
         }
         return seed;
     }
@@ -119,7 +157,8 @@ public class Vectorizer {
         state = State.Running;
         lastUpdateFired = -1;
         tickrate.reset();
-        rng = new MersenneTwister(session.getParams().getSeed());
+        seeds = new MersenneTwister(session.getParams().getSeed());
+        rng = new MersenneTwister(nextSeed());
 
         storageQueue = Queues.newLinkedBlockingQueue();
         storageThread = Executors.newFixedThreadPool(1);
@@ -172,10 +211,10 @@ public class Vectorizer {
         }
         final VectorizerContext vc = getVectorizerContext();
         final EvolutionContext ev = getEvolutionContext();
-        final GenomeFilter filter = getEvolutionStrategy().getGenomeFilter();
+        final EvolutionStrategy es = getEvolutionStrategy();
         final Genome latest = vc.getLatestGenome();
-        if (filter != null && genome != null) {
-            genome = filter.apply(rng, vc, ev, genome);
+        if (es != null && genome != null) {
+            genome = es.apply(rng, vc, ev, genome);
         }
         if (genome != null) {
             final int numberOfMutations = vc.incNumberOfMutations();

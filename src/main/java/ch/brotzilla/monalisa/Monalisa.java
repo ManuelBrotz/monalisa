@@ -6,15 +6,21 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
-
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
+import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
+import ch.brotzilla.monalisa.evolution.strategies.ConstrainingGenomeFactory;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
+import ch.brotzilla.monalisa.evolution.strategies.ConstrainingMutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.ProgressiveEvolutionStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
+import ch.brotzilla.monalisa.rendering.LayeredRenderer;
+import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.vectorizer.Vectorizer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
@@ -35,11 +41,7 @@ public class Monalisa {
     protected final DecimalFormat ff = new DecimalFormat("#,###,###,###,##0.######");
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
 
-    protected MutationStrategy setupEvolutionStrategy() {
-        return new ProgressiveEvolutionStrategy();
-    }
-
-    protected EvolutionContext setupEvolutionContext() {
+    protected static EvolutionContext setupEvolutionContext(SessionManager session) {
         final EvolutionContext c = new EvolutionContext();
         c.setOuterBorder(session.getWidth() / 2, session.getHeight() / 2);
         c.setInnerBorder(session.getWidth() / 10, session.getHeight() / 10);
@@ -47,6 +49,38 @@ public class Monalisa {
         c.setPointMutationRange(new GaussianRangeSelector(15));
         c.setColorChannelMutationRange(new GaussianRangeSelector(10));
         return c;
+    }
+
+    protected static RendererFactory setupRendererFactory() {
+        return new RendererFactory() {
+            @Override
+            public Renderer createRenderer(VectorizerContext vc, EvolutionContext ec) {
+                return new LayeredRenderer(vc.getWidth(), vc.getHeight(), true);
+            }
+        };
+    }
+    
+    protected static GenomeFactory setupGenomeFactory() {
+        return new ConstrainingGenomeFactory(5, 5);
+    }
+    
+    protected static EvolutionStrategy setupEvolutionStrategy() {
+        return new ProgressiveEvolutionStrategy(setupRendererFactory(), setupGenomeFactory());
+    }
+    
+    protected static MutationStrategy setupMutationStrategy() {
+        return new ConstrainingMutationStrategy();
+    }
+
+    protected static Vectorizer setupVectorizer(SessionManager session) {
+        final Vectorizer vectorizer = new Vectorizer();
+        vectorizer.setSession(session);
+        vectorizer.setEvolutionContext(setupEvolutionContext(session));
+        vectorizer.setMutationStrategy(setupMutationStrategy());
+        vectorizer.setEvolutionStrategy(setupEvolutionStrategy());
+        vectorizer.setRendererFactory(setupRendererFactory());
+        vectorizer.setGenomeFactory(setupGenomeFactory());
+        return vectorizer;
     }
 
     protected void printError() {
@@ -111,11 +145,7 @@ public class Monalisa {
             }
         }
         
-        this.vectorizer = new Vectorizer();
-        vectorizer.setSession(this.session);
-        vectorizer.setEvolutionContext(setupEvolutionContext());
-        vectorizer.setEvolutionStrategy(setupEvolutionStrategy());
-        
+        this.vectorizer = setupVectorizer(session);
         vectorizer.addListener(new VectorizerListener() {
             @Override
             public void started(Vectorizer v, Genome latest) {

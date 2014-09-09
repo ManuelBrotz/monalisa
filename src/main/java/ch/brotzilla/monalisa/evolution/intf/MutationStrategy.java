@@ -7,12 +7,6 @@ import ch.brotzilla.util.MersenneTwister;
 
 public interface MutationStrategy {
 
-    RendererFactory getRendererFactory();
-    
-    GenomeFactory getGenomeFactory();
-    
-    GenomeFilter getGenomeFilter();
-    
     Genome mutate(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input);
     
 }
