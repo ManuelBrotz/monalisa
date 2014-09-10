@@ -167,7 +167,7 @@ public class PolygonCache {
             final List<Genome> genomes = Lists.newArrayList();
             drainQueue(genomes);
             for (final Genome genome : genomes) {
-                for (final Gene gene : genome.getCurrentLayer()) {
+                for (final Gene gene : genome.genes) {
                     CacheEntry entry = temp.get(gene);
                     if (entry == null) {
                         entry = cache.get(gene);

@@ -22,7 +22,7 @@ public class GenomeAddGeneMutation extends BasicMutation implements GenomeMutati
 
     @Override
     public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
-        return Utils.appendGeneToCurrentLayer(input, rng, vectorizerContext, evolutionContext, genomeFactory);
+        return Utils.appendGene(input, rng, vectorizerContext, evolutionContext, genomeFactory);
     }
 
 }

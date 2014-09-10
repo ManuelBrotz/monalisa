@@ -14,8 +14,7 @@ public class CachingRenderer extends Renderer {
     
     @Override
     protected void renderGenome(Genome genome, Graphics2D g) {
-        Preconditions.checkArgument(genome.genes.length == 1, "Multi layer genomes are not supported");
-        for (final Gene gene : genome.getCurrentLayer()) {
+        for (final Gene gene : genome.genes) {
             CacheEntry entry = cache.get(gene);
             if (entry != null) {
                 g.drawImage(entry.getImage(), entry.getX(), entry.getY(), null);

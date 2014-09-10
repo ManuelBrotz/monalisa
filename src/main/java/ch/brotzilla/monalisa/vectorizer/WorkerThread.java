@@ -25,12 +25,7 @@ public class WorkerThread extends BasicThread {
         final EvolutionContext ec = v.getEvolutionContext();
         final MutationStrategy ms = v.getMutationStrategy();
         final GenomeFactory gf = v.getGenomeFactory();
-        final Renderer re = v.getRendererFactory().createRenderer(vc, ec);
-        
-        if (re == null) {
-            throw new IllegalStateException("RendererFactory must not return null");
-        }
-        
+        final Renderer re = v.createRenderer();
         final int[] targetImageData = vc.getTargetImageData();
         final int[] importanceMapData = vc.getImportanceMapData();
         

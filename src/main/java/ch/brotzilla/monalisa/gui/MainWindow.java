@@ -27,9 +27,7 @@ import ch.brotzilla.monalisa.db.Database;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.gui.StatusDisplay.Orientation;
 import ch.brotzilla.monalisa.images.Image;
-import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.io.SessionManager;
-import ch.brotzilla.monalisa.rendering.LayeredRenderer;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
@@ -109,27 +107,28 @@ public class MainWindow extends JFrame {
         }
     }
 
-    public MainWindow(Monalisa monalisa, SessionManager sessionManager, Genome currentGenome) throws IOException {
+    public MainWindow(Monalisa monalisa) throws IOException {
         super();
 
         this.monalisa = Preconditions.checkNotNull(monalisa, "The parameter 'monalisa' must not be null");
-        this.sessionManager = Preconditions.checkNotNull(sessionManager, "The parameter 'sessionManager' must not be null");
-        this.currentGenome = currentGenome;
+        this.sessionManager = monalisa.getSessionManager();
+        this.currentGenome = monalisa.getSessionManager().getVectorizerContext().getLatestGenome();
 
         final VectorizerContext vc = sessionManager.getVectorizerContext();
         
         this.inputImage = new Image(vc.getTargetImage());
-        this.currentImage = new Image(ImageType.ARGB, sessionManager.getWidth(), sessionManager.getHeight());
         if (vc.getImportanceMap() != null) {
             this.importanceMap = new Image(vc.getImportanceMap());
         } else {
             this.importanceMap = null;
         }
 
-        this.renderer = new LayeredRenderer(currentImage, false);
+        this.renderer = monalisa.getVectorizer().createRenderer();
         if (currentGenome != null) {
             renderer.render(currentGenome);
         }
+        
+        this.currentImage = renderer.getImage();
         
         updateWindowTitle(sessionManager.getSessionName());
 

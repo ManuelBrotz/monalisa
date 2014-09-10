@@ -155,98 +155,32 @@ public class Utils {
         return genes;
     }
     
-    public static Genome appendGeneToCurrentLayer(Genome genome, MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, GenomeFactory genomeFactory) {
+    public static Genome appendGene(Genome genome, MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, GenomeFactory genomeFactory) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
         Preconditions.checkNotNull(genomeFactory, "The parameter 'genomeFactory' must not be null");
         final Gene gene = genomeFactory.createGene(rng, vectorizerContext, evolutionContext);
-        final Gene[] inputLayer = genome.getCurrentLayer();
-        final Gene[] newLayer = new Gene[inputLayer.length + 1];
-        System.arraycopy(inputLayer, 0, newLayer, 0, inputLayer.length);
-        newLayer[newLayer.length - 1] = gene;
-        return new Genome(genome.background, Utils.copyGenesReplaceLastLayer(genome.genes, newLayer), false);
+        final Gene[] inputGenes = genome.genes;
+        final Gene[] newGenes = new Gene[inputGenes.length + 1];
+        System.arraycopy(inputGenes, 0, newGenes, 0, inputGenes.length);
+        newGenes[newGenes.length - 1] = gene;
+        return new Genome(newGenes, false);
     }
 
-    public static Genome splitCurrentLayerIntoNewLayer(Genome genome, int sizeOfNewLayer) {
-        Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
-        Preconditions.checkArgument(sizeOfNewLayer > 0, "The parameter 'sizeOfNewLayer' has to be greater than zero");
-        
-        final Gene[][] genes = genome.genes;
-        final Gene[] currentLayer = genome.getCurrentLayer();
-        final int currentSize = currentLayer.length;
-        Preconditions.checkArgument(currentSize > sizeOfNewLayer, "The size of the current layer of the parameter 'genome' has to be greater than the parameter 'sizeOfNewLayer'");
-        
-        final Gene[] newLayer = new Gene[currentSize - sizeOfNewLayer];
-        System.arraycopy(currentLayer, 0, newLayer, 0, currentSize - sizeOfNewLayer);
-        
-        final Gene[] newCurrentLayer = new Gene[sizeOfNewLayer];
-        System.arraycopy(currentLayer, currentSize - sizeOfNewLayer, newCurrentLayer, 0, sizeOfNewLayer);
-        
-        final Gene[][] newGenes = new Gene[genes.length + 1][];
-        for (int l = 0; l < genes.length - 1; l++) {
-            newGenes[l] = new Gene[genes[l].length];
-            System.arraycopy(genes[l], 0, newGenes[l], 0, genes[l].length);
-        }
-        
-        newGenes[newGenes.length - 2] = newLayer;
-        newGenes[newGenes.length - 1] = newCurrentLayer;
-        
-        return new Genome(genome.background, newGenes);
-    }
-    
-    public static Gene[][] copyGenes(Gene[][] genes) {
+    public static Gene[] copyGenes(Gene[] genes) {
         Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
         Preconditions.checkArgument(genes.length > 0, "The length of the parameter 'genes' has to be greater than zero");
-        final int layers = genes.length;
-        final Gene[][] result = new Gene[layers][];
-        for (int i = 0; i < layers; i++) {
+        final int size = genes.length;
+        final Gene[] result = new Gene[size];
+        for (int i = 0; i < size; i++) {
             Preconditions.checkNotNull(genes[i], "The parameter 'genes[" + i + "]' must not contain null");
-            final int size = genes[i].length;
-            Preconditions.checkArgument(size > 0, "The length of the parameter 'genes[" + i + "]' has to be greater than zero");
-            result[i] = new Gene[size];
-            System.arraycopy(genes[i], 0, result[i], 0, size);
+            result[i] = genes[i];
         }
         return result;
     }
 
-    public static Gene[][] copyGenesAppendLayer(Gene[][] genes, Gene[] layer) {
-        Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
-        Preconditions.checkArgument(genes.length > 0, "The length of the parameter 'genes' has to be greater than zero");
-        Preconditions.checkNotNull(layer, "The parameter 'layer' must not be null");
-        Preconditions.checkArgument(layer.length > 0, "The length of the parameter 'layer' has to be greater than zero");
-        final int layers = genes.length;
-        final Gene[][] result = new Gene[layers + 1][];
-        for (int i = 0; i < layers; i++) {
-            Preconditions.checkNotNull(genes[i], "The parameter 'genes[" + i + "]' must not contain null");
-            final int size = genes[i].length;
-            Preconditions.checkArgument(size > 0, "The length of the parameter 'genes[" + i + "]' has to be greater than zero");
-            result[i] = new Gene[size];
-            System.arraycopy(genes[i], 0, result[i], 0, size);
-        }
-        result[layers] = layer;
-        return result;
-    }
-
-    public static Gene[][] copyGenesReplaceLastLayer(Gene[][] genes, Gene[] layer) {
-        Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");
-        Preconditions.checkArgument(genes.length > 0, "The length of the parameter 'genes' has to be greater than zero");
-        Preconditions.checkNotNull(layer, "The parameter 'layer' must not be null");
-        Preconditions.checkArgument(layer.length > 0, "The length of the parameter 'layer' has to be greater than zero");
-        final int layers = genes.length;
-        final Gene[][] result = new Gene[layers][];
-        for (int i = 0; i < layers-1; i++) {
-            Preconditions.checkNotNull(genes[i], "The parameter 'genes[" + i + "]' must not contain null");
-            final int size = genes[i].length;
-            Preconditions.checkArgument(size > 0, "The length of the parameter 'genes[" + i + "]' has to be greater than zero");
-            result[i] = new Gene[size];
-            System.arraycopy(genes[i], 0, result[i], 0, size);
-        }
-        result[layers-1] = layer;
-        return result;
-    }
-    
     public static boolean hasAcceptableAlpha(Gene gene, int minAlpha, int maxAlpha) {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         Preconditions.checkArgument(minAlpha >= 0, "The parameter 'minAlpha' has to be greater than or equal to zero");

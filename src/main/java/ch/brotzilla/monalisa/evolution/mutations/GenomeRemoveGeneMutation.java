@@ -4,7 +4,6 @@ import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
@@ -16,20 +15,20 @@ public class GenomeRemoveGeneMutation extends BasicMutation implements GenomeMut
 
     @Override
     public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
-        final Gene[] inputLayer = input.getCurrentLayer();
-        final int length = inputLayer.length;
+        final Gene[] inputGenes = input.genes;
+        final int length = inputGenes.length;
         if (length > 1) {
             final int index = evolutionContext.getGeneIndexSelector().select(rng, length);
-            final Gene[] newLayer = new Gene[length - 1];
+            final Gene[] newGenes = new Gene[length - 1];
             if (index == 0) {
-                System.arraycopy(inputLayer, 1, newLayer, 0, length - 1);
+                System.arraycopy(inputGenes, 1, newGenes, 0, length - 1);
             } else if (index == length - 1) {
-                System.arraycopy(inputLayer, 0, newLayer, 0, length - 1);
+                System.arraycopy(inputGenes, 0, newGenes, 0, length - 1);
             } else {
-                System.arraycopy(inputLayer, 0, newLayer, 0, index);
-                System.arraycopy(inputLayer, index + 1, newLayer, index, length - index - 1);
+                System.arraycopy(inputGenes, 0, newGenes, 0, index);
+                System.arraycopy(inputGenes, index + 1, newGenes, index, length - index - 1);
             }
-            return new Genome(input.background, Utils.copyGenesReplaceLastLayer(input.genes, newLayer), false);
+            return new Genome(newGenes, false);
         }
         return input;
     }

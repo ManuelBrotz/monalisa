@@ -11,15 +11,15 @@ import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
-import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
+import ch.brotzilla.monalisa.evolution.selectors.TailIndexSelector;
 import ch.brotzilla.monalisa.evolution.strategies.ConstrainingGenomeFactory;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.evolution.strategies.ConstrainingMutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.ProgressiveEvolutionStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
-import ch.brotzilla.monalisa.rendering.LayeredRenderer;
+import ch.brotzilla.monalisa.rendering.CachingTailRenderer;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.vectorizer.Vectorizer;
@@ -45,7 +45,7 @@ public class Monalisa {
         final EvolutionContext c = new EvolutionContext();
         c.setOuterBorder(0, 0);
         c.setInnerBorder(0, 0);
-        c.setGeneIndexSelector(new BasicIndexSelector());
+        c.setGeneIndexSelector(new TailIndexSelector(15));
         c.setPointMutationRange(new GaussianRangeSelector(15));
         c.setColorChannelMutationRange(new GaussianRangeSelector(10));
         return c;
@@ -55,7 +55,7 @@ public class Monalisa {
         return new RendererFactory() {
             @Override
             public Renderer createRenderer(VectorizerContext vc, EvolutionContext ec) {
-                return new LayeredRenderer(vc.getWidth(), vc.getHeight(), true);
+                return new CachingTailRenderer(15, vc.getWidth(), vc.getHeight(), true);
             }
         };
     }
@@ -106,6 +106,22 @@ public class Monalisa {
     public Monalisa(Params params) {
         Preconditions.checkNotNull(params, "The parameter 'params' must not be null");
         this.params = params;
+    }
+    
+    public Params getParams() {
+        return params;
+    }
+    
+    public SessionManager getSessionManager() {
+        return session;
+    }
+    
+    public Vectorizer getVectorizer() {
+        return vectorizer;
+    }
+    
+    public MainWindow getMainWindow() {
+        return mainWindow;
     }
 
     public void setup() throws IOException, SQLiteException {
@@ -196,7 +212,7 @@ public class Monalisa {
     public void showGui() {
         if (mainWindow == null) {
             try {
-                mainWindow = new MainWindow(this, session, vectorizer.getVectorizerContext().getLatestGenome());
+                mainWindow = new MainWindow(this);
                 final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
                 final int width = 640, height = 480;
                 mainWindow.setBounds(screen.width / 2 - width / 2, screen.height / 2 - height / 2, width, height);

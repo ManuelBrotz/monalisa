@@ -36,7 +36,7 @@ public class SimpleGenomeFactory implements GenomeFactory {
 
     @Override
     public Genome createGenome(MersenneTwister rng, VectorizerContext vc, EvolutionContext ec) {
-        return new Genome(null, new Gene[][] {Utils.createRandomGenes(rng, vc, ec, minGenes, maxGenes, this)});
+        return new Genome(Utils.createRandomGenes(rng, vc, ec, minGenes, maxGenes, this));
     }
 
 }

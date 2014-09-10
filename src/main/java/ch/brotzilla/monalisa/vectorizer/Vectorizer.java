@@ -17,6 +17,7 @@ import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.SessionManager;
+import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.util.MersenneTwister;
 import ch.brotzilla.util.TickRate;
 
@@ -58,7 +59,6 @@ public class Vectorizer {
         return session != null 
                 && evolutionContext != null 
                 && mutationStrategy != null 
-                && evolutionStrategy != null
                 && genomeFactory != null
                 && rendererFactory != null;
     }
@@ -131,6 +131,15 @@ public class Vectorizer {
     public RendererFactory getRendererFactory() {
         return rendererFactory;
     }
+    
+    public Renderer createRenderer() {
+        Preconditions.checkState(getRendererFactory() != null, "The renderer factory must not be null");
+        Preconditions.checkState(getVectorizerContext() != null, "The vectorizer context must not be null");
+        Preconditions.checkState(getEvolutionContext() != null, "The evolution context must not be null");
+        final Renderer result = getRendererFactory().createRenderer(getVectorizerContext(), getEvolutionContext());
+        Preconditions.checkState(result != null, "The renderer factory must not return null");
+        return result;
+    }
 
     public void setRendererFactory(RendererFactory value) {
         checkStopped("RendererFactory");
@@ -138,7 +147,7 @@ public class Vectorizer {
     }
 
     public synchronized int nextSeed() {
-        Preconditions.checkNotNull(seeds, "No seeds available");
+        Preconditions.checkState(seeds != null, "No seeds available");
         int seed = seeds.nextInt();
         while (seed == 0) {
             seed = seeds.nextInt();

@@ -18,11 +18,7 @@ public abstract class Renderer {
     protected boolean autoUpdateBuffer;
     
     protected void renderBackground(Genome genome, Graphics2D g) {
-        if (genome.background == null) {
-            g.setBackground(TRANSPARENT);
-        } else {
-            g.setBackground(genome.background);
-        }
+        g.setBackground(TRANSPARENT);
         g.clearRect(0, 0, image.getWidth(), image.getHeight());
     }
     
