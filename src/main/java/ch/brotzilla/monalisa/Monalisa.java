@@ -43,8 +43,8 @@ public class Monalisa {
 
     protected static EvolutionContext setupEvolutionContext(SessionManager session) {
         final EvolutionContext c = new EvolutionContext();
-        c.setOuterBorder(session.getWidth() / 2, session.getHeight() / 2);
-        c.setInnerBorder(session.getWidth() / 10, session.getHeight() / 10);
+        c.setOuterBorder(0, 0);
+        c.setInnerBorder(0, 0);
         c.setGeneIndexSelector(new BasicIndexSelector());
         c.setPointMutationRange(new GaussianRangeSelector(15));
         c.setColorChannelMutationRange(new GaussianRangeSelector(10));

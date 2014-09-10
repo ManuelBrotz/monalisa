@@ -155,12 +155,13 @@ public class Utils {
         return genes;
     }
     
-    public static Genome appendGeneToCurrentLayer(Genome genome, MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext) {
+    public static Genome appendGeneToCurrentLayer(Genome genome, MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, GenomeFactory genomeFactory) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
         Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
-        final Gene gene = Utils.createRandomGene(rng, vectorizerContext, evolutionContext);
+        Preconditions.checkNotNull(genomeFactory, "The parameter 'genomeFactory' must not be null");
+        final Gene gene = genomeFactory.createGene(rng, vectorizerContext, evolutionContext);
         final Gene[] inputLayer = genome.getCurrentLayer();
         final Gene[] newLayer = new Gene[inputLayer.length + 1];
         System.arraycopy(inputLayer, 0, newLayer, 0, inputLayer.length);

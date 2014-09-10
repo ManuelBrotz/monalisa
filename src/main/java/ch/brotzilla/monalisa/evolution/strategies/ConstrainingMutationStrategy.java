@@ -49,7 +49,7 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
     protected static final BasicTableSelector<GeneMutation> geneRareMutations = 
             new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAddPoint, geneRemovePoint, geneSwapPoints);
         
-    protected static final GenomeAddGeneMutation genomeAddGene = new GenomeAddGeneMutation();
+    protected static final GenomeAddGeneMutation genomeAddGene = new GenomeAddGeneMutation(new ConstrainingGenomeFactory(5,  5));
     protected static final GenomeRemoveGeneMutation genomeRemoveGene = new GenomeRemoveGeneMutation();
     protected static final GenomeSwapGenesMutation genomeSwapGenes = new GenomeSwapGenesMutation();
 

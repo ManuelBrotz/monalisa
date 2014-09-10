@@ -93,7 +93,7 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
                 System.out.println("New Polygon will be added in " + timeBetweenNewPolygons + " ms.");
             } else if (System.currentTimeMillis() - timeLastPolygonAdded >= timeBetweenNewPolygons) {
                 timeLastPolygonAdded = -1;
-                result = Utils.appendGeneToCurrentLayer(result, rng, vectorizerContext, evolutionContext);
+                result = Utils.appendGeneToCurrentLayer(result, rng, vectorizerContext, evolutionContext, genomeFactory);
                 minPolygonsToAccept = result.countPolygons();
 //                Preconditions.checkState(result != null, "Internal error");
 //                Preconditions.checkState(result != input, "Internal error");

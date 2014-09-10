@@ -32,10 +32,10 @@ public class ConstrainingGenomeFactory implements GenomeFactory {
     @Override
     public Gene createGene(MersenneTwister rng, VectorizerContext vc, EvolutionContext ec) {
         Gene result = Utils.createRandomGene(rng, vc, ec);
-        while (!(Utils.hasAcceptableAlpha(result, 10, 245) 
-                && Utils.hasAcceptableCoordinates(result, vc, ec) 
-                && Utils.hasAcceptableAngles(result, 15.0d) 
-                && Utils.hasAcceptablePointToLineDistances(result, 5.0d))) {
+        while (!Utils.hasAcceptableAlpha(result, 10, 245) 
+                || !Utils.hasAcceptableCoordinates(result, vc, ec) 
+                || !Utils.hasAcceptableAngles(result, 15.0d) 
+                || !Utils.hasAcceptablePointToLineDistances(result, 5.0d)) {
             result = Utils.createRandomGene(rng, vc, ec);
         }
         return result;
