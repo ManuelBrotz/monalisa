@@ -16,7 +16,9 @@ public class TailIndexSelector implements IndexSelector {
 
     @Override
     public int select(MersenneTwister rng, int length) {
-        return rng.nextInt(length - Math.max(length - tailSize, 0));
+        final int beginIndex = Math.max(length - tailSize, 0);
+        final int count = length - beginIndex;
+        return beginIndex + rng.nextInt(count);
     }
 
 }
