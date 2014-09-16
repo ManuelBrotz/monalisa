@@ -36,6 +36,10 @@ public abstract class Renderer {
         this.autoUpdateBuffer = autoUpdateBuffer;
     }
 
+    public boolean getAutoUpdateBuffer() {
+        return autoUpdateBuffer;
+    }
+    
     public Image getImage() {
         return image;
     }
