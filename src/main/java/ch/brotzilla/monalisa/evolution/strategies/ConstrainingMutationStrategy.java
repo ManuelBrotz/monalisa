@@ -41,7 +41,7 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
     protected static final GeneColorDarkerMutation geneDarkerColor = new GeneColorDarkerMutation();
 
     protected static final BasicTableSelector<GeneMutation> geneImportantMutations = 
-            new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneMovePoint, geneDilate);
+            new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneMovePoint);
     
     protected static final BasicTableSelector<GeneMutation> geneColorMutations = 
             new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAlphaChannel, geneColorChannel, geneBrighterColor, geneDarkerColor);
