@@ -23,6 +23,7 @@ import ch.brotzilla.monalisa.rendering.CachingTailRenderer;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.vectorizer.Vectorizer;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.monalisa.vectorizer.VectorizerListener;
 
@@ -73,14 +74,17 @@ public class Monalisa {
     }
 
     protected static Vectorizer setupVectorizer(SessionManager session) {
-        final Vectorizer vectorizer = new Vectorizer();
-        vectorizer.setSession(session);
-        vectorizer.setEvolutionContext(setupEvolutionContext(session));
-        vectorizer.setMutationStrategy(setupMutationStrategy());
-        vectorizer.setEvolutionStrategy(setupEvolutionStrategy());
-        vectorizer.setRendererFactory(setupRendererFactory());
-        vectorizer.setGenomeFactory(setupGenomeFactory());
-        return vectorizer;
+        final Vectorizer v = new Vectorizer();
+        final VectorizerConfig c = new VectorizerConfig();
+        v.setSession(session);
+        v.setConfig(c);
+        c.setSession(session);
+        c.setEvolutionContext(setupEvolutionContext(session));
+        c.setMutationStrategy(setupMutationStrategy());
+        c.setEvolutionStrategy(setupEvolutionStrategy());
+        c.setRendererFactory(setupRendererFactory());
+        c.setGenomeFactory(setupGenomeFactory());
+        return v;
     }
 
     protected void printError() {
@@ -239,7 +243,7 @@ public class Monalisa {
             } else if (input.equals("show-gui")) {
                 showGui();
             } else if (input.equals("status")) {
-                final VectorizerContext vc = vectorizer.getVectorizerContext();
+                final VectorizerContext vc = vectorizer.getConfig().getVectorizerContext();
                 final Genome genome = vc.getLatestGenome();
                 System.out.println("Mutations: " + vc.getNumberOfMutations() + ", Improvements: " + vc.getNumberOfImprovements() + ", Polygons: " + genome.countPolygons() + ", Points: "
                         + genome.countPoints() + ", Fitness: " + ff.format(genome.fitness));

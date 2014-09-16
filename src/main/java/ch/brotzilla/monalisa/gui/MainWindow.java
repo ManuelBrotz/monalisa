@@ -123,7 +123,7 @@ public class MainWindow extends JFrame {
             this.importanceMap = null;
         }
 
-        this.renderer = monalisa.getVectorizer().createRenderer();
+        this.renderer = monalisa.getVectorizer().getConfig().createRenderer();
         if (currentGenome != null) {
             renderer.render(currentGenome);
         }

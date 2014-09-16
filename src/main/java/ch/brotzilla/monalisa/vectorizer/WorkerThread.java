@@ -16,16 +16,17 @@ public class WorkerThread extends BasicThread {
     protected void execute() {
         
         final Vectorizer v = getOwner();
+        final VectorizerConfig c = v.getConfig();
         
         if (!v.isReady()) {
-            throw new IllegalStateException("Vectorizer is not ready");
+            throw new IllegalStateException("The vectorizer is not ready");
         }
         
-        final VectorizerContext vc = v.getVectorizerContext();
-        final EvolutionContext ec = v.getEvolutionContext();
-        final MutationStrategy ms = v.getMutationStrategy();
-        final GenomeFactory gf = v.getGenomeFactory();
-        final Renderer re = v.createRenderer();
+        final VectorizerContext vc = c.getVectorizerContext();
+        final EvolutionContext ec = c.getEvolutionContext();
+        final MutationStrategy ms = c.getMutationStrategy();
+        final GenomeFactory gf = c.getGenomeFactory();
+        final Renderer re = c.createRenderer();
         final int[] targetImageData = vc.getTargetImageData();
         final int[] importanceMapData = vc.getImportanceMapData();
         

@@ -17,9 +17,17 @@ public class StorageThread extends BasicThread {
 
     @Override
     protected void execute() throws IOException, SQLiteException {
+        
+        final Vectorizer v = getOwner();
+        
+        if (!v.isReady()) {
+            throw new IllegalStateException("The vectorizer is not ready");
+        }
+
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+
         long timeLastStored = 0;
-        try (final Database db = getOwner().getSession().connect()) {
+        try (final Database db = v.getSession().connect()) {
             while (!getExecutor().isShutdown()) {
                 try {
                     final Genome genome = storageQueue.poll(250, TimeUnit.MILLISECONDS);

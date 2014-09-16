@@ -121,8 +121,8 @@ public class StatusDisplay extends JPanel {
             selectedValue.setText("0");
             rateValue.setText("0.00/s");
         } else {
-            generatedValue.setText(v.getVectorizerContext().getNumberOfMutations() + "");
-            selectedValue.setText(v.getVectorizerContext().getNumberOfImprovements() + "");
+            generatedValue.setText(v.getConfig().getVectorizerContext().getNumberOfMutations() + "");
+            selectedValue.setText(v.getConfig().getVectorizerContext().getNumberOfImprovements() + "");
             rateValue.setText(rf.format(v.getTickRate().getTickRate()) + "/s");
         }
     }
