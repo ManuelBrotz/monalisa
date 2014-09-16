@@ -339,7 +339,7 @@ public class Utils {
             sum += ((da * da * 3) + (dr * dr) + (dg * dg) + (db * db)) * (256 - importanceMap[i]);
         }
 //        sum = sum + (sum / 20000f) * genome.countPolygons() + (sum / 200000f) * genome.countPoints();
-        sum = sum + (sum * genome.countPoints() * 0.000005d);
+//        sum = sum + (sum * genome.countPoints() * 0.000005d);
         return sum;
     }
     
