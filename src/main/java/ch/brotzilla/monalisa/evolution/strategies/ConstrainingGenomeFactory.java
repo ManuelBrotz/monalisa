@@ -6,7 +6,7 @@ import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.utils.Utils;
-import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
 public class ConstrainingGenomeFactory implements GenomeFactory {
@@ -30,20 +30,20 @@ public class ConstrainingGenomeFactory implements GenomeFactory {
     }
     
     @Override
-    public Gene createGene(MersenneTwister rng, VectorizerContext vc, EvolutionContext ec) {
-        Gene result = Utils.createRandomGene(rng, vc, ec);
+    public Gene createGene(MersenneTwister rng, VectorizerConfig config) {
+        Gene result = Utils.createRandomGene(rng, config);
         while (!Utils.hasAcceptableAlpha(result, 10, 245) 
-                || !Utils.hasAcceptableCoordinates(result, vc, ec) 
+                || !Utils.hasAcceptableCoordinates(result, config) 
                 || !Utils.hasAcceptableAngles(result, 15.0d) 
                 || !Utils.hasAcceptablePointToLineDistances(result, 5.0d)) {
-            result = Utils.createRandomGene(rng, vc, ec);
+            result = Utils.createRandomGene(rng, config);
         }
         return result;
     }
 
     @Override
-    public Genome createGenome(MersenneTwister rng, VectorizerContext vc, EvolutionContext ec) {
-        return new Genome(Utils.createRandomGenes(rng, vc, ec, minGenes, maxGenes, this));
+    public Genome createGenome(MersenneTwister rng, VectorizerConfig config) {
+        return new Genome(Utils.createRandomGenes(rng, config, minGenes, maxGenes, this));
     }
 
 }

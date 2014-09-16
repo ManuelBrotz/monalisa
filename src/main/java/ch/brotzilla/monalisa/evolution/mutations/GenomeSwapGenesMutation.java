@@ -4,8 +4,7 @@ import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.intf.IndexSelector;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
 public class GenomeSwapGenesMutation extends BasicMutation implements GenomeMutation {
@@ -23,12 +22,12 @@ public class GenomeSwapGenesMutation extends BasicMutation implements GenomeMuta
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
+    public Genome apply(MersenneTwister rng, VectorizerConfig config, Genome input) {
         final Gene[] inputGenes = input.genes;
         final int length = inputGenes.length;
         if (length > 1) {
-            final int index1 = evolutionContext.getGeneIndexSelector().select(rng, length);
-            final int index2 = selectSecondIndex(rng, evolutionContext.getGeneIndexSelector(), index1, length);
+            final int index1 = config.getEvolutionContext().getGeneIndexSelector().select(rng, length);
+            final int index2 = selectSecondIndex(rng, config.getEvolutionContext().getGeneIndexSelector(), index1, length);
             final Gene[] newGenes = new Gene[inputGenes.length];
             System.arraycopy(inputGenes, 0, newGenes, 0, inputGenes.length);
             final Gene tmp = newGenes[index1];

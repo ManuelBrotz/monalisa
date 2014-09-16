@@ -2,10 +2,9 @@ package ch.brotzilla.monalisa.evolution.mutations;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.utils.BoundingBox;
 import ch.brotzilla.monalisa.utils.Utils;
-import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
 public class GeneDilateMutation extends BasicMutation implements GeneMutation {
@@ -19,7 +18,7 @@ public class GeneDilateMutation extends BasicMutation implements GeneMutation {
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
+    public Gene apply(MersenneTwister rng, VectorizerConfig config, Gene input) {
         final BoundingBox box = Utils.computeBoundingBox(input, 2.0d, 2.0d);
         final int cx = box.getXMin() + rng.nextInt(box.getWidth());
         final int cy = box.getYMin() + rng.nextInt(box.getHeight());

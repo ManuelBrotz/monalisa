@@ -114,7 +114,7 @@ public class VectorizerConfig {
     
     public Renderer createRenderer() {
         checkReady();
-        final Renderer result = getRendererFactory().createRenderer(getVectorizerContext(), getEvolutionContext());
+        final Renderer result = getRendererFactory().createRenderer(this);
         Preconditions.checkState(result != null, "The renderer factory must not return null");
         return result;
     }

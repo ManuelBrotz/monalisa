@@ -23,7 +23,7 @@ import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
 import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
 import ch.brotzilla.monalisa.utils.Utils;
-import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
 public class ConstrainingMutationStrategy implements MutationStrategy {
@@ -56,33 +56,31 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
     protected static final BasicTableSelector<GenomeMutation> genomeMutations = 
             new BasicTableSelector<GenomeMutation>(defaultMutationSelector, /* genomeAddGene, genomeRemoveGene, */ genomeSwapGenes);
 
-    protected Gene mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
+    protected Gene mutateGene(MersenneTwister rng, VectorizerConfig config, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final float p = rng.nextFloat();
         if (p < 0.75f) {
-            return geneImportantMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
+            return geneImportantMutations.select(rng).apply(rng, config, input);
         }
         if (p < 0.95f) {
-            return geneColorMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
+            return geneColorMutations.select(rng).apply(rng, config, input);
         }
-        return geneRareMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
+        return geneRareMutations.select(rng).apply(rng, config, input);
     }
     
-    protected Genome mutateGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
+    protected Genome mutateGene(MersenneTwister rng, VectorizerConfig config, Genome input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final Gene[] genes = input.genes;
-        final int index = evolutionContext.getGeneIndexSelector().select(rng, genes.length);
+        final int index = config.getEvolutionContext().getGeneIndexSelector().select(rng, genes.length);
         final Gene selected = genes[index];
-        final Gene mutated  = mutateGene(rng, vectorizerContext, evolutionContext, selected);
+        final Gene mutated  = mutateGene(rng, config, selected);
         if (mutated == null || mutated == selected 
                 || !Utils.hasAcceptableAlpha(mutated, 10, 245)
-                || !Utils.hasAcceptableCoordinates(mutated, vectorizerContext, evolutionContext)
+                || !Utils.hasAcceptableCoordinates(mutated, config)
                 || !Utils.hasAcceptableAngles(mutated, 15.0d) 
                 || !Utils.hasAcceptablePointToLineDistances(mutated, 5.0d) 
                 || Utils.isSelfIntersecting(mutated)) {
@@ -93,17 +91,16 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
         return result;
     }
     
-    protected Genome mutateGenome(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
-        return genomeMutations.select(rng).apply(rng, vectorizerContext, evolutionContext, input);
+    protected Genome mutateGenome(MersenneTwister rng, VectorizerConfig config, final Genome input) {
+        return genomeMutations.select(rng).apply(rng, config, input);
     }
     
     public ConstrainingMutationStrategy() {}
     
     @Override
-    public Genome mutate(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, final Genome input) {
+    public Genome mutate(MersenneTwister rng, VectorizerConfig config, final Genome input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final int count = 1 + rng.nextInt(2);
         Genome result = input;
@@ -111,9 +108,9 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
             Genome mutated = result;
             while (mutated == result) {
                 if (rng.nextBoolean(0.99f)) {
-                    mutated = mutateGene(rng, vectorizerContext, evolutionContext, result);
+                    mutated = mutateGene(rng, config, result);
                 } else {
-                    mutated = mutateGenome(rng, vectorizerContext, evolutionContext, result);
+                    mutated = mutateGenome(rng, config, result);
                 }
             }
             result = mutated;

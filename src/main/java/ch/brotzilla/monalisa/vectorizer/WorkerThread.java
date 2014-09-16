@@ -5,7 +5,6 @@ import java.util.concurrent.ExecutorService;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.util.MersenneTwister;
@@ -23,7 +22,6 @@ public class WorkerThread extends BasicThread {
         }
         
         final VectorizerContext vc = c.getVectorizerContext();
-        final EvolutionContext ec = c.getEvolutionContext();
         final MutationStrategy ms = c.getMutationStrategy();
         final GenomeFactory gf = c.getGenomeFactory();
         final Renderer re = c.createRenderer();
@@ -34,14 +32,14 @@ public class WorkerThread extends BasicThread {
 
         Genome genome = vc.getLatestGenome();
         if (genome == null) {
-            genome = gf.createGenome(rng, vc, ec);
+            genome = gf.createGenome(rng, c);
             if (genome == null) {
                 throw new IllegalStateException("GenomeFactory must not return null");
             }
         }
         while (genome != null && !getExecutor().isShutdown()) {
             try {
-                final Genome mutated = ms.mutate(rng, vc, ec, genome);
+                final Genome mutated = ms.mutate(rng, c, genome);
                 if (mutated == null) {
                     throw new IllegalStateException("MutationStrategy must not return null");
                 } else if (mutated == genome) {

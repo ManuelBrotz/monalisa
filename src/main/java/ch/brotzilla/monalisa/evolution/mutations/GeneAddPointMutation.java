@@ -2,8 +2,7 @@ package ch.brotzilla.monalisa.evolution.mutations;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
 public class GeneAddPointMutation extends BasicMutation implements GeneMutation {
@@ -13,15 +12,15 @@ public class GeneAddPointMutation extends BasicMutation implements GeneMutation 
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
+    public Gene apply(MersenneTwister rng, VectorizerConfig config, Gene input) {
         final int len = input.x.length;
         final int index = rng.nextInt(len+1);
         final int prev = index == 0 ? len : index - 1;
         final int next = index == len ? 0 : index + 1;
         final int[] x = expand(input.x, index);
         final int[] y = expand(input.y, index);
-        x[index] = Math.round((x[prev] + x[next]) / 2.0f) + evolutionContext.getPointMutationRange().select(rng);
-        y[index] = Math.round((y[prev] + y[next]) / 2.0f) + evolutionContext.getPointMutationRange().select(rng);
+        x[index] = Math.round((x[prev] + x[next]) / 2.0f) + config.getEvolutionContext().getPointMutationRange().select(rng);
+        y[index] = Math.round((y[prev] + y[next]) / 2.0f) + config.getEvolutionContext().getPointMutationRange().select(rng);
         return new Gene(x, y, input.color);
     }
     

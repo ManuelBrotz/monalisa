@@ -55,8 +55,8 @@ public class Monalisa {
     protected static RendererFactory setupRendererFactory() {
         return new RendererFactory() {
             @Override
-            public Renderer createRenderer(VectorizerContext vc, EvolutionContext ec) {
-                return new CachingTailRenderer(15, vc.getWidth(), vc.getHeight(), true);
+            public Renderer createRenderer(VectorizerConfig config) {
+                return new CachingTailRenderer(15, config.getWidth(), config.getHeight(), true);
             }
         };
     }

@@ -12,7 +12,6 @@ import com.google.common.collect.Queues;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.util.MersenneTwister;
 import ch.brotzilla.util.TickRate;
@@ -156,11 +155,10 @@ public class Vectorizer {
         }
         final VectorizerConfig c = getConfig();
         final VectorizerContext vc = c.getVectorizerContext();
-        final EvolutionContext ev = c.getEvolutionContext();
         final EvolutionStrategy es = c.getEvolutionStrategy();
         final Genome latest = vc.getLatestGenome();
         if (es != null && genome != null) {
-            genome = es.apply(rng, vc, ev, genome);
+            genome = es.apply(rng, c, genome);
         }
         if (genome != null) {
             final int numberOfMutations = vc.incNumberOfMutations();

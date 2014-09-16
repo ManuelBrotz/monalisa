@@ -14,6 +14,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.rendering.SimpleRenderer;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.Geometry;
 import ch.brotzilla.util.MersenneTwister;
@@ -111,11 +112,12 @@ public class Utils {
         return new BoundingBox(xmin, ymin, xmax, ymax);
     }
     
-    public static Gene createRandomGene(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext) {
+    public static Gene createRandomGene(MersenneTwister rng, VectorizerConfig config) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
-        final int width = vectorizerContext.getWidth(), height = vectorizerContext.getHeight(), xborder = evolutionContext.getOuterBorderX(), yborder = evolutionContext.getOuterBorderY();
+        Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
+        final EvolutionContext evolutionContext = config.getEvolutionContext();
+        final VectorizerContext vectorizerContext = config.getVectorizerContext();
+        final int width = config.getWidth(), height = config.getHeight(), xborder = evolutionContext.getOuterBorderX(), yborder = evolutionContext.getOuterBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
         final int[] inputData = vectorizerContext.getTargetImage().getBuffer(), x = new int[3], y = new int[3];
         x[0] = rng.nextInt(bwidth) - xborder;
@@ -130,13 +132,12 @@ public class Utils {
             final int alpha = rng.nextInt(256) << 24;
             return new Gene(x, y, (color & 0x00FFFFFF) | alpha);
         }
-        return createRandomGene(rng, vectorizerContext, evolutionContext);
+        return createRandomGene(rng, config);
     }
 
-    public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, int minGenes, int maxGenes, GenomeFactory genomeFactory) {
+    public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerConfig config, int minGenes, int maxGenes, GenomeFactory genomeFactory) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");
         Preconditions.checkArgument(maxGenes >= minGenes, "The parameter 'maxGenes' must be greater than or equal to 'minGenes'");
         Preconditions.checkNotNull(genomeFactory, "The parameter 'genomeFactory' must not be null");
@@ -150,18 +151,17 @@ public class Utils {
         Preconditions.checkState(length <= maxGenes);
         final Gene[] genes = new Gene[length];
         for (int i = 0; i < length; i++) {
-            genes[i] = genomeFactory.createGene(rng, vectorizerContext, evolutionContext);
+            genes[i] = genomeFactory.createGene(rng, config);
         }
         return genes;
     }
     
-    public static Genome appendGene(Genome genome, MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, GenomeFactory genomeFactory) {
+    public static Genome appendGene(Genome genome, MersenneTwister rng, VectorizerConfig config, GenomeFactory genomeFactory) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         Preconditions.checkNotNull(genomeFactory, "The parameter 'genomeFactory' must not be null");
-        final Gene gene = genomeFactory.createGene(rng, vectorizerContext, evolutionContext);
+        final Gene gene = genomeFactory.createGene(rng, config);
         final Gene[] inputGenes = genome.genes;
         final Gene[] newGenes = new Gene[inputGenes.length + 1];
         System.arraycopy(inputGenes, 0, newGenes, 0, inputGenes.length);
@@ -237,13 +237,12 @@ public class Utils {
         return true;
     }
     
-    public static boolean hasAcceptableCoordinates(Gene gene, VectorizerContext vectorizerContext, EvolutionContext evolutionContext) {
+    public static boolean hasAcceptableCoordinates(Gene gene, VectorizerConfig config) {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
-        Preconditions.checkNotNull(vectorizerContext, "The parameter 'vectorizerContext' must not be null");
-        Preconditions.checkNotNull(evolutionContext, "The parameter 'evolutionContext' must not be null");
+        Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         final int len = gene.x.length;
         final int[] x = gene.x, y = gene.y;
-        final int w = vectorizerContext.getWidth(), h = vectorizerContext.getHeight();
+        final int w = config.getWidth(), h = config.getHeight();
         for (int i = 0; i < len; i++) {
             final int px = x[i], py = y[i];
             if (px < 0 || px >= w || py < 0 || py >= h) {

@@ -4,8 +4,7 @@ import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
 public class GenePointMutation extends BasicMutation implements GeneMutation {
@@ -15,13 +14,13 @@ public class GenePointMutation extends BasicMutation implements GeneMutation {
     }
 
     @Override
-    public Gene apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Gene input) {
+    public Gene apply(MersenneTwister rng, VectorizerConfig config, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final Gene result = new Gene(input);
         final int coord = rng.nextInt(result.x.length);
-        result.x[coord] += evolutionContext.getPointMutationRange().select(rng);
-        result.y[coord] += evolutionContext.getPointMutationRange().select(rng);
+        result.x[coord] += config.getEvolutionContext().getPointMutationRange().select(rng);
+        result.y[coord] += config.getEvolutionContext().getPointMutationRange().select(rng);
         return result;
     }
     

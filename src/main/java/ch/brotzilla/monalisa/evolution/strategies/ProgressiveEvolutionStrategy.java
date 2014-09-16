@@ -8,6 +8,7 @@ import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Utils;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
@@ -38,7 +39,7 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
     }
     
     @Override
-    public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
+    public Genome apply(MersenneTwister rng, VectorizerConfig config, Genome input) {
         Genome result = input;
         
         if (minPolygonsToAccept > 0 && input.countPolygons() < minPolygonsToAccept) {
@@ -50,7 +51,7 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
             System.out.println("New Polygon will be added in " + timeBetweenNewPolygons + " ms.");
         } else if (System.currentTimeMillis() - timeLastPolygonAdded >= timeBetweenNewPolygons) {
             timeLastPolygonAdded = 0;
-            result = Utils.appendGene(result, rng, vectorizerContext, evolutionContext, genomeFactory);
+            result = Utils.appendGene(result, rng, config, genomeFactory);
             minPolygonsToAccept = result.countPolygons();
             System.out.println("New polygon added.");
         }
@@ -58,10 +59,11 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
         if (result != input) {
             result.overrideFitnessFlag = true;
             if (renderer == null) {
-                renderer = rendererFactory.createRenderer(vectorizerContext, evolutionContext);
+                renderer = rendererFactory.createRenderer(config);
             }
             renderer.render(result);
-            result.fitness = Utils.computeSimpleFitness(result, vectorizerContext.getTargetImageData(), vectorizerContext.getImportanceMapData(), renderer.getBuffer());
+            final VectorizerContext vc = config.getVectorizerContext();
+            result.fitness = Utils.computeSimpleFitness(result, vc.getTargetImageData(), vc.getImportanceMapData(), renderer.getBuffer());
         }
         
         return result;

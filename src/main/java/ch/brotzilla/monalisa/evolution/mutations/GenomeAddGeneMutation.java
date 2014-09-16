@@ -5,9 +5,8 @@ import com.google.common.base.Preconditions;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
 import ch.brotzilla.monalisa.utils.Utils;
-import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
 public class GenomeAddGeneMutation extends BasicMutation implements GenomeMutation {
@@ -21,8 +20,8 @@ public class GenomeAddGeneMutation extends BasicMutation implements GenomeMutati
     }
 
     @Override
-    public Genome apply(MersenneTwister rng, VectorizerContext vectorizerContext, EvolutionContext evolutionContext, Genome input) {
-        return Utils.appendGene(input, rng, vectorizerContext, evolutionContext, genomeFactory);
+    public Genome apply(MersenneTwister rng, VectorizerConfig config, Genome input) {
+        return Utils.appendGene(input, rng, config, genomeFactory);
     }
 
 }
