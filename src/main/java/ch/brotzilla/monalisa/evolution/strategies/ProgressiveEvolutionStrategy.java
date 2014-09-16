@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
-import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
-import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
@@ -14,19 +12,13 @@ import ch.brotzilla.util.MersenneTwister;
 
 public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
 
-    protected final RendererFactory rendererFactory;
-    protected final GenomeFactory genomeFactory;
     protected Renderer renderer;
     
     protected int timeBetweenNewPolygons = 60000;
     protected long timeLastPolygonAdded = 0;
     protected int minPolygonsToAccept = 0;
     
-    public ProgressiveEvolutionStrategy(RendererFactory rendererFactory, GenomeFactory genomeFactory) {
-        Preconditions.checkNotNull(rendererFactory, "The parameter 'rendererFactory' must not be null");
-        Preconditions.checkNotNull(genomeFactory, "The parameter 'genomeFactory' must not be null");
-        this.rendererFactory = rendererFactory;
-        this.genomeFactory = genomeFactory;
+    public ProgressiveEvolutionStrategy() {
     }
     
     public int getTimeBetweenNewPolygons() {
@@ -51,7 +43,7 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
             System.out.println("New Polygon will be added in " + timeBetweenNewPolygons + " ms.");
         } else if (System.currentTimeMillis() - timeLastPolygonAdded >= timeBetweenNewPolygons) {
             timeLastPolygonAdded = 0;
-            result = Utils.appendGene(result, rng, config, genomeFactory);
+            result = Utils.appendGene(result, rng, config);
             minPolygonsToAccept = result.countPolygons();
             System.out.println("New polygon added.");
         }
@@ -59,7 +51,7 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
         if (result != input) {
             result.overrideFitnessFlag = true;
             if (renderer == null) {
-                renderer = rendererFactory.createRenderer(config);
+                renderer = config.createRenderer();
             }
             renderer.render(result);
             final VectorizerContext vc = config.getVectorizerContext();

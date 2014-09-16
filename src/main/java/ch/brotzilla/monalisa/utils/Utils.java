@@ -156,12 +156,11 @@ public class Utils {
         return genes;
     }
     
-    public static Genome appendGene(Genome genome, MersenneTwister rng, VectorizerConfig config, GenomeFactory genomeFactory) {
+    public static Genome appendGene(Genome genome, MersenneTwister rng, VectorizerConfig config) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
-        Preconditions.checkNotNull(genomeFactory, "The parameter 'genomeFactory' must not be null");
-        final Gene gene = genomeFactory.createGene(rng, config);
+        final Gene gene = config.getGenomeFactory().createGene(rng, config);
         final Gene[] inputGenes = genome.genes;
         final Gene[] newGenes = new Gene[inputGenes.length + 1];
         System.arraycopy(inputGenes, 0, newGenes, 0, inputGenes.length);

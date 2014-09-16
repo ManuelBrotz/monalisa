@@ -2,6 +2,7 @@ package ch.brotzilla.monalisa.vectorizer;
 
 import com.google.common.base.Preconditions;
 
+import ch.brotzilla.monalisa.evolution.constraints.MutationConstraints;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
@@ -19,6 +20,7 @@ public class VectorizerConfig {
     private MutationStrategy mutationStrategy;
     private GenomeFactory genomeFactory;
     private RendererFactory rendererFactory;
+    private MutationConstraints mutationConstraints;
 
     boolean frozen = false;
     
@@ -31,7 +33,8 @@ public class VectorizerConfig {
                 && evolutionContext != null 
                 && mutationStrategy != null 
                 && genomeFactory != null
-                && rendererFactory != null;
+                && rendererFactory != null
+                && mutationConstraints != null;
     }
 
     public int getWidth() {
@@ -122,6 +125,15 @@ public class VectorizerConfig {
     public void setRendererFactory(RendererFactory value) {
         checkFrozenProperty("RendererFactory");
         this.rendererFactory = value;
+    }
+    
+    public MutationConstraints getConstraints() {
+        return mutationConstraints;
+    }
+    
+    public void setConstraints(MutationConstraints value) {
+        checkFrozenProperty("Constraints");
+        this.mutationConstraints = value;
     }
 
     private void checkFrozenProperty(String property) {

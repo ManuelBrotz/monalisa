@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
+import ch.brotzilla.monalisa.evolution.constraints.MutationConstraints;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
@@ -66,13 +67,18 @@ public class Monalisa {
     }
     
     protected static EvolutionStrategy setupEvolutionStrategy() {
-        return new ProgressiveEvolutionStrategy(setupRendererFactory(), setupGenomeFactory());
+        return new ProgressiveEvolutionStrategy();
     }
     
     protected static MutationStrategy setupMutationStrategy() {
         return new ConstrainingMutationStrategy();
     }
 
+    protected static MutationConstraints setupMutationConstraints() {
+        final MutationConstraints c = new MutationConstraints();
+        return c;
+    }
+    
     protected static Vectorizer setupVectorizer(SessionManager session) {
         final Vectorizer v = new Vectorizer();
         final VectorizerConfig c = new VectorizerConfig();
@@ -84,6 +90,7 @@ public class Monalisa {
         c.setEvolutionStrategy(setupEvolutionStrategy());
         c.setRendererFactory(setupRendererFactory());
         c.setGenomeFactory(setupGenomeFactory());
+        c.setConstraints(setupMutationConstraints());
         return v;
     }
 

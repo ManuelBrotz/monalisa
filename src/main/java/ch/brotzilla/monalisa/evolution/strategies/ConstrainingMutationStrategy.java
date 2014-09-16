@@ -22,7 +22,6 @@ import ch.brotzilla.monalisa.evolution.mutations.GenomeRemoveGeneMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
 import ch.brotzilla.monalisa.evolution.selectors.BasicIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
-import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
@@ -49,12 +48,12 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
     protected static final BasicTableSelector<GeneMutation> geneRareMutations = 
             new BasicTableSelector<GeneMutation>(defaultMutationSelector, geneAddPoint, geneRemovePoint, geneSwapPoints);
         
-    protected static final GenomeAddGeneMutation genomeAddGene = new GenomeAddGeneMutation(new ConstrainingGenomeFactory(5,  5));
+    protected static final GenomeAddGeneMutation genomeAddGene = new GenomeAddGeneMutation();
     protected static final GenomeRemoveGeneMutation genomeRemoveGene = new GenomeRemoveGeneMutation();
     protected static final GenomeSwapGenesMutation genomeSwapGenes = new GenomeSwapGenesMutation();
 
     protected static final BasicTableSelector<GenomeMutation> genomeMutations = 
-            new BasicTableSelector<GenomeMutation>(defaultMutationSelector, /* genomeAddGene, genomeRemoveGene, */ genomeSwapGenes);
+            new BasicTableSelector<GenomeMutation>(defaultMutationSelector, genomeSwapGenes);
 
     protected Gene mutateGene(MersenneTwister rng, VectorizerConfig config, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
@@ -70,6 +69,13 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
         return geneRareMutations.select(rng).apply(rng, config, input);
     }
     
+    /*
+     * || !Utils.hasAcceptableAlpha(mutated, 10, 245)
+                || !Utils.hasAcceptableCoordinates(mutated, config)
+                || !Utils.hasAcceptableAngles(mutated, 15.0d) 
+                || !Utils.hasAcceptablePointToLineDistances(mutated, 5.0d) 
+                || Utils.isSelfIntersecting(mutated)
+     */
     protected Genome mutateGene(MersenneTwister rng, VectorizerConfig config, Genome input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
@@ -78,12 +84,7 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
         final int index = config.getEvolutionContext().getGeneIndexSelector().select(rng, genes.length);
         final Gene selected = genes[index];
         final Gene mutated  = mutateGene(rng, config, selected);
-        if (mutated == null || mutated == selected 
-                || !Utils.hasAcceptableAlpha(mutated, 10, 245)
-                || !Utils.hasAcceptableCoordinates(mutated, config)
-                || !Utils.hasAcceptableAngles(mutated, 15.0d) 
-                || !Utils.hasAcceptablePointToLineDistances(mutated, 5.0d) 
-                || Utils.isSelfIntersecting(mutated)) {
+        if (mutated == null || mutated == selected || !config.getConstraints().acceptable(config, mutated)) {
             return input;
         }
         final Genome result = new Genome(input);
@@ -92,10 +93,15 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
     }
     
     protected Genome mutateGenome(MersenneTwister rng, VectorizerConfig config, final Genome input) {
-        return genomeMutations.select(rng).apply(rng, config, input);
+        Genome mutated = genomeMutations.select(rng).apply(rng, config, input);
+        if (mutated == null || mutated == input || !config.getConstraints().acceptable(config, mutated)) {
+            return input;
+        }
+        return mutated;
     }
     
-    public ConstrainingMutationStrategy() {}
+    public ConstrainingMutationStrategy() {
+    }
     
     @Override
     public Genome mutate(MersenneTwister rng, VectorizerConfig config, final Genome input) {
