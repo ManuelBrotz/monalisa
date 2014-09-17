@@ -12,15 +12,22 @@ public class BasicTableSelector<T> implements TableSelector<T> {
     private final T[] items;
     private final int length;
     
-    public BasicTableSelector(IndexSelector selector, @SuppressWarnings("unchecked") T... items) {
+    @SuppressWarnings("unchecked")
+    public BasicTableSelector(IndexSelector selector, T... items) {
         Preconditions.checkNotNull(selector, "The parameter 'selector' must not be null");
         Preconditions.checkNotNull(items, "The parameter 'items' must not be null");
         Preconditions.checkArgument(items.length > 0, "The parameter 'items' must not be empty");
         this.selector = selector;
-        this.items = items;
         this.length = items.length;
+        this.items = (T[]) new Object[length];
+        System.arraycopy(items, 0, this.items, 0, length);
     }
-    
+
+    @SuppressWarnings("unchecked")
+    public BasicTableSelector(T... items) {
+        this(new BasicIndexSelector(), items);
+    }
+
     public int getLength() {
         return length;
     }

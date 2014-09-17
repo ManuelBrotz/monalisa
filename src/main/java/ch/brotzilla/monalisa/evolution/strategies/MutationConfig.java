@@ -10,6 +10,8 @@ public class MutationConfig {
     private IndexSelector geneIndexSelector;
     private RangeSelector pointMutationRange, colorChannelMutationRange;
     protected int outerBorderX, outerBorderY, innerBorderX, innerBorderY;
+    protected double geneVersusGenomeMutationProbability;
+    protected int minMutationsPerGenome, maxMutationsPerGenome;
 
     public MutationConfig() {
     }
@@ -97,5 +99,36 @@ public class MutationConfig {
         this.innerBorderY = borderY;
         return this;
     }
+
+    public double getGeneVersusGenomeMutationProbability() {
+        return geneVersusGenomeMutationProbability;
+    }
     
+    public MutationConfig setGeneVersusGenomeMutationProbability(double value) {
+        Preconditions.checkArgument(value > 0.0d, "The parameter 'value' has to be greater than zero");
+        this.geneVersusGenomeMutationProbability = value;
+        return this;
+    }
+    
+    
+    public int getMinMutationsPerGenome() {
+        return minMutationsPerGenome;
+    }
+    
+    public MutationConfig setMinMutationsPerGenome(int value) {
+        Preconditions.checkArgument(value >= 1, "The parameter 'value' has to be greater than 1");
+        this.minMutationsPerGenome = value;
+        return this;
+    }
+    
+    public int getMaxMutationsPerGenome() {
+        return maxMutationsPerGenome;
+    }
+    
+    public MutationConfig setMaxMutationsPerGenome(int value) {
+        Preconditions.checkArgument(value >= 1, "The parameter 'value' has to be greater than 1");
+        this.maxMutationsPerGenome = value;
+        return this;
+    }
+
 }

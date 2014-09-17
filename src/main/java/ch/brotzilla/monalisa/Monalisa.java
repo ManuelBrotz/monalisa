@@ -18,14 +18,27 @@ import ch.brotzilla.monalisa.evolution.fitness.BasicFitnessFunction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.intf.GeneConstraint;
+import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
+import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
+import ch.brotzilla.monalisa.evolution.mutations.GeneAddPointMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneAlphaChannelMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneColorBrighterMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneColorChannelMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneColorDarkerMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GenePointMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneRemovePointMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneSwapPointsMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
+import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
+import ch.brotzilla.monalisa.evolution.selectors.ComplexTableSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
 import ch.brotzilla.monalisa.evolution.selectors.TailIndexSelector;
 import ch.brotzilla.monalisa.evolution.strategies.BasicGenomeFactory;
+import ch.brotzilla.monalisa.evolution.strategies.BasicMutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.MutationConfig;
-import ch.brotzilla.monalisa.evolution.strategies.StaticMutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.ProgressiveEvolutionStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
@@ -58,6 +71,9 @@ public class Monalisa {
         c.setGeneIndexSelector(new TailIndexSelector(15));
         c.setPointMutationRange(new GaussianRangeSelector(15));
         c.setColorChannelMutationRange(new GaussianRangeSelector(10));
+        c.setGeneVersusGenomeMutationProbability(0.99d);
+        c.setMinMutationsPerGenome(1);
+        c.setMaxMutationsPerGenome(2);
         return c;
     }
 
@@ -79,7 +95,26 @@ public class Monalisa {
     }
     
     protected static MutationStrategy setupMutationStrategy() {
-        return new StaticMutationStrategy();
+        
+        final ComplexTableSelector.Builder<GeneMutation> genes = ComplexTableSelector.newBuilder();
+        genes.add(new BasicTableSelector<GeneMutation>(new GenePointMutation()), 0.75d);
+        genes.add(new BasicTableSelector<GeneMutation>(
+                new GeneAlphaChannelMutation(),
+                new GeneColorChannelMutation(),
+                new GeneColorBrighterMutation(),
+                new GeneColorDarkerMutation()
+                ), 0.24d);
+        genes.add(new BasicTableSelector<GeneMutation>(
+                new GeneAddPointMutation(),
+                new GeneRemovePointMutation(),
+                new GeneSwapPointsMutation()
+                ), 0.01d);
+        
+        final BasicTableSelector<GenomeMutation> genomes = new BasicTableSelector<GenomeMutation>(
+                new GenomeSwapGenesMutation()
+                );
+        
+        return new BasicMutationStrategy(genes.build(), genomes);
     }
 
     protected static MutationConstraints setupMutationConstraints() {

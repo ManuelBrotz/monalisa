@@ -107,7 +107,8 @@ public class ComplexTableSelector<T> implements TableSelector<T> {
                 final double p = e.probability / sum;
                 newList.add(new Entry<T>(e.selector, p));
             }
-            return new ComplexTableSelector<T>((Entry<T>[]) newList.toArray());
+            final Entry<T>[] tmp = new Entry[newList.size()];
+            return new ComplexTableSelector<T>(newList.toArray(tmp));
         }
         
     }
