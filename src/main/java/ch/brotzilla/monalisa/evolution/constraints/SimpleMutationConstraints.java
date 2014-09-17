@@ -33,11 +33,11 @@ public final class SimpleMutationConstraints extends MutationConstraints {
     }
 
     @Override
-    public boolean acceptable(VectorizerConfig config, Gene gene) {
+    public boolean satisfied(VectorizerConfig config, Gene gene) {
         if (geneConstraint == null) {
             return true;
         }
-        return geneConstraint.acceptable(config, gene);
+        return geneConstraint.satisfied(config, gene);
     }
 
 }

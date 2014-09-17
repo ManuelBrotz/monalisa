@@ -84,7 +84,7 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
         final int index = config.getEvolutionContext().getGeneIndexSelector().select(rng, genes.length);
         final Gene selected = genes[index];
         final Gene mutated  = mutateGene(rng, config, selected);
-        if (mutated == null || mutated == selected || !config.getConstraints().acceptable(config, mutated)) {
+        if (mutated == null || mutated == selected || !config.getConstraints().satisfied(config, mutated)) {
             return input;
         }
         final Genome result = new Genome(input);

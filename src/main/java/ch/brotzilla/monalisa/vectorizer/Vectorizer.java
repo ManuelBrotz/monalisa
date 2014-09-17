@@ -66,6 +66,9 @@ public class Vectorizer {
     public void setSession(SessionManager value) {
         checkStopped("Session");
         this.session = value;
+        if (config != null) {
+            config.setSession(value);
+        }
     }
     
     public VectorizerConfig getConfig() {
@@ -75,6 +78,9 @@ public class Vectorizer {
     public void setConfig(VectorizerConfig value) {
         checkStopped("Config");
         this.config = value;
+        if (config != null) {
+            config.setSession(session);
+        }
     }
     
     public synchronized int nextSeed() {

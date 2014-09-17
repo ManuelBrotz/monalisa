@@ -40,7 +40,7 @@ public class ConstrainingGenomeFactory implements GenomeFactory {
     public Gene createGene(MersenneTwister rng, VectorizerConfig config) {
         final MutationConstraints c = config.getConstraints();
         Gene result = Utils.createRandomGene(rng, config);
-        while (!c.acceptable(config, result)) {
+        while (!c.satisfied(config, result)) {
             result = Utils.createRandomGene(rng, config);
         }
         return result;

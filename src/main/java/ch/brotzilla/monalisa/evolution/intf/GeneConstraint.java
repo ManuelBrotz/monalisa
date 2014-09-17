@@ -5,6 +5,6 @@ import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 
 public interface GeneConstraint {
     
-    boolean acceptable(VectorizerConfig config, Gene gene);
+    boolean satisfied(VectorizerConfig config, Gene gene);
     
 }
