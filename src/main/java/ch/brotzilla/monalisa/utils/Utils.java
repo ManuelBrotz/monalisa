@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
+import ch.brotzilla.monalisa.evolution.strategies.MutationConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.Geometry;
@@ -108,11 +108,11 @@ public class Utils {
     public static Gene createRandomGene(MersenneTwister rng, VectorizerConfig config) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
-        final EvolutionContext evolutionContext = config.getEvolutionContext();
-        final VectorizerContext vectorizerContext = config.getVectorizerContext();
-        final int width = config.getWidth(), height = config.getHeight(), xborder = evolutionContext.getOuterBorderX(), yborder = evolutionContext.getOuterBorderY();
+        final MutationConfig mc = config.getMutationConfig();
+        final VectorizerContext vc = config.getVectorizerContext();
+        final int width = config.getWidth(), height = config.getHeight(), xborder = mc.getOuterBorderX(), yborder = mc.getOuterBorderY();
         final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
-        final int[] inputData = vectorizerContext.getTargetImage().getBuffer(), x = new int[3], y = new int[3];
+        final int[] inputData = vc.getTargetImageData(), x = new int[3], y = new int[3];
         x[0] = rng.nextInt(bwidth) - xborder;
         x[1] = rng.nextInt(bwidth) - xborder;
         x[2] = rng.nextInt(bwidth) - xborder;

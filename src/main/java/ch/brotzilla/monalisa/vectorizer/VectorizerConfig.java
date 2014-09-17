@@ -8,7 +8,7 @@ import ch.brotzilla.monalisa.evolution.intf.FitnessFunction;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
+import ch.brotzilla.monalisa.evolution.strategies.MutationConfig;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.Renderer;
 
@@ -16,7 +16,7 @@ public class VectorizerConfig {
 
     private int width, height;
     private VectorizerContext vectorizerContext;
-    private EvolutionContext evolutionContext;
+    private MutationConfig mutationConfig;
     private EvolutionStrategy evolutionStrategy;
     private MutationStrategy mutationStrategy;
     private GenomeFactory genomeFactory;
@@ -32,7 +32,7 @@ public class VectorizerConfig {
     public boolean isReady() {
         return width > 0 && height > 0 
                 && vectorizerContext != null 
-                && evolutionContext != null 
+                && mutationConfig != null 
                 && mutationStrategy != null 
                 && genomeFactory != null
                 && rendererFactory != null
@@ -78,13 +78,13 @@ public class VectorizerConfig {
         }
     }
     
-    public EvolutionContext getEvolutionContext() {
-        return evolutionContext;
+    public MutationConfig getMutationConfig() {
+        return mutationConfig;
     }
 
-    public void setEvolutionContext(EvolutionContext value) {
-        checkFrozenProperty("EvolutionContext");
-        this.evolutionContext = value;
+    public void setMutationConfig(MutationConfig value) {
+        checkFrozenProperty("MutationConfig");
+        this.mutationConfig = value;
     }
 
     public EvolutionStrategy getEvolutionStrategy() {

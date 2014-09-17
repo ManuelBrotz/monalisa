@@ -25,6 +25,11 @@ public class BasicTableSelector<T> implements TableSelector<T> {
         return length;
     }
     
+    public T get(int index) {
+        return items[index];
+    }
+    
+    @Override
     public T select(MersenneTwister rng) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         if (length == 1) {

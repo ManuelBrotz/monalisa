@@ -74,7 +74,7 @@ public class StaticMutationStrategy implements MutationStrategy {
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final Gene[] genes = input.genes;
-        final int index = config.getEvolutionContext().getGeneIndexSelector().select(rng, genes.length);
+        final int index = config.getMutationConfig().getGeneIndexSelector().select(rng, genes.length);
         final Gene selected = genes[index];
         final Gene mutated  = mutateGene(rng, config, selected);
         if (mutated == null || mutated == selected || !config.getConstraints().satisfied(config, mutated)) {

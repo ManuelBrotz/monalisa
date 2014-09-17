@@ -19,8 +19,8 @@ public class GeneAddPointMutation extends BasicMutation implements GeneMutation 
         final int next = index == len ? 0 : index + 1;
         final int[] x = expand(input.x, index);
         final int[] y = expand(input.y, index);
-        x[index] = Math.round((x[prev] + x[next]) / 2.0f) + config.getEvolutionContext().getPointMutationRange().select(rng);
-        y[index] = Math.round((y[prev] + y[next]) / 2.0f) + config.getEvolutionContext().getPointMutationRange().select(rng);
+        x[index] = Math.round((x[prev] + x[next]) / 2.0f) + config.getMutationConfig().getPointMutationRange().select(rng);
+        y[index] = Math.round((y[prev] + y[next]) / 2.0f) + config.getMutationConfig().getPointMutationRange().select(rng);
         return new Gene(x, y, input.color);
     }
     

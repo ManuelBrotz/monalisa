@@ -19,8 +19,8 @@ public class GenePointMutation extends BasicMutation implements GeneMutation {
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
         final Gene result = new Gene(input);
         final int coord = rng.nextInt(result.x.length);
-        result.x[coord] += config.getEvolutionContext().getPointMutationRange().select(rng);
-        result.y[coord] += config.getEvolutionContext().getPointMutationRange().select(rng);
+        result.x[coord] += config.getMutationConfig().getPointMutationRange().select(rng);
+        result.y[coord] += config.getMutationConfig().getPointMutationRange().select(rng);
         return result;
     }
     

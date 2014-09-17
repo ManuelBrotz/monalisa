@@ -17,7 +17,7 @@ public class GenomeRemoveGeneMutation extends BasicMutation implements GenomeMut
         final Gene[] inputGenes = input.genes;
         final int length = inputGenes.length;
         if (length > 1) {
-            final int index = config.getEvolutionContext().getGeneIndexSelector().select(rng, length);
+            final int index = config.getMutationConfig().getGeneIndexSelector().select(rng, length);
             final Gene[] newGenes = new Gene[length - 1];
             if (index == 0) {
                 System.arraycopy(inputGenes, 1, newGenes, 0, length - 1);

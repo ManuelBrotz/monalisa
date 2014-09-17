@@ -24,7 +24,7 @@ import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
 import ch.brotzilla.monalisa.evolution.selectors.TailIndexSelector;
 import ch.brotzilla.monalisa.evolution.strategies.BasicGenomeFactory;
-import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
+import ch.brotzilla.monalisa.evolution.strategies.MutationConfig;
 import ch.brotzilla.monalisa.evolution.strategies.StaticMutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.ProgressiveEvolutionStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
@@ -51,8 +51,8 @@ public class Monalisa {
 
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
 
-    protected static EvolutionContext setupEvolutionContext(SessionManager session) {
-        final EvolutionContext c = new EvolutionContext();
+    protected static MutationConfig setupMutationConfig(SessionManager session) {
+        final MutationConfig c = new MutationConfig();
         c.setOuterBorder(0, 0);
         c.setInnerBorder(0, 0);
         c.setGeneIndexSelector(new TailIndexSelector(15));
@@ -98,7 +98,7 @@ public class Monalisa {
         final VectorizerConfig c = new VectorizerConfig();
         v.setSession(session);
         v.setConfig(c);
-        c.setEvolutionContext(setupEvolutionContext(session));
+        c.setMutationConfig(setupMutationConfig(session));
         c.setMutationStrategy(setupMutationStrategy());
         c.setEvolutionStrategy(setupEvolutionStrategy());
         c.setRendererFactory(setupRendererFactory());

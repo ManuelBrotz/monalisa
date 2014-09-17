@@ -14,7 +14,7 @@ public class GeneAlphaChannelMutation extends BasicMutation implements GeneMutat
     @Override
     public Gene apply(MersenneTwister rng, VectorizerConfig config, Gene input) {
         final Gene result = new Gene(input);
-        int value = result.color[0] + config.getEvolutionContext().getColorChannelMutationRange().select(rng);
+        int value = result.color[0] + config.getMutationConfig().getColorChannelMutationRange().select(rng);
         if (value < 0) value = 0;
         if (value > 255) value = 255;
         return result;

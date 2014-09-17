@@ -26,8 +26,8 @@ public class GenomeSwapGenesMutation extends BasicMutation implements GenomeMuta
         final Gene[] inputGenes = input.genes;
         final int length = inputGenes.length;
         if (length > 1) {
-            final int index1 = config.getEvolutionContext().getGeneIndexSelector().select(rng, length);
-            final int index2 = selectSecondIndex(rng, config.getEvolutionContext().getGeneIndexSelector(), index1, length);
+            final int index1 = config.getMutationConfig().getGeneIndexSelector().select(rng, length);
+            final int index2 = selectSecondIndex(rng, config.getMutationConfig().getGeneIndexSelector(), index1, length);
             final Gene[] newGenes = new Gene[inputGenes.length];
             System.arraycopy(inputGenes, 0, newGenes, 0, inputGenes.length);
             final Gene tmp = newGenes[index1];
