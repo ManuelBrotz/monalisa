@@ -23,9 +23,9 @@ import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
 import ch.brotzilla.monalisa.evolution.selectors.TailIndexSelector;
-import ch.brotzilla.monalisa.evolution.strategies.ConstrainingGenomeFactory;
+import ch.brotzilla.monalisa.evolution.strategies.BasicGenomeFactory;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.evolution.strategies.ConstrainingMutationStrategy;
+import ch.brotzilla.monalisa.evolution.strategies.StaticMutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.ProgressiveEvolutionStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
@@ -71,7 +71,7 @@ public class Monalisa {
     }
     
     protected static GenomeFactory setupGenomeFactory() {
-        return new ConstrainingGenomeFactory(5, 5);
+        return new BasicGenomeFactory(5, 5);
     }
     
     protected static EvolutionStrategy setupEvolutionStrategy() {
@@ -79,7 +79,7 @@ public class Monalisa {
     }
     
     protected static MutationStrategy setupMutationStrategy() {
-        return new ConstrainingMutationStrategy();
+        return new StaticMutationStrategy();
     }
 
     protected static MutationConstraints setupMutationConstraints() {

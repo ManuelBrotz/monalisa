@@ -25,7 +25,7 @@ import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
-public class ConstrainingMutationStrategy implements MutationStrategy {
+public class StaticMutationStrategy implements MutationStrategy {
     
     protected static final IndexSelector defaultMutationSelector = new BasicIndexSelector();
     
@@ -93,7 +93,7 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
         return mutated;
     }
     
-    public ConstrainingMutationStrategy() {
+    public StaticMutationStrategy() {
     }
     
     @Override
