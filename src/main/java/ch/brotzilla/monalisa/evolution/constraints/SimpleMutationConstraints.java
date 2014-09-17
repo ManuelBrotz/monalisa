@@ -25,11 +25,11 @@ public final class SimpleMutationConstraints extends MutationConstraints {
     }
 
     @Override
-    public boolean acceptable(VectorizerConfig config, Genome genome) {
+    public boolean satisfied(VectorizerConfig config, Genome genome) {
         if (genomeConstraint == null) {
             return true;
         }
-        return genomeConstraint.acceptable(config, genome);
+        return genomeConstraint.satisfied(config, genome);
     }
 
     @Override

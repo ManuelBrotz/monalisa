@@ -29,12 +29,12 @@ public final class ComplexMutationConstraints extends MutationConstraints {
     }
 
     @Override
-    public boolean acceptable(VectorizerConfig config, Genome genome) {
+    public boolean satisfied(VectorizerConfig config, Genome genome) {
         if (genomeConstraints.isEmpty()) {
             return true;
         }
         for (final GenomeConstraint c : genomeConstraints) {
-            if (c != null & !c.acceptable(config, genome)) {
+            if (c != null & !c.satisfied(config, genome)) {
                 return false;
             }
         }

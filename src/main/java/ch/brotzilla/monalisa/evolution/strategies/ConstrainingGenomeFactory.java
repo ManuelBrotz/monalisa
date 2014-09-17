@@ -30,12 +30,6 @@ public class ConstrainingGenomeFactory implements GenomeFactory {
         return maxGenes;
     }
     
-    /*
-     * !Utils.hasAcceptableAlpha(result, 10, 245) 
-                || !Utils.hasAcceptableCoordinates(result, config) 
-                || !Utils.hasAcceptableAngles(result, 15.0d) 
-                || !Utils.hasAcceptablePointToLineDistances(result, 5.0d)
-     */
     @Override
     public Gene createGene(MersenneTwister rng, VectorizerConfig config) {
         final MutationConstraints c = config.getConstraints();
@@ -50,7 +44,7 @@ public class ConstrainingGenomeFactory implements GenomeFactory {
     public Genome createGenome(MersenneTwister rng, VectorizerConfig config) {
         final MutationConstraints c = config.getConstraints();
         Genome result = new Genome(Utils.createRandomGenes(rng, config, minGenes, maxGenes, this));
-        while (!c.acceptable(config, result)) {
+        while (!c.satisfied(config, result)) {
             result = new Genome(Utils.createRandomGenes(rng, config, minGenes, maxGenes, this));
         }
         return result;

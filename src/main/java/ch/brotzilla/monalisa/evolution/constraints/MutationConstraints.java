@@ -12,7 +12,7 @@ public class MutationConstraints implements GeneConstraint, GenomeConstraint {
     }
     
     @Override
-    public boolean acceptable(VectorizerConfig config, Genome genome) {
+    public boolean satisfied(VectorizerConfig config, Genome genome) {
         return true;
     }
 

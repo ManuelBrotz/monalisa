@@ -14,6 +14,7 @@ import ch.brotzilla.monalisa.evolution.constraints.GeneSelfIntersectionConstrain
 import ch.brotzilla.monalisa.evolution.constraints.GeneStrictCoordinatesConstraint;
 import ch.brotzilla.monalisa.evolution.constraints.GeneVertexToEdgeDistanceConstraint;
 import ch.brotzilla.monalisa.evolution.constraints.MutationConstraints;
+import ch.brotzilla.monalisa.evolution.fitness.BasicFitnessFunction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.intf.GeneConstraint;
@@ -48,7 +49,6 @@ public class Monalisa {
 
     protected MainWindow mainWindow;
 
-    protected final DecimalFormat ff = new DecimalFormat("#,###,###,###,##0.######");
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
 
     protected static EvolutionContext setupEvolutionContext(SessionManager session) {
@@ -104,6 +104,7 @@ public class Monalisa {
         c.setRendererFactory(setupRendererFactory());
         c.setGenomeFactory(setupGenomeFactory());
         c.setConstraints(setupMutationConstraints());
+        c.setFitnessFunction(new BasicFitnessFunction(3.0, 1.0, 1.0, 1.0));
         return v;
     }
 
@@ -190,20 +191,20 @@ public class Monalisa {
             @Override
             public void started(Vectorizer v, Genome latest) {
                 if (mainWindow != null) {
-                    mainWindow.submit(latest);
+                    mainWindow.submit(v.getConfig(), latest);
                 }
             }
             @Override
             public void improved(Vectorizer v, Genome latest) {
                 if (mainWindow != null) {
-                    mainWindow.submit(latest);
-                    mainWindow.getStatusDisplay().update(v);
+                    mainWindow.submit(v.getConfig(), latest);
+                    mainWindow.getStatusDisplay().update(v.getConfig(), v.getTickRate());
                 }
             }
             @Override
             public void update(Vectorizer v) {
                 if (mainWindow != null) {
-                    mainWindow.getStatusDisplay().update(v);
+                    mainWindow.getStatusDisplay().update(v.getConfig(), v.getTickRate());
                 }
             }
             @Override
@@ -266,9 +267,9 @@ public class Monalisa {
                 final VectorizerContext vc = vectorizer.getConfig().getVectorizerContext();
                 final Genome genome = vc.getLatestGenome();
                 System.out.println("Mutations: " + vc.getNumberOfMutations() + ", Improvements: " + vc.getNumberOfImprovements() + ", Polygons: " + genome.countPolygons() + ", Points: "
-                        + genome.countPoints() + ", Fitness: " + ff.format(genome.fitness));
+                        + genome.countPoints() + ", Fitness: " + vectorizer.getConfig().getFitnessFunction().format(genome.fitness));
             } else if (input.equals("rate")) {
-                System.out.println(rf.format(vectorizer.getTickRate().getTickRate()) + " images/sec");
+                System.out.println(rf.format(vectorizer.getTickRate()) + " images/sec");
             } else if (input.equals("cache")) {
                 System.out.println("Number of cached polygons: <not available>"/* + vectorizer.getPolygonCache().getSize()*/);
             } else {

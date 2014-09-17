@@ -69,13 +69,6 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
         return geneRareMutations.select(rng).apply(rng, config, input);
     }
     
-    /*
-     * || !Utils.hasAcceptableAlpha(mutated, 10, 245)
-                || !Utils.hasAcceptableCoordinates(mutated, config)
-                || !Utils.hasAcceptableAngles(mutated, 15.0d) 
-                || !Utils.hasAcceptablePointToLineDistances(mutated, 5.0d) 
-                || Utils.isSelfIntersecting(mutated)
-     */
     protected Genome mutateGene(MersenneTwister rng, VectorizerConfig config, Genome input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
@@ -94,7 +87,7 @@ public class ConstrainingMutationStrategy implements MutationStrategy {
     
     protected Genome mutateGenome(MersenneTwister rng, VectorizerConfig config, final Genome input) {
         Genome mutated = genomeMutations.select(rng).apply(rng, config, input);
-        if (mutated == null || mutated == input || !config.getConstraints().acceptable(config, mutated)) {
+        if (mutated == null || mutated == input || !config.getConstraints().satisfied(config, mutated)) {
             return input;
         }
         return mutated;

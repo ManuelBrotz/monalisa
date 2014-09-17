@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.constraints.MutationConstraints;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.FitnessFunction;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
@@ -21,6 +22,7 @@ public class VectorizerConfig {
     private GenomeFactory genomeFactory;
     private RendererFactory rendererFactory;
     private MutationConstraints mutationConstraints;
+    private FitnessFunction fitnessFunction;
 
     boolean frozen = false;
     
@@ -34,7 +36,8 @@ public class VectorizerConfig {
                 && mutationStrategy != null 
                 && genomeFactory != null
                 && rendererFactory != null
-                && mutationConstraints != null;
+                && mutationConstraints != null
+                && fitnessFunction != null;
     }
 
     public int getWidth() {
@@ -135,16 +138,25 @@ public class VectorizerConfig {
         checkFrozenProperty("Constraints");
         this.mutationConstraints = value;
     }
+    
+    public FitnessFunction getFitnessFunction() {
+        return fitnessFunction;
+    }
+    
+    public void setFitnessFunction(FitnessFunction value) {
+        checkFrozenProperty("FitnessFunction");
+        this.fitnessFunction = value;
+    }
+
+    public void checkReady() {
+        if (!isReady()) {
+            throw new IllegalStateException("The vectorizer configuration is not ready");
+        }
+    }
 
     private void checkFrozenProperty(String property) {
         if (frozen) {
             throw new IllegalStateException("Property '" + property + "' cannot be changed while the vectorizer is running");
-        }
-    }
-
-    private void checkReady() {
-        if (!isReady()) {
-            throw new IllegalStateException("The vectorizer configuration is not ready");
         }
     }
 

@@ -55,8 +55,8 @@ public class Vectorizer {
         return state;
     }
 
-    public TickRate getTickRate() {
-        return tickrate;
+    public double getTickRate() {
+        return tickrate.getTickRate();
     }
 
     public SessionManager getSession() {

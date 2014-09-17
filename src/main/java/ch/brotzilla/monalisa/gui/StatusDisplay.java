@@ -9,7 +9,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.vectorizer.Vectorizer;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MatrixLayout;
 
 @SuppressWarnings("serial")
@@ -24,7 +24,6 @@ public class StatusDisplay extends JPanel {
     protected final JLabel fitnessName, fitnessValue;
     protected final JLabel rateName, rateValue;
     
-    protected final DecimalFormat ff = new DecimalFormat( "#,###,###,###,##0.00" );
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
     protected final DecimalFormat pppf = new DecimalFormat("#0.00");
     
@@ -97,7 +96,7 @@ public class StatusDisplay extends JPanel {
         }
     }
 
-    public void submit(Genome genome) {
+    public void submit(VectorizerConfig config, Genome genome) {
         if (genome == null) {
             generatedValue.setText("0");
             selectedValue.setText("0");
@@ -105,25 +104,27 @@ public class StatusDisplay extends JPanel {
             pointsValue.setText("0 (0.0)");
             fitnessValue.setText("0");
         } else {
+            Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
             generatedValue.setText(genome.numberOfMutations + "");
             selectedValue.setText(genome.numberOfImprovements + "");
             polygonsValue.setText(genome.countPolygons() + "");
             final int cp = genome.countPoints();
             final double ppp = (double) cp / genome.countPolygons();
             pointsValue.setText(cp + " (" + pppf.format(ppp) + ")");
-            fitnessValue.setText(ff.format(genome.fitness));
+            fitnessValue.setText(config.getFitnessFunction().format(genome.fitness));
         }
     }
     
-    public void update(Vectorizer v) {
-        if (v == null) {
+    public void update(VectorizerConfig config, double rate) {
+        if (config == null) {
             generatedValue.setText("0");
             selectedValue.setText("0");
             rateValue.setText("0.00/s");
         } else {
-            generatedValue.setText(v.getConfig().getVectorizerContext().getNumberOfMutations() + "");
-            selectedValue.setText(v.getConfig().getVectorizerContext().getNumberOfImprovements() + "");
-            rateValue.setText(rf.format(v.getTickRate().getTickRate()) + "/s");
+            Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
+            generatedValue.setText(config.getVectorizerContext().getNumberOfMutations() + "");
+            selectedValue.setText(config.getVectorizerContext().getNumberOfImprovements() + "");
+            rateValue.setText(rf.format(rate) + "/s");
         }
     }
 }

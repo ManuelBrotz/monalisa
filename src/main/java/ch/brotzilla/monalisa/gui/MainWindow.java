@@ -29,6 +29,7 @@ import ch.brotzilla.monalisa.gui.StatusDisplay.Orientation;
 import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
 @SuppressWarnings("serial")
@@ -173,7 +174,7 @@ public class MainWindow extends JFrame {
         return statusDisplay;
     }
 
-    public synchronized void submit(Genome genome) {
+    public synchronized void submit(VectorizerConfig config, Genome genome) {
         if (genome == null) {
             return;
         }
@@ -183,7 +184,7 @@ public class MainWindow extends JFrame {
         final long time = System.currentTimeMillis();
         if (time - lastRenderTime >= 1000) {
             lastRenderTime = time;
-            statusDisplay.submit(genome);
+            statusDisplay.submit(config, genome);
             renderer.render(genome);
             currentImageDisplay.repaint();
         }

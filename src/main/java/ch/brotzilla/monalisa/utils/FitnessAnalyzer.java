@@ -7,35 +7,33 @@ import com.google.common.base.Preconditions;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.rendering.Renderer;
-import ch.brotzilla.monalisa.rendering.SimpleRenderer;
+import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 
 public class FitnessAnalyzer {
 
+    protected final VectorizerConfig config;
     protected final Renderer renderer;
-    protected final int[] inputData, importanceMap;
+    protected final int[] targetData, importanceMap;
     
     protected double computeFitness(Genome genome) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         renderer.render(genome);
-        return Utils.computeSimpleFitness(genome, inputData, importanceMap, renderer.getBuffer());
+        if (renderer.getAutoUpdateBuffer()) {
+            return config.getFitnessFunction().compute(config, genome, renderer.getBuffer());
+        } else {
+            return config.getFitnessFunction().compute(config, genome, renderer.readData());
+        }
     }
     
-    public FitnessAnalyzer(Renderer renderer, int[] inputData, int[] importanceMap) {
-        Preconditions.checkNotNull(renderer, "The parameter 'renderer' must not be null");
-        Preconditions.checkArgument(renderer.getAutoUpdateBuffer(), "The property 'getAutoUpdateBuffer()' of the parameter 'renderer' must be set to true");
-        Preconditions.checkNotNull(inputData, "The parameter 'inputData' must not be null");
-        this.renderer = renderer;
-        this.inputData = inputData;
-        this.importanceMap = importanceMap;
+    public FitnessAnalyzer(VectorizerConfig config) {
+        Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
+        config.checkReady();
+        this.config = config;
+        this.renderer = config.createRenderer();
+        this.targetData = config.getVectorizerContext().getTargetImageData();
+        this.importanceMap = config.getVectorizerContext().getImportanceMapData();
     }
     
-    public FitnessAnalyzer(int width, int height, int[] inputData, int[] importanceMap) {
-        Preconditions.checkNotNull(inputData, "The parameter 'inputData' must not be null");
-        this.renderer = new SimpleRenderer(width, height, true);
-        this.inputData = inputData;
-        this.importanceMap = importanceMap;
-    }
-
     public double[] analyze(Genome genome) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         final double originalFitness = computeFitness(genome);

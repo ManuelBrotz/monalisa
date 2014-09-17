@@ -7,7 +7,6 @@ import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
-import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.MersenneTwister;
 
 public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
@@ -54,8 +53,11 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
                 renderer = config.createRenderer();
             }
             renderer.render(result);
-            final VectorizerContext vc = config.getVectorizerContext();
-            result.fitness = Utils.computeSimpleFitness(result, vc.getTargetImageData(), vc.getImportanceMapData(), renderer.getBuffer());
+            if (renderer.getAutoUpdateBuffer()) {
+                result.fitness = config.getFitnessFunction().compute(config, result, renderer.getBuffer());
+            } else {
+                result.fitness = config.getFitnessFunction().compute(config, result, renderer.readData());
+            }
         }
         
         return result;

@@ -13,12 +13,10 @@ import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.strategies.EvolutionContext;
-import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.Geometry;
 import ch.brotzilla.util.MersenneTwister;
-import ch.brotzilla.util.TextReader;
 
 import com.google.common.base.Preconditions;
 
@@ -35,11 +33,6 @@ public class Utils {
         return image;
     }
     
-    public static String readTextFile(File file) throws IOException {
-        final TextReader reader = new TextReader(1024 * 10);
-        return reader.readTextFile(file);
-    }
-
     public static Point computeCentroid(Gene gene, Point output) {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         return computeCentroid(gene.x, gene.y, output);
@@ -206,43 +199,6 @@ public class Utils {
         return false;
     }
 
-    public static double computeSimpleFitness(Genome genome, int[] inputData, int[] importanceMap, int[] targetData) {
-        Preconditions.checkNotNull(inputData, "The parameter 'inputData' must not be null");
-        Preconditions.checkNotNull(importanceMap, "The parameter 'importanceMap' must not be null");
-        Preconditions.checkNotNull(targetData, "The parameter 'targetData' must not be null");
-        Preconditions.checkArgument(inputData.length == importanceMap.length, "The parameters 'inputData' and 'importanceMap' must be of equal length");
-        Preconditions.checkArgument(inputData.length == targetData.length, "The parameters 'inputData' and 'targetData' must be of equal length");
-        double sum = 0;
-        final int length = targetData.length;
-        for (int i = 0; i < length; i++) {
-            final int ic = inputData[i];
-            final int ia = (ic >> 24) & 0x000000FF;
-            final int ir = (ic >> 16) & 0x000000FF;
-            final int ig = (ic >> 8) & 0x000000FF;
-            final int ib = ic & 0x000000FF;
-            final int tc = targetData[i];
-            final int ta = (tc >> 24) & 0x000000FF;
-            final int tr = (tc >> 16) & 0x000000FF;
-            final int tg = (tc >> 8) & 0x000000FF;
-            final int tb = tc & 0x000000FF;
-            final int da = ia - ta;
-            final int dr = ir - tr;
-            final int dg = ig - tg;
-            final int db = ib - tb;
-//            sum += ((da * da) + (dr * dr) + (dg * dg) + (db * db)) * (256 - importanceMap[i]);
-            sum += ((da * da * 3) + (dr * dr) + (dg * dg) + (db * db)) * (256 - importanceMap[i]);
-        }
-//        sum = sum + (sum / 20000f) * genome.countPolygons() + (sum / 200000f) * genome.countPoints();
-//        sum = sum + (sum * genome.countPoints() * 0.000005d);
-        return sum;
-    }
-    
-    public static double computeSimpleFitness(Genome genome, int[] inputData, int[] importanceMap, int width, int height) {
-        final SimpleRenderer renderer = new SimpleRenderer(width, height, true);
-        renderer.render(genome);
-        return computeSimpleFitness(genome, inputData, importanceMap, renderer.getBuffer());
-    }
-    
     public static int[] decodeColor(int argb, int[] output) {
         final int a = (argb >> 24) & 0x000000FF;
         final int r = (argb >> 16) & 0x000000FF;
@@ -314,10 +270,6 @@ public class Utils {
                 throw new IllegalArgumentException("Invalid color value. (" + value + ")");
             }
         }
-    }
-    
-    public static boolean equals(double a, double b) {
-        return (Double.compare(a, b) == 0) || (Double.isInfinite(a) && Double.isInfinite(b)) || (Double.isNaN(a) && Double.isNaN(b));
     }
     
     public static boolean equals(int[] a, int[] b) {
