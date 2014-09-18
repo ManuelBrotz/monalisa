@@ -32,9 +32,10 @@ import ch.brotzilla.monalisa.evolution.mutations.GenePointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneRemovePointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneSwapPointsMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
-import ch.brotzilla.monalisa.evolution.selectors.BasicTableSelector;
-import ch.brotzilla.monalisa.evolution.selectors.ComplexTableSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
+import ch.brotzilla.monalisa.evolution.selectors.PObjectSelector;
+import ch.brotzilla.monalisa.evolution.selectors.SingleObjectSelector;
+import ch.brotzilla.monalisa.evolution.selectors.TObjectSelector;
 import ch.brotzilla.monalisa.evolution.selectors.TailIndexSelector;
 import ch.brotzilla.monalisa.evolution.strategies.BasicGenomeFactory;
 import ch.brotzilla.monalisa.evolution.strategies.BasicMutationStrategy;
@@ -96,25 +97,21 @@ public class Monalisa {
     
     protected static MutationStrategy setupMutationStrategy() {
         
-        final ComplexTableSelector.Builder<GeneMutation> genes = ComplexTableSelector.newBuilder();
-        genes.add(new BasicTableSelector<GeneMutation>(new GenePointMutation()), 0.75d);
-        genes.add(new BasicTableSelector<GeneMutation>(
-                new GeneAlphaChannelMutation(),
-                new GeneColorChannelMutation(),
-                new GeneColorBrighterMutation(),
-                new GeneColorDarkerMutation()
-                ), 0.24d);
-        genes.add(new BasicTableSelector<GeneMutation>(
-                new GeneAddPointMutation(),
-                new GeneRemovePointMutation(),
-                new GeneSwapPointsMutation()
-                ), 0.01d);
-        
-        final BasicTableSelector<GenomeMutation> genomes = new BasicTableSelector<GenomeMutation>(
-                new GenomeSwapGenesMutation()
-                );
-        
-        return new BasicMutationStrategy(genes.build(), genomes);
+        return new BasicMutationStrategy(
+                PObjectSelector.<GeneMutation>newBuilder()
+                .add(new GenePointMutation(), 0.75d)
+                .add(TObjectSelector.<GeneMutation>newBuilder().add(
+                        new GeneAlphaChannelMutation(),
+                        new GeneColorChannelMutation(),
+                        new GeneColorBrighterMutation(),
+                        new GeneColorDarkerMutation()
+                        ).build(), 0.24d)
+                .add(TObjectSelector.<GeneMutation>newBuilder().add(
+                        new GeneAddPointMutation(),
+                        new GeneRemovePointMutation(),
+                        new GeneSwapPointsMutation()
+                        ).build(), 0.01d).build(),
+                SingleObjectSelector.<GenomeMutation>build(new GenomeSwapGenesMutation()));
     }
 
     protected static MutationConstraints setupMutationConstraints() {

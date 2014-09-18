@@ -7,14 +7,14 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
 import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
-import ch.brotzilla.monalisa.evolution.intf.TableSelector;
+import ch.brotzilla.monalisa.evolution.intf.ObjectSelector;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
 public class BasicMutationStrategy implements MutationStrategy {
 
-    private final TableSelector<GeneMutation> geneMutations;
-    private final TableSelector<GenomeMutation> genomeMutations;
+    private final ObjectSelector<GeneMutation> geneMutations;
+    private final ObjectSelector<GenomeMutation> genomeMutations;
     
     protected Gene mutateGene(MersenneTwister rng, VectorizerConfig config, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
@@ -51,18 +51,18 @@ public class BasicMutationStrategy implements MutationStrategy {
         return mutated;
     }
 
-    public BasicMutationStrategy(TableSelector<GeneMutation> geneMutations, TableSelector<GenomeMutation> genomeMutations) {
+    public BasicMutationStrategy(ObjectSelector<GeneMutation> geneMutations, ObjectSelector<GenomeMutation> genomeMutations) {
         Preconditions.checkNotNull(geneMutations, "The parameter 'geneMutations' must not be null");
         Preconditions.checkNotNull(genomeMutations, "The parameter 'genomeMutations' must not be null");
         this.geneMutations = geneMutations;
         this.genomeMutations = genomeMutations;
     }
     
-    public TableSelector<GeneMutation> getGeneMutations() {
+    public ObjectSelector<GeneMutation> getGeneMutations() {
         return geneMutations;
     }
     
-    public TableSelector<GenomeMutation> getGenomeMutations() {
+    public ObjectSelector<GenomeMutation> getGenomeMutations() {
         return genomeMutations;
     }
 
