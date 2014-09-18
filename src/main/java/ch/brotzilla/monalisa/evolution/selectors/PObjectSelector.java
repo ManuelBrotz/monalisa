@@ -92,18 +92,34 @@ public class PObjectSelector<T> implements ObjectSelector<T> {
             return this;
         }
         
-        public Builder<T> add(ObjectSelector<T> value, double probability) {
-            Preconditions.checkNotNull(value, "The parameter 'value' must not be null");
+        public Builder<T> add(double probability, ObjectSelector<T> value) {
             Preconditions.checkArgument(probability > 0.0d, "The parameter 'probability' has to be greater than zero");
+            Preconditions.checkNotNull(value, "The parameter 'value' must not be null");
             entries.add(value);
             probabilities.add(probability);
             return this;
         }
         
-        public Builder<T> add(T value, double probability) {
-            Preconditions.checkNotNull(value, "The parameter 'value' must not be null");
+        public Builder<T> add(double probability, @SuppressWarnings("unchecked") ObjectSelector<T>... values) {
             Preconditions.checkArgument(probability > 0.0d, "The parameter 'probability' has to be greater than zero");
+            Preconditions.checkNotNull(values, "The parameter 'values' must not be null");
+            entries.add(TObjectSelector.<ObjectSelector<T>>newBuilder().add(values).build());
+            probabilities.add(probability);
+            return this;
+        }
+        
+        public Builder<T> add(double probability, T value) {
+            Preconditions.checkArgument(probability > 0.0d, "The parameter 'probability' has to be greater than zero");
+            Preconditions.checkNotNull(value, "The parameter 'value' must not be null");
             entries.add(value);
+            probabilities.add(probability);
+            return this;
+        }
+        
+        public Builder<T> add(double probability, @SuppressWarnings("unchecked") T... values) {
+            Preconditions.checkArgument(probability > 0.0d, "The parameter 'probability' has to be greater than zero");
+            Preconditions.checkNotNull(values, "The parameter 'values' must not be null");
+            entries.add(TObjectSelector.<T>newBuilder().add(values).build());
             probabilities.add(probability);
             return this;
         }

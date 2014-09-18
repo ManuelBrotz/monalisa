@@ -99,18 +99,10 @@ public class Monalisa {
         
         return new BasicMutationStrategy(
                 PObjectSelector.<GeneMutation>newBuilder()
-                .add(new GenePointMutation(), 0.75d)
-                .add(TObjectSelector.<GeneMutation>newBuilder().add(
-                        new GeneAlphaChannelMutation(),
-                        new GeneColorChannelMutation(),
-                        new GeneColorBrighterMutation(),
-                        new GeneColorDarkerMutation()
-                        ).build(), 0.24d)
-                .add(TObjectSelector.<GeneMutation>newBuilder().add(
-                        new GeneAddPointMutation(),
-                        new GeneRemovePointMutation(),
-                        new GeneSwapPointsMutation()
-                        ).build(), 0.01d).build(),
+                .add(0.75d, new GenePointMutation())
+                .add(0.24d, new GeneAlphaChannelMutation(), new GeneColorChannelMutation(), new GeneColorBrighterMutation(), new GeneColorDarkerMutation())
+                .add(0.01d, new GeneAddPointMutation(), new GeneRemovePointMutation(), new GeneSwapPointsMutation())
+                .build(),
                 SingleObjectSelector.<GenomeMutation>build(new GenomeSwapGenesMutation()));
     }
 
