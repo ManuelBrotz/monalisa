@@ -18,9 +18,7 @@ import ch.brotzilla.monalisa.evolution.fitness.BasicFitnessFunction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
 import ch.brotzilla.monalisa.evolution.intf.GeneConstraint;
-import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
-import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.mutations.GeneAddPointMutation;
@@ -32,10 +30,8 @@ import ch.brotzilla.monalisa.evolution.mutations.GenePointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneRemovePointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneSwapPointsMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
+import ch.brotzilla.monalisa.evolution.mutations.ProbabilityGeneMutationSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
-import ch.brotzilla.monalisa.evolution.selectors.PObjectSelector;
-import ch.brotzilla.monalisa.evolution.selectors.SingleObjectSelector;
-import ch.brotzilla.monalisa.evolution.selectors.TObjectSelector;
 import ch.brotzilla.monalisa.evolution.selectors.TailIndexSelector;
 import ch.brotzilla.monalisa.evolution.strategies.BasicGenomeFactory;
 import ch.brotzilla.monalisa.evolution.strategies.BasicMutationStrategy;
@@ -96,14 +92,13 @@ public class Monalisa {
     }
     
     protected static MutationStrategy setupMutationStrategy() {
-        
         return new BasicMutationStrategy(
-                PObjectSelector.<GeneMutation>newBuilder()
+                new ProbabilityGeneMutationSelector.Builder()
                 .add(0.75d, new GenePointMutation())
                 .add(0.24d, new GeneAlphaChannelMutation(), new GeneColorChannelMutation(), new GeneColorBrighterMutation(), new GeneColorDarkerMutation())
                 .add(0.01d, new GeneAddPointMutation(), new GeneRemovePointMutation(), new GeneSwapPointsMutation())
                 .build(),
-                SingleObjectSelector.<GenomeMutation>build(new GenomeSwapGenesMutation()));
+                new GenomeSwapGenesMutation());
     }
 
     protected static MutationConstraints setupMutationConstraints() {

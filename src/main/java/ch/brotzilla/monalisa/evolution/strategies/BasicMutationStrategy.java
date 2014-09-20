@@ -7,22 +7,19 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
 import ch.brotzilla.monalisa.evolution.intf.GenomeMutation;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
-import ch.brotzilla.monalisa.evolution.intf.ObjectSelector;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
 public class BasicMutationStrategy implements MutationStrategy {
 
-    private final ObjectSelector<GeneMutation> geneMutations;
-    private final ObjectSelector<GenomeMutation> genomeMutations;
+    private final GeneMutation geneMutation;
+    private final GenomeMutation genomeMutation;
     
     protected Gene mutateGene(MersenneTwister rng, VectorizerConfig config, Gene input) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         Preconditions.checkNotNull(input, "The parameter 'input' must not be null");
-        final GeneMutation mutation = geneMutations.select(rng);
-        Preconditions.checkNotNull(mutation, "The gene mutation selector must not return null");
-        return mutation.apply(rng, config, input);
+        return geneMutation.apply(rng, config, input);
     }
     
     protected Genome mutateGene(MersenneTwister rng, VectorizerConfig config, Genome input) {
@@ -42,28 +39,26 @@ public class BasicMutationStrategy implements MutationStrategy {
     }
     
     protected Genome mutateGenome(MersenneTwister rng, VectorizerConfig config, final Genome input) {
-        final GenomeMutation mutation = genomeMutations.select(rng);
-        Preconditions.checkNotNull(mutation, "The genome mutation selector must not return null");
-        Genome mutated = mutation.apply(rng, config, input);
+        Genome mutated = genomeMutation.apply(rng, config, input);
         if (mutated == null || mutated == input || !config.getConstraints().satisfied(config, mutated)) {
             return input;
         }
         return mutated;
     }
 
-    public BasicMutationStrategy(ObjectSelector<GeneMutation> geneMutations, ObjectSelector<GenomeMutation> genomeMutations) {
-        Preconditions.checkNotNull(geneMutations, "The parameter 'geneMutations' must not be null");
-        Preconditions.checkNotNull(genomeMutations, "The parameter 'genomeMutations' must not be null");
-        this.geneMutations = geneMutations;
-        this.genomeMutations = genomeMutations;
+    public BasicMutationStrategy(GeneMutation geneMutation, GenomeMutation genomeMutation) {
+        Preconditions.checkNotNull(geneMutation, "The parameter 'geneMutation' must not be null");
+        Preconditions.checkNotNull(genomeMutation, "The parameter 'genomeMutation' must not be null");
+        this.geneMutation = geneMutation;
+        this.genomeMutation = genomeMutation;
     }
     
-    public ObjectSelector<GeneMutation> getGeneMutations() {
-        return geneMutations;
+    public GeneMutation getGeneMutation() {
+        return geneMutation;
     }
     
-    public ObjectSelector<GenomeMutation> getGenomeMutations() {
-        return genomeMutations;
+    public GenomeMutation getGenomeMutation() {
+        return genomeMutation;
     }
 
     @Override
