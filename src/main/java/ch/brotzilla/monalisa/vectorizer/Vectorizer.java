@@ -172,7 +172,7 @@ public class Vectorizer {
             genome = es.apply(rng, c, genome, latest == null || fc.isImprovement(latest, genome));
         }
 
-        if (genome != null && (latest == null || fc.isImprovement(latest, genome) || genome.overrideFitness)) {
+        if (genome != null && (latest == null || genome.overrideFitness || fc.isImprovement(latest, genome))) {
             genome.numberOfImprovements = vc.incNumberOfImprovements();
             genome.numberOfMutations = numberOfMutations;
             vc.setLatestGenome(genome);
