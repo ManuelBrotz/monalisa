@@ -114,16 +114,17 @@ public class Monalisa {
     
     protected static Vectorizer setupVectorizer(SessionManager session) {
         final Vectorizer v = new Vectorizer();
-        final VectorizerConfig c = new VectorizerConfig();
         v.setSession(session);
-        v.setConfig(c);
-        c.setMutationConfig(setupMutationConfig(session));
-        c.setMutationStrategy(setupMutationStrategy());
-        c.setEvolutionStrategy(setupEvolutionStrategy());
-        c.setRendererFactory(setupRendererFactory());
-        c.setGenomeFactory(setupGenomeFactory());
-        c.setConstraints(setupMutationConstraints());
-        c.setFitnessFunction(new BasicFitnessFunction(3.0, 1.0, 1.0, 1.0));
+        final VectorizerConfig.Builder c = new VectorizerConfig.Builder();
+        c.setSession(session)
+            .setMutationConfig(setupMutationConfig(session))
+            .setMutationStrategy(setupMutationStrategy())
+            .setEvolutionStrategy(setupEvolutionStrategy())
+            .setRendererFactory(setupRendererFactory())
+            .setGenomeFactory(setupGenomeFactory())
+            .setConstraints(setupMutationConstraints())
+            .setFitnessFunction(new BasicFitnessFunction(3.0, 1.0, 1.0, 1.0));
+        v.setConfig(c.build());
         return v;
     }
 

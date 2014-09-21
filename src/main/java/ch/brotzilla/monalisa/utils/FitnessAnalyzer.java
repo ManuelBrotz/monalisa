@@ -27,7 +27,6 @@ public class FitnessAnalyzer {
     
     public FitnessAnalyzer(VectorizerConfig config) {
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
-        config.checkReady();
         this.config = config;
         this.renderer = config.createRenderer();
         this.targetData = config.getVectorizerContext().getTargetImageData();

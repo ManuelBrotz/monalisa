@@ -41,15 +41,12 @@ public class Vectorizer {
     }
 
     public Vectorizer() {
-        this.config = new VectorizerConfig();
         this.listeners = Lists.newArrayList();
         this.tickrate = new TickRate(60);
     }
     
     public boolean isReady() {
-        return session != null
-                && config != null
-                && config.isReady();
+        return session != null && config != null;
     }
 
     public State getState() {
@@ -67,9 +64,6 @@ public class Vectorizer {
     public void setSession(SessionManager value) {
         checkStopped("Session");
         this.session = value;
-        if (config != null) {
-            config.setSession(value);
-        }
     }
     
     public VectorizerConfig getConfig() {
@@ -79,9 +73,6 @@ public class Vectorizer {
     public void setConfig(VectorizerConfig value) {
         checkStopped("Config");
         this.config = value;
-        if (config != null) {
-            config.setSession(session);
-        }
     }
     
     public synchronized int nextSeed() {
@@ -105,7 +96,6 @@ public class Vectorizer {
         seeds = new MersenneTwister(getSession().getParams().getSeed());
         rng = new MersenneTwister(nextSeed());
 
-        config.frozen = true;
         state = State.Running;
         lastUpdateFired = -1;
         tickrate.reset();
@@ -148,7 +138,6 @@ public class Vectorizer {
             }
         } finally {
             state = State.Stopped;
-            config.frozen = false;
             storageThread = null;
             workerThreads = null;
             storageQueue = null;
