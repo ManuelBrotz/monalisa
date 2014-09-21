@@ -16,7 +16,7 @@ public class Genome {
     public final Gene[] genes;
     public double fitness;
     public int numberOfMutations, numberOfImprovements;
-    public boolean overrideFitnessFlag;
+    public boolean overrideFitness;
 
     public Genome(Gene[] genes, boolean copy) {
         Preconditions.checkNotNull(genes, "The parameter 'genes' must not be null");

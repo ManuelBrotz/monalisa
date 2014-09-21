@@ -72,6 +72,13 @@ public class BasicFitnessFunction extends AbstractFitnessFunction {
     }
 
     @Override
+    public boolean isImprovement(Genome latest, Genome mutated) {
+        Preconditions.checkNotNull(latest, "The parameter 'latest' must not be null");
+        Preconditions.checkNotNull(mutated, "The parameter 'mutated' must not be null");
+        return mutated.fitness < latest.fitness;
+    }
+
+    @Override
     public String format(double fitness) {
         return ff.format(fitness);
     }

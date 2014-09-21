@@ -12,6 +12,7 @@ import com.google.common.collect.Queues;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
+import ch.brotzilla.monalisa.evolution.intf.FitnessFunction;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.util.MersenneTwister;
 import ch.brotzilla.util.TickRate;
@@ -156,32 +157,37 @@ public class Vectorizer {
     }
 
     public synchronized Genome submit(Genome genome) {
-        if (state != State.Running) {
+        if (state != State.Running || genome == null) {
             return null;
         }
+        
         final VectorizerConfig c = getConfig();
         final VectorizerContext vc = c.getVectorizerContext();
         final EvolutionStrategy es = c.getEvolutionStrategy();
+        final FitnessFunction fc = c.getFitnessFunction();
         final Genome latest = vc.getLatestGenome();
-        if (es != null && genome != null) {
-            genome = es.apply(rng, c, genome);
+        final int numberOfMutations = vc.incNumberOfMutations();
+        
+        if (es != null) {
+            genome = es.apply(rng, c, genome, latest == null || fc.isImprovement(latest, genome));
         }
-        if (genome != null) {
-            final int numberOfMutations = vc.incNumberOfMutations();
-            if (latest == null || genome.fitness < latest.fitness || genome.overrideFitnessFlag) {
-                genome.numberOfImprovements = vc.incNumberOfImprovements();
-                genome.numberOfMutations = numberOfMutations;
-                vc.setLatestGenome(genome);
-                storageQueue.offer(genome);
-                fireImproved(genome);
-                lastUpdateFired = System.currentTimeMillis();
-            }
-            tickrate.tick();
+
+        if (genome != null && (latest == null || fc.isImprovement(latest, genome) || genome.overrideFitness)) {
+            genome.numberOfImprovements = vc.incNumberOfImprovements();
+            genome.numberOfMutations = numberOfMutations;
+            vc.setLatestGenome(genome);
+            storageQueue.offer(genome);
+            fireImproved(genome);
+            lastUpdateFired = System.currentTimeMillis();
         }
+        
+        tickrate.tick();
+
         if (lastUpdateFired < 0 || System.currentTimeMillis() - lastUpdateFired >= 1000) {
             lastUpdateFired = System.currentTimeMillis();
             fireUpdate();
         }
+        
         return vc.getLatestGenome();
     }
 

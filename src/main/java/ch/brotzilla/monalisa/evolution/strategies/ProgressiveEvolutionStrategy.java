@@ -30,7 +30,11 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
     }
     
     @Override
-    public Genome apply(MersenneTwister rng, VectorizerConfig config, Genome input) {
+    public Genome apply(MersenneTwister rng, VectorizerConfig config, Genome input, boolean isImprovement) {
+        if (!isImprovement) {
+            return input;
+        }
+        
         Genome result = input;
         
         if (minPolygonsToAccept > 0 && input.countPolygons() < minPolygonsToAccept) {
@@ -48,7 +52,6 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
         }
         
         if (result != input) {
-            result.overrideFitnessFlag = true;
             if (renderer == null) {
                 renderer = config.createRenderer();
             }

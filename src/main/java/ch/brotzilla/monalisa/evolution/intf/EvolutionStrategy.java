@@ -6,6 +6,6 @@ import ch.brotzilla.util.MersenneTwister;
 
 public interface EvolutionStrategy {
     
-    Genome apply(MersenneTwister rng, VectorizerConfig config, Genome input);
+    Genome apply(MersenneTwister rng, VectorizerConfig config, Genome input, boolean isImprovement);
     
 }

@@ -44,6 +44,11 @@ public class DecoratedFitnessFunction extends AbstractFitnessFunction {
     }
 
     @Override
+    public boolean isImprovement(Genome latest, Genome mutated) {
+        return delegate.isImprovement(latest, mutated);
+    }
+
+    @Override
     public String format(double fitness) {
         return delegate.format(fitness);
     }

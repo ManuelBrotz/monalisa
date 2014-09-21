@@ -9,5 +9,7 @@ public interface FitnessFunction {
     
     double compute(VectorizerConfig config, Genome genome);
     
+    boolean isImprovement(Genome latest, Genome mutated);
+    
     String format(double fitness);
 }

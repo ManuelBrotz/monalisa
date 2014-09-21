@@ -95,8 +95,8 @@ public class Monalisa {
         return new BasicMutationStrategy(
                 new ProbabilityGeneMutationSelector.Builder()
                 .add(0.75d, new GenePointMutation())
-                .add(0.24d, new GeneAlphaChannelMutation(), new GeneColorChannelMutation(), new GeneColorBrighterMutation(), new GeneColorDarkerMutation())
-                .add(0.01d, new GeneAddPointMutation(), new GeneRemovePointMutation(), new GeneSwapPointsMutation())
+                .add(0.15d, new GeneAlphaChannelMutation(), new GeneColorChannelMutation(), new GeneColorBrighterMutation(), new GeneColorDarkerMutation())
+                .add(0.10d, new GeneAddPointMutation(), new GeneRemovePointMutation(), new GeneSwapPointsMutation())
                 .build(),
                 new GenomeSwapGenesMutation());
     }
