@@ -52,6 +52,7 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
         }
         
         if (result != input) {
+            result.overrideFitness = true;
             if (renderer == null) {
                 renderer = config.createRenderer();
             }
