@@ -9,12 +9,10 @@ import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.strategies.MutationConfig;
-import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.Renderer;
 
 public class VectorizerConfig {
 
-    private final int width, height;
     private final VectorizerContext vectorizerContext;
     private final MutationConfig mutationConfig;
     private final EvolutionStrategy evolutionStrategy;
@@ -27,8 +25,6 @@ public class VectorizerConfig {
     private VectorizerConfig(Builder builder) {
         Preconditions.checkNotNull(builder, "The parameter 'builder' must not be null");
         builder.checkReady();
-        this.width = builder.getWidth();
-        this.height = builder.getHeight();
         this.vectorizerContext = builder.getVectorizerContext();
         this.mutationConfig = builder.getMutationConfig();
         this.evolutionStrategy = builder.getEvolutionStrategy();
@@ -40,11 +36,11 @@ public class VectorizerConfig {
     }
 
     public int getWidth() {
-        return width;
+        return vectorizerContext.getWidth();
     }
 
     public int getHeight() {
-        return height;
+        return vectorizerContext.getHeight();
     }
 
     public VectorizerContext getVectorizerContext() {
@@ -87,7 +83,6 @@ public class VectorizerConfig {
 
     public static class Builder {
 
-        private int width, height;
         private VectorizerContext vectorizerContext;
         private MutationConfig mutationConfig;
         private EvolutionStrategy evolutionStrategy;
@@ -98,24 +93,8 @@ public class VectorizerConfig {
         private FitnessFunction fitnessFunction;
 
         public boolean isReady() {
-            return width > 0 && height > 0 && vectorizerContext != null && mutationConfig != null && mutationStrategy != null && genomeFactory != null && rendererFactory != null
+            return vectorizerContext != null && mutationConfig != null && mutationStrategy != null && genomeFactory != null && rendererFactory != null
                     && mutationConstraints != null && fitnessFunction != null;
-        }
-
-        public int getWidth() {
-            return width;
-        }
-
-        public int getHeight() {
-            return height;
-        }
-
-        public Builder setSize(int width, int height) {
-            Preconditions.checkArgument(width >= 0, "The parameter 'width' has to be greater than or equal to zero");
-            Preconditions.checkArgument(height >= 0, "The parameter 'height' has to be greater than or equal to zero");
-            this.width = width;
-            this.height = height;
-            return this;
         }
 
         public VectorizerContext getVectorizerContext() {
@@ -124,19 +103,6 @@ public class VectorizerConfig {
 
         public Builder setVectorizerContext(VectorizerContext value) {
             this.vectorizerContext = value;
-            return this;
-        }
-
-        public Builder setSession(SessionManager session) {
-            if (session != null) {
-                this.width = session.getWidth();
-                this.height = session.getHeight();
-                this.vectorizerContext = session.getVectorizerContext();
-            } else {
-                this.width = 0;
-                this.height = 0;
-                this.vectorizerContext = null;
-            }
             return this;
         }
 
@@ -204,8 +170,6 @@ public class VectorizerConfig {
         }
 
         public void checkReady() {
-            Preconditions.checkArgument(getWidth() > 0, "The property 'Width' has to be greater than zero");
-            Preconditions.checkArgument(getHeight() > 0, "The property 'Height' has to be greater than zero");
             Preconditions.checkNotNull(getVectorizerContext(), "The property 'VectorizerContext' must not be null");
             Preconditions.checkNotNull(getMutationConfig(), "The property 'MutationConfig' must not be null");
             Preconditions.checkNotNull(getEvolutionStrategy(), "The property 'EvolutionStrategy' must not be null");

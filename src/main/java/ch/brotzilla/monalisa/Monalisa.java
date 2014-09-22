@@ -116,7 +116,7 @@ public class Monalisa {
         final Vectorizer v = new Vectorizer();
         v.setSession(session);
         final VectorizerConfig.Builder c = new VectorizerConfig.Builder();
-        c.setSession(session)
+        c.setVectorizerContext(session.getVectorizerContext())
             .setMutationConfig(setupMutationConfig(session))
             .setMutationStrategy(setupMutationStrategy())
             .setEvolutionStrategy(setupEvolutionStrategy())
