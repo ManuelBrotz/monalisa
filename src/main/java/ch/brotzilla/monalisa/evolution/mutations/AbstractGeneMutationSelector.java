@@ -6,32 +6,51 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import ch.brotzilla.monalisa.evolution.intf.GeneMutation;
+import ch.brotzilla.monalisa.intf.Builder;
 
 public abstract class AbstractGeneMutationSelector extends BasicMutation implements GeneMutation {
 
     protected final GeneMutation[] mutations;
     protected final int length;
     
-    protected AbstractGeneMutationSelector(String id, String name, String description, GeneMutation[] mutations) {
-        super(id, name, description);
-        Preconditions.checkNotNull(mutations, "The parameter 'mutations' must not be null");
-        Preconditions.checkArgument(mutations.length > 0, "The length of the parameter 'mutations' has to be greater than zero");
-        this.mutations = mutations;
+    protected AbstractGeneMutationSelector(AbstractBuilder builder) {
+        super(Preconditions.checkNotNull(builder, "The parameter 'builder' must not be null").checkReady().getID(), builder.getName(), builder.getDescription());
+        this.mutations = builder.buildMutations();
         this.length = mutations.length;
     }
 
-    protected abstract static class AbstractBuilder {
+    protected abstract static class AbstractBuilder implements Builder<GeneMutation> {
         
         private final List<GeneMutation> mutations;
         private String id, name, description;
         
-        protected abstract GeneMutation buildSelector(GeneMutation[] mutations);
+        protected GeneMutation[] buildMutations() {
+            final int length = mutations.size();
+            final GeneMutation[] result = new GeneMutation[length];
+            for (int i = 0; i < length; i++) {
+                result[i] = mutations.get(i);
+            }
+            return result;
+        }
         
         protected AbstractBuilder(String id, String name, String description) {
             this.mutations = Lists.newArrayList();
             this.id = id;
             this.name = name;
             this.description = description;
+        }
+        
+        @Override
+        public AbstractBuilder checkReady() {
+            Preconditions.checkState(!mutations.isEmpty(), "The list of mutations must not be empty");
+            Preconditions.checkState(mutations.indexOf(null) == -1, "The list of mutations must not contain null elements");
+            Preconditions.checkState(isReady(), "The mutation selector is not ready");
+            return this;
+        }
+        
+        @Override
+        public boolean isReady() {
+            return !mutations.isEmpty() && mutations.indexOf(null) == -1;
         }
 
         public String getID() {
@@ -84,17 +103,6 @@ public abstract class AbstractGeneMutationSelector extends BasicMutation impleme
             return this;
         }
         
-        public GeneMutation build() {
-            final int length = mutations.size();
-            if (length == 0) {
-                throw new IllegalStateException("The builder must not be empty");
-            }
-            final GeneMutation[] tmp = new GeneMutation[length];
-            for (int i = 0; i < length; i++) {
-                tmp[i] = mutations.get(i);
-            }
-            return buildSelector(tmp);
-        }
     }
 
 }

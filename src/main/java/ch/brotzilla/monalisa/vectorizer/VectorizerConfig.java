@@ -81,7 +81,7 @@ public class VectorizerConfig {
         return result;
     }
 
-    public static class Builder {
+    public static class Builder implements ch.brotzilla.monalisa.intf.Builder<VectorizerConfig> {
 
         private VectorizerContext vectorizerContext;
         private MutationConfig mutationConfig;
@@ -92,7 +92,8 @@ public class VectorizerConfig {
         private MutationConstraints mutationConstraints;
         private FitnessFunction fitnessFunction;
 
-        private void checkReady() {
+        @Override
+        public Builder checkReady() {
             Preconditions.checkNotNull(getVectorizerContext(), "The property 'VectorizerContext' must not be null");
             Preconditions.checkNotNull(getMutationConfig(), "The property 'MutationConfig' must not be null");
             Preconditions.checkNotNull(getEvolutionStrategy(), "The property 'EvolutionStrategy' must not be null");
@@ -102,8 +103,10 @@ public class VectorizerConfig {
             Preconditions.checkNotNull(getConstraints(), "The property 'Constraints' must not be null");
             Preconditions.checkNotNull(getFitnessFunction(), "The property 'FitnessFunction' must not be null");
             Preconditions.checkState(isReady(), "The vectorizer configuration is not ready");
+            return this;
         }
 
+        @Override
         public boolean isReady() {
             return vectorizerContext != null && mutationConfig != null && mutationStrategy != null && genomeFactory != null && rendererFactory != null
                     && mutationConstraints != null && fitnessFunction != null;
@@ -181,6 +184,7 @@ public class VectorizerConfig {
             return this;
         }
 
+        @Override
         public VectorizerConfig build() {
             return new VectorizerConfig(this);
         }

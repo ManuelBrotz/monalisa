@@ -14,11 +14,9 @@ public class ProbabilityGenomeMutationSelector extends AbstractGenomeMutationSel
 
     protected final double[] probabilities; 
     
-    protected ProbabilityGenomeMutationSelector(String id, String name, String description, GenomeMutation[] mutations, double[] probabilites) {
-        super(id, name, description, mutations);
-        Preconditions.checkNotNull(probabilites, "The parameter 'probabilities' must not be null");
-        Preconditions.checkArgument(probabilites.length == mutations.length, "The length of the parameter 'probabilities' has to be equal to the length of the parameter 'mutations'");
-        this.probabilities = probabilites;
+    protected ProbabilityGenomeMutationSelector(Builder builder) {
+        super(builder);
+        this.probabilities = builder.buildProbabilities();
     }
 
     @Override
@@ -42,7 +40,17 @@ public class ProbabilityGenomeMutationSelector extends AbstractGenomeMutationSel
     public static class Builder extends AbstractBuilder {
         
         protected final List<Double> probabilities;
-        
+
+        protected double[] buildProbabilities() {
+            final double sum = sum();
+            final int length = size();
+            final double[] result = new double[length];
+            for (int i = 0; i < length; i++) {
+                result[i] = probabilities.get(i) / sum;
+            }
+            return result;
+        }
+
         protected double sum() {
             double sum = 0;
             for (final Double p : probabilities) {
@@ -60,16 +68,19 @@ public class ProbabilityGenomeMutationSelector extends AbstractGenomeMutationSel
         public Builder() {
             this("probability-genome-mutation-selector", "ProbabilityGenomeMutationSelector", "");
         }
-
+        
         @Override
-        protected GenomeMutation buildSelector(GenomeMutation[] mutations) {
-            final double sum = sum();
-            final int length = size();
-            final double[] tmp = new double[length];
-            for (int i = 0; i < length; i++) {
-                tmp[i] = probabilities.get(i) / sum;
-            }
-            return new ProbabilityGenomeMutationSelector(getID(), getName(), getDescription(), mutations, tmp);
+        public Builder checkReady() {
+            Preconditions.checkState(!probabilities.isEmpty(), "The list of probabilities must not be empty");
+            Preconditions.checkState(probabilities.indexOf(null) == -1, "The list of probabilities must not contain null elements");
+            Preconditions.checkState(probabilities.size() == size(), "The number of probabilities has to be equal to the number of mutations");
+            super.checkReady();
+            return this;
+        }
+        
+        @Override
+        public boolean isReady() {
+            return !probabilities.isEmpty() && probabilities.size() == size() && super.isReady();
         }
 
         public Builder setID(String value){
@@ -99,6 +110,11 @@ public class ProbabilityGenomeMutationSelector extends AbstractGenomeMutationSel
             }
             probabilities.add(probability);
             return this;
+        }
+
+        @Override
+        public GenomeMutation build() {
+            return new ProbabilityGenomeMutationSelector(this);
         }
 
     }

@@ -9,8 +9,8 @@ import ch.brotzilla.util.MersenneTwister;
 
 public class RandomGenomeMutationSelector extends AbstractGenomeMutationSelector {
 
-    protected RandomGenomeMutationSelector(String id, String name, String description, GenomeMutation[] mutations) {
-        super(id, name, description, mutations);
+    protected RandomGenomeMutationSelector(Builder builder) {
+        super(builder);
     }
 
     @Override
@@ -32,11 +32,6 @@ public class RandomGenomeMutationSelector extends AbstractGenomeMutationSelector
             super("random-genome-mutation-selector", "RandomGenomeMutationSelector", "");
         }
 
-        @Override
-        protected GenomeMutation buildSelector(GenomeMutation[] mutations) {
-            return new RandomGenomeMutationSelector(getID(), getName(), getDescription(), mutations);
-        }
-
         public Builder setID(String value){
             return (Builder) super.setID(value);
         }
@@ -55,6 +50,11 @@ public class RandomGenomeMutationSelector extends AbstractGenomeMutationSelector
         
         public Builder add(GenomeMutation... mutations) {
             return (Builder) super.add(mutations);
+        }
+
+        @Override
+        public GenomeMutation build() {
+            return new RandomGenomeMutationSelector(this);
         }
 
     }

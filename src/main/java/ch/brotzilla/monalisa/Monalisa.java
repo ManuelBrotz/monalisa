@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.Scanner;
 
 import ch.brotzilla.monalisa.evolution.constraints.ComplexMutationConstraints;
@@ -17,7 +16,7 @@ import ch.brotzilla.monalisa.evolution.constraints.MutationConstraints;
 import ch.brotzilla.monalisa.evolution.fitness.BasicFitnessFunction;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
-import ch.brotzilla.monalisa.evolution.intf.GeneConstraint;
+import ch.brotzilla.monalisa.evolution.intf.FitnessFunction;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
@@ -102,27 +101,30 @@ public class Monalisa {
     }
 
     protected static MutationConstraints setupMutationConstraints() {
-        final ComplexMutationConstraints c = new ComplexMutationConstraints();
-        final List<GeneConstraint> genes = c.getGeneConstraints();
-        genes.add(new GeneAlphaConstraint(10, 245));
-        genes.add(new GeneAngleConstraint(15.0d));
-        genes.add(new GeneStrictCoordinatesConstraint());
-        genes.add(new GeneVertexToEdgeDistanceConstraint(5.0d));
-        genes.add(new GeneSelfIntersectionConstraint());
-        return c;
+        return new ComplexMutationConstraints.Builder()
+        .add(new GeneAlphaConstraint(10, 245))
+        .add(new GeneAngleConstraint(15.0d))
+        .add(new GeneStrictCoordinatesConstraint())
+        .add(new GeneVertexToEdgeDistanceConstraint(5.0d))
+        .add(new GeneSelfIntersectionConstraint())
+        .build();
+    }
+    
+    protected static FitnessFunction setupFitnessFunction() {
+        return new BasicFitnessFunction(3.0, 1.0, 1.0, 1.0);
     }
     
     protected static Vectorizer setupVectorizer(SessionManager session) {
-        final VectorizerConfig.Builder c = new VectorizerConfig.Builder();
-        c.setVectorizerContext(session.getVectorizerContext())
-            .setMutationConfig(setupMutationConfig(session))
-            .setMutationStrategy(setupMutationStrategy())
-            .setEvolutionStrategy(setupEvolutionStrategy())
-            .setRendererFactory(setupRendererFactory())
-            .setGenomeFactory(setupGenomeFactory())
-            .setConstraints(setupMutationConstraints())
-            .setFitnessFunction(new BasicFitnessFunction(3.0, 1.0, 1.0, 1.0));
-        return new Vectorizer(session, c.build());
+        return new Vectorizer(session, new VectorizerConfig.Builder()
+        .setVectorizerContext(session.getVectorizerContext())
+        .setMutationConfig(setupMutationConfig(session))
+        .setMutationStrategy(setupMutationStrategy())
+        .setEvolutionStrategy(setupEvolutionStrategy())
+        .setRendererFactory(setupRendererFactory())
+        .setGenomeFactory(setupGenomeFactory())
+        .setConstraints(setupMutationConstraints())
+        .setFitnessFunction(setupFitnessFunction())
+        .build());
     }
 
     protected void printError() {

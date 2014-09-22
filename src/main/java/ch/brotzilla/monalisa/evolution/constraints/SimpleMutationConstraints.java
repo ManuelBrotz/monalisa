@@ -6,7 +6,7 @@ import ch.brotzilla.monalisa.evolution.intf.GeneConstraint;
 import ch.brotzilla.monalisa.evolution.intf.GenomeConstraint;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 
-public final class SimpleMutationConstraints extends MutationConstraints {
+public class SimpleMutationConstraints extends MutationConstraints {
 
     private final GenomeConstraint genomeConstraint;
     private final GeneConstraint geneConstraint;
@@ -16,14 +16,6 @@ public final class SimpleMutationConstraints extends MutationConstraints {
         this.geneConstraint = geneConstraint;
     }
     
-    public GenomeConstraint getGenomeConstraint() {
-        return genomeConstraint;
-    }
-    
-    public GeneConstraint getGeneConstraint() {
-        return geneConstraint;
-    }
-
     @Override
     public boolean satisfied(VectorizerConfig config, Genome genome) {
         if (genomeConstraint == null) {
