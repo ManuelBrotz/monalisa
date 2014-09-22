@@ -17,10 +17,6 @@ public class WorkerThread extends BasicThread {
         final Vectorizer v = getOwner();
         final VectorizerConfig c = v.getConfig();
         
-        if (!v.isReady()) {
-            throw new IllegalStateException("The vectorizer is not ready");
-        }
-        
         final VectorizerContext vc = c.getVectorizerContext();
         final MutationStrategy ms = c.getMutationStrategy();
         final GenomeFactory gf = c.getGenomeFactory();

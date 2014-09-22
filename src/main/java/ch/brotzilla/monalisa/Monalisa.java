@@ -113,8 +113,6 @@ public class Monalisa {
     }
     
     protected static Vectorizer setupVectorizer(SessionManager session) {
-        final Vectorizer v = new Vectorizer();
-        v.setSession(session);
         final VectorizerConfig.Builder c = new VectorizerConfig.Builder();
         c.setVectorizerContext(session.getVectorizerContext())
             .setMutationConfig(setupMutationConfig(session))
@@ -124,8 +122,7 @@ public class Monalisa {
             .setGenomeFactory(setupGenomeFactory())
             .setConstraints(setupMutationConstraints())
             .setFitnessFunction(new BasicFitnessFunction(3.0, 1.0, 1.0, 1.0));
-        v.setConfig(c.build());
-        return v;
+        return new Vectorizer(session, c.build());
     }
 
     protected void printError() {

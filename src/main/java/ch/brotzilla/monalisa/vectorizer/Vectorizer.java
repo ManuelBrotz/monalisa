@@ -19,36 +19,38 @@ import ch.brotzilla.util.TickRate;
 
 public class Vectorizer {
 
-    private State state = State.Stopped;
-    private long lastUpdateFired;
-
     // created on construction
     private final List<VectorizerListener> listeners;
     private final TickRate tickrate;
 
     // supplied by the user
-    private SessionManager session;
-    private VectorizerConfig config;
+    private final SessionManager session;
+    private final VectorizerConfig config;
     
     // created on startup
     private MersenneTwister seeds, rng;
     private ExecutorService workerThreads;
     private BlockingQueue<Genome> storageQueue;
     private ExecutorService storageThread;
+
+    // internal state
+    private State state = State.Stopped;
+    private long lastUpdateFired;
     
     public enum State {
         Running, Stopping, Stopped
     }
 
-    public Vectorizer() {
+    public Vectorizer(SessionManager session, VectorizerConfig config) {
+        Preconditions.checkNotNull(session, "The parameter 'session' must not be null");
+        Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
+        Preconditions.checkArgument(session.getVectorizerContext() == config.getVectorizerContext(), "The parameters 'session' and 'config' have to reference the same vectorizer context");
         this.listeners = Lists.newArrayList();
         this.tickrate = new TickRate(60);
+        this.session = session;
+        this.config = config;
     }
     
-    public boolean isReady() {
-        return session != null && config != null;
-    }
-
     public State getState() {
         return state;
     }
@@ -61,22 +63,11 @@ public class Vectorizer {
         return session;
     }
     
-    public void setSession(SessionManager value) {
-        checkStopped("Session");
-        this.session = value;
-    }
-    
     public VectorizerConfig getConfig() {
         return config;
     }
     
-    public void setConfig(VectorizerConfig value) {
-        checkStopped("Config");
-        this.config = value;
-    }
-    
     public synchronized int nextSeed() {
-        checkReady();
         Preconditions.checkState(seeds != null, "No seeds available");
         int seed = seeds.nextInt();
         while (seed == 0) {
@@ -88,9 +79,6 @@ public class Vectorizer {
     public void start() {
         if (state != State.Stopped) {
             throw new IllegalStateException("Unable to start vectorizer");
-        }
-        if (!isReady()) {
-            throw new IllegalStateException("The Vectorizer configuration is not ready");
         }
 
         seeds = new MersenneTwister(getSession().getParams().getSeed());
@@ -196,7 +184,7 @@ public class Vectorizer {
         }
         listeners.remove(listener);
     }
-
+    
     private void fireStarted(Genome latest) {
         for (VectorizerListener l : listeners) {
             l.started(this, latest);
@@ -227,16 +215,4 @@ public class Vectorizer {
         }
     }
     
-    private void checkReady() {
-        if (!isReady()) {
-            throw new IllegalStateException("The vectorizer is not ready");
-        }
-    }
-    
-    private void checkStopped(String property) {
-        if (state != State.Stopped) {
-            throw new IllegalStateException("Property '" + property + "' cannot be changed while the vectorizer is running");
-        }
-    }
-
 }

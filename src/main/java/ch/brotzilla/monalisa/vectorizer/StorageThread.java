@@ -20,10 +20,6 @@ public class StorageThread extends BasicThread {
         
         final Vectorizer v = getOwner();
         
-        if (!v.isReady()) {
-            throw new IllegalStateException("The vectorizer is not ready");
-        }
-
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
         long timeLastStored = 0;
