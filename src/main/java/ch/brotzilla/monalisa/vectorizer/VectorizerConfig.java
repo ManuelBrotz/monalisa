@@ -92,6 +92,18 @@ public class VectorizerConfig {
         private MutationConstraints mutationConstraints;
         private FitnessFunction fitnessFunction;
 
+        private void checkReady() {
+            Preconditions.checkNotNull(getVectorizerContext(), "The property 'VectorizerContext' must not be null");
+            Preconditions.checkNotNull(getMutationConfig(), "The property 'MutationConfig' must not be null");
+            Preconditions.checkNotNull(getEvolutionStrategy(), "The property 'EvolutionStrategy' must not be null");
+            Preconditions.checkNotNull(getMutationStrategy(), "The property 'MutationStrategy' must not be null");
+            Preconditions.checkNotNull(getGenomeFactory(), "The property 'GenomeFactory' must not be null");
+            Preconditions.checkNotNull(getRendererFactory(), "The property 'RendererFactory' must not be null");
+            Preconditions.checkNotNull(getConstraints(), "The property 'Constraints' must not be null");
+            Preconditions.checkNotNull(getFitnessFunction(), "The property 'FitnessFunction' must not be null");
+            Preconditions.checkState(isReady(), "The vectorizer configuration is not ready");
+        }
+
         public boolean isReady() {
             return vectorizerContext != null && mutationConfig != null && mutationStrategy != null && genomeFactory != null && rendererFactory != null
                     && mutationConstraints != null && fitnessFunction != null;
@@ -169,22 +181,7 @@ public class VectorizerConfig {
             return this;
         }
 
-        public void checkReady() {
-            Preconditions.checkNotNull(getVectorizerContext(), "The property 'VectorizerContext' must not be null");
-            Preconditions.checkNotNull(getMutationConfig(), "The property 'MutationConfig' must not be null");
-            Preconditions.checkNotNull(getEvolutionStrategy(), "The property 'EvolutionStrategy' must not be null");
-            Preconditions.checkNotNull(getMutationStrategy(), "The property 'MutationStrategy' must not be null");
-            Preconditions.checkNotNull(getGenomeFactory(), "The property 'GenomeFactory' must not be null");
-            Preconditions.checkNotNull(getRendererFactory(), "The property 'RendererFactory' must not be null");
-            Preconditions.checkNotNull(getConstraints(), "The property 'Constraints' must not be null");
-            Preconditions.checkNotNull(getFitnessFunction(), "The property 'FitnessFunction' must not be null");
-            if (!isReady()) {
-                throw new IllegalStateException("The vectorizer configuration is not ready");
-            }
-        }
-
         public VectorizerConfig build() {
-            checkReady();
             return new VectorizerConfig(this);
         }
 

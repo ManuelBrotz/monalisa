@@ -62,16 +62,16 @@ public class Monalisa {
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
 
     protected static MutationConfig setupMutationConfig(SessionManager session) {
-        final MutationConfig c = new MutationConfig();
-        c.setOuterBorder(0, 0);
-        c.setInnerBorder(0, 0);
-        c.setGeneIndexSelector(new TailIndexSelector(15));
-        c.setPointMutationRange(new GaussianRangeSelector(15));
-        c.setColorChannelMutationRange(new GaussianRangeSelector(10));
-        c.setGeneVersusGenomeMutationProbability(0.99d);
-        c.setMinMutationsPerGenome(1);
-        c.setMaxMutationsPerGenome(2);
-        return c;
+        return new MutationConfig.Builder()
+        .setOuterBorder(0, 0)
+        .setInnerBorder(0, 0)
+        .setGeneIndexSelector(new TailIndexSelector(15))
+        .setPointMutationRange(new GaussianRangeSelector(15))
+        .setColorChannelMutationRange(new GaussianRangeSelector(10))
+        .setGeneVersusGenomeMutationProbability(0.99d)
+        .setMinMutationsPerGenome(1)
+        .setMaxMutationsPerGenome(2)
+        .build();
     }
 
     protected static RendererFactory setupRendererFactory() {
