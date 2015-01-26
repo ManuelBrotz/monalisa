@@ -8,16 +8,22 @@ import ch.brotzilla.util.MersenneTwister;
 public class GaussianRangeSelector implements RangeSelector {
 
     private final int deviation, min, max;
+    private final boolean canReturnZero;
     
-    public GaussianRangeSelector(int deviation) {
+    public GaussianRangeSelector(int deviation, boolean canReturnZero) {
         Preconditions.checkArgument(deviation > 0, "The parameter 'deviation' has to be greater than zero");
         this.deviation = deviation;
         this.min = deviation * -3;
         this.max = deviation * 3;
+        this.canReturnZero = canReturnZero;
     }
     
     public int getDeviation() {
         return deviation;
+    }
+    
+    public boolean canReturnZero() {
+        return canReturnZero;
     }
     
     @Override
@@ -34,11 +40,8 @@ public class GaussianRangeSelector implements RangeSelector {
     public int select(MersenneTwister rng) {
         final double gaussian = rng.nextGaussian();
         int value = (int) Math.round(gaussian * deviation);
-        if (value < min) {
-            return min;
-        }
-        if (value > max) {
-            return max;
+        if ((value == 0 && !canReturnZero) || value < min || value > max) {
+            return select(rng);
         }
         return value;
     }
