@@ -1,10 +1,8 @@
 package ch.brotzilla.monalisa;
 
 import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Scanner;
 
 import ch.brotzilla.monalisa.evolution.constraints.ComplexMutationConstraints;
 import ch.brotzilla.monalisa.evolution.constraints.GeneAlphaConstraint;
@@ -41,9 +39,9 @@ import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.CachingTailRenderer;
 import ch.brotzilla.monalisa.rendering.Renderer;
 import ch.brotzilla.monalisa.utils.Params;
+import ch.brotzilla.monalisa.utils.UI;
 import ch.brotzilla.monalisa.vectorizer.Vectorizer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
-import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.monalisa.vectorizer.VectorizerListener;
 
 import com.almworks.sqlite4java.SQLiteException;
@@ -126,6 +124,15 @@ public class Monalisa {
         .setFitnessFunction(setupFitnessFunction())
         .build());
     }
+    
+    protected MainWindow setupMainWindow() throws IOException {
+        final MainWindow result = new MainWindow(this);
+        result.setBounds(UI.computeScreenCenteredWindowBounds(
+                new Dimension(vectorizer.getConfig().getWidth() + 50, vectorizer.getConfig().getHeight() + 150),
+                new Dimension(640, 480)));
+        result.setVisible(true);
+        return result;
+    }
 
     protected void printError() {
         System.out.println("Usage:");
@@ -206,25 +213,21 @@ public class Monalisa {
         }
         
         this.vectorizer = setupVectorizer(session);
+        this.mainWindow = setupMainWindow();
+        
         vectorizer.addListener(new VectorizerListener() {
             @Override
             public void started(Vectorizer v, Genome latest) {
-                if (mainWindow != null) {
-                    mainWindow.submit(v.getConfig(), latest);
-                }
+                mainWindow.submit(v.getConfig(), latest);
             }
             @Override
             public void improved(Vectorizer v, Genome latest) {
-                if (mainWindow != null) {
-                    mainWindow.submit(v.getConfig(), latest);
-                    mainWindow.getStatusDisplay().update(v.getConfig(), v.getTickRate());
-                }
+                mainWindow.submit(v.getConfig(), latest);
+                mainWindow.getStatusDisplay().update(v.getConfig(), v.getTickRate());
             }
             @Override
             public void update(Vectorizer v) {
-                if (mainWindow != null) {
-                    mainWindow.getStatusDisplay().update(v.getConfig(), v.getTickRate());
-                }
+                mainWindow.getStatusDisplay().update(v.getConfig(), v.getTickRate());
             }
             @Override
             public void stopping(Vectorizer v) {
@@ -241,10 +244,6 @@ public class Monalisa {
         if (!params.isReady())
             throw new IllegalStateException("Not ready");
 
-        if (params.getShowGui()) {
-            showGui();
-        }
-        
         vectorizer.start();
     }
 
@@ -253,57 +252,12 @@ public class Monalisa {
         System.exit(0);
     }
 
-    public void showGui() {
-        if (mainWindow == null) {
-            try {
-                mainWindow = new MainWindow(this);
-                final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-                final int width = 640, height = 480;
-                mainWindow.setBounds(screen.width / 2 - width / 2, screen.height / 2 - height / 2, width, height);
-            } catch (Exception e) {
-                System.out.println("Unable to instanciate the gui");
-                e.printStackTrace();
-                return;
-            }
-        }
-        mainWindow.setVisible(true);
-    }
-
-    public void initCommandLine() {
-        @SuppressWarnings("resource")
-        final Scanner cmd = new Scanner(System.in);
-        while (true) {
-            System.out.print("> ");
-            final String input = cmd.nextLine();
-            if (input == null || input.trim().isEmpty()) {
-                continue;
-            }
-            if (input.equals("shutdown") || input.equals("exit")) {
-                quit();
-            } else if (input.equals("show-gui")) {
-                showGui();
-            } else if (input.equals("status")) {
-                final VectorizerContext vc = vectorizer.getConfig().getVectorizerContext();
-                final Genome genome = vc.getLatestGenome();
-                System.out.println("Mutations: " + vc.getNumberOfMutations() + ", Improvements: " + vc.getNumberOfImprovements() + ", Polygons: " + genome.countPolygons() + ", Points: "
-                        + genome.countPoints() + ", Fitness: " + vectorizer.getConfig().getFitnessFunction().format(genome.fitness));
-            } else if (input.equals("rate")) {
-                System.out.println(rf.format(vectorizer.getTickRate()) + " images/sec");
-            } else if (input.equals("cache")) {
-                System.out.println("Number of cached polygons: <not available>"/* + vectorizer.getPolygonCache().getSize()*/);
-            } else {
-                System.out.println("Unknown command: " + input);
-            }
-        }
-    }
-
     public static void main(String[] args) {
         final Monalisa ml = new Monalisa(args);
         try {
             if (ml.params.isReady()) {
                 ml.setup();
                 ml.start();
-                ml.initCommandLine();
             } else {
                 ml.printError();
             }
