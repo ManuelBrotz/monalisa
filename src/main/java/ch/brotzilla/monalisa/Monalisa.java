@@ -30,6 +30,7 @@ import ch.brotzilla.monalisa.evolution.mutations.GeneRemovePointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneSwapPointsMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenomeSwapGenesMutation;
 import ch.brotzilla.monalisa.evolution.mutations.ProbabilityGeneMutationSelector;
+import ch.brotzilla.monalisa.evolution.selectors.BiasedIndexSelector;
 import ch.brotzilla.monalisa.evolution.selectors.GaussianRangeSelector;
 import ch.brotzilla.monalisa.evolution.selectors.TailIndexSelector;
 import ch.brotzilla.monalisa.evolution.strategies.BasicGenomeFactory;
@@ -40,6 +41,7 @@ import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.CachingTailRenderer;
 import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.SimpleRenderer;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.vectorizer.Vectorizer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
@@ -64,7 +66,7 @@ public class Monalisa {
         return new MutationConfig.Builder()
         .setOuterBorder(0, 0)
         .setInnerBorder(0, 0)
-        .setGeneIndexSelector(new TailIndexSelector(15))
+        .setGeneIndexSelector(new BiasedIndexSelector(4))
         .setPointMutationRange(new GaussianRangeSelector(15))
         .setColorChannelMutationRange(new GaussianRangeSelector(10))
         .setGeneVersusGenomeMutationProbability(0.99d)
@@ -77,7 +79,7 @@ public class Monalisa {
         return new RendererFactory() {
             @Override
             public Renderer createRenderer(VectorizerConfig config) {
-                return new CachingTailRenderer(15, config.getWidth(), config.getHeight(), true);
+                return new SimpleRenderer(config.getWidth(), config.getHeight(), true);
             }
         };
     }
