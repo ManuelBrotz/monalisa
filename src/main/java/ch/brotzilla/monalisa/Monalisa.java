@@ -33,6 +33,7 @@ import ch.brotzilla.monalisa.evolution.selectors.TailIndexSelector;
 import ch.brotzilla.monalisa.evolution.strategies.BasicGenomeFactory;
 import ch.brotzilla.monalisa.evolution.strategies.BasicMutationStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.MutationConfig;
+import ch.brotzilla.monalisa.evolution.strategies.ProgressiveAddPolygonStrategy;
 import ch.brotzilla.monalisa.evolution.strategies.ProgressiveEvolutionStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
@@ -85,7 +86,7 @@ public class Monalisa {
     }
     
     protected static EvolutionStrategy setupEvolutionStrategy() {
-        return new ProgressiveEvolutionStrategy();
+        return new ProgressiveEvolutionStrategy(new ProgressiveAddPolygonStrategy());
     }
     
     protected static MutationStrategy setupMutationStrategy() {
