@@ -23,6 +23,8 @@ import ch.brotzilla.monalisa.evolution.mutations.GeneAlphaChannelMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneColorBrighterMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneColorChannelMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneColorDarkerMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneColorHueMutation;
+import ch.brotzilla.monalisa.evolution.mutations.GeneMoveMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GenePointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneRemovePointMutation;
 import ch.brotzilla.monalisa.evolution.mutations.GeneSwapPointsMutation;
@@ -93,8 +95,8 @@ public class Monalisa {
         return new BasicMutationStrategy(
                 new ProbabilityGeneMutationSelector.Builder()
                 .add(0.75d, new GenePointMutation())
-                .add(0.15d, new GeneAlphaChannelMutation(), new GeneColorChannelMutation(), new GeneColorBrighterMutation(), new GeneColorDarkerMutation())
-                .add(0.10d, new GeneAddPointMutation(), new GeneRemovePointMutation(), new GeneSwapPointsMutation())
+                .add(0.15d, new GeneColorHueMutation(), new GeneAlphaChannelMutation(), new GeneColorChannelMutation(), new GeneColorBrighterMutation(), new GeneColorDarkerMutation())
+                .add(0.10d, new GeneMoveMutation(), new GeneAddPointMutation(), new GeneRemovePointMutation(), new GeneSwapPointsMutation())
                 .build(),
                 new GenomeSwapGenesMutation());
     }

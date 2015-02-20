@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import ch.brotzilla.monalisa.utils.BoundingBox;
 import ch.brotzilla.monalisa.utils.Utils;
 
 import com.google.common.base.Preconditions;
@@ -90,6 +91,18 @@ public class Gene {
     public void render(Graphics2D graphics) {
         graphics.setColor(new Color(color[1], color[2], color[3], color[0]));
         graphics.fillPolygon(x, y, x.length);
+    }
+    
+    public BoundingBox computeBoundingBox() {
+        int xmin = Integer.MAX_VALUE, xmax = Integer.MIN_VALUE;
+        int ymin = Integer.MAX_VALUE, ymax = Integer.MIN_VALUE;
+        for (int i = 0; i < x.length; i++) {
+            if (x[i] < xmin) xmin = x[i];
+            if (x[i] > xmax) xmax = x[i];
+            if (y[i] < ymin) ymin = y[i];
+            if (y[i] > ymax) ymax = y[i];
+        }
+        return new BoundingBox(xmin, ymin, xmax, ymax);
     }
     
     @Override
