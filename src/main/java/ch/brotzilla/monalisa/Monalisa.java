@@ -76,7 +76,7 @@ public class Monalisa {
     protected static void setupLibraryPath() {
         final Properties props = System.getProperties();
         final String libraryPath = new File("sqlite4java/").getAbsolutePath() + "/";
-        System.out.println("System property '" + SQLite.LIBRARY_PATH_PROPERTY + "' has ben set to:");
+        System.out.println("System property '" + SQLite.LIBRARY_PATH_PROPERTY + "' has been set to:");
         System.out.println(libraryPath);
         System.out.println();
         props.setProperty(SQLite.LIBRARY_PATH_PROPERTY, libraryPath);
