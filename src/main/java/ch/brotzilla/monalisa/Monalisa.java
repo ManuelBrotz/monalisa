@@ -55,7 +55,7 @@ import com.google.common.base.Preconditions;
 
 public class Monalisa {
 
-    public final static boolean SetupLibraryPath = true;
+    public final static boolean SetupLibraryPath = false;
     public final static String Version = "Monalisa v0.5";
     public final static String Author = "2015, by Manuel Brotz, manu.brotz@gmx.ch";
     
