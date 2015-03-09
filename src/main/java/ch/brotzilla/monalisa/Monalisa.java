@@ -1,8 +1,10 @@
 package ch.brotzilla.monalisa;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Properties;
 
 import ch.brotzilla.monalisa.evolution.constraints.ComplexMutationConstraints;
 import ch.brotzilla.monalisa.evolution.constraints.GeneAlphaConstraint;
@@ -47,11 +49,16 @@ import ch.brotzilla.monalisa.vectorizer.Vectorizer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerListener;
 
+import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
 import com.google.common.base.Preconditions;
 
 public class Monalisa {
 
+    public final static boolean SetupLibraryPath = true;
+    public final static String Version = "Monalisa v0.5";
+    public final static String Author = "2015, by Manuel Brotz, manu.brotz@gmx.ch";
+    
     protected Params params;
     protected SessionManager session;
     
@@ -61,6 +68,20 @@ public class Monalisa {
 
     protected final DecimalFormat rf = new DecimalFormat("#,##0.00");
 
+    protected static void printVersionInfo() {
+        System.out.println(Version);
+        System.out.println(Author);
+    }
+    
+    protected static void setupLibraryPath() {
+        final Properties props = System.getProperties();
+        final String libraryPath = new File("sqlite4java/").getAbsolutePath() + "/";
+        System.out.println("System property '" + SQLite.LIBRARY_PATH_PROPERTY + "' has ben set to:");
+        System.out.println(libraryPath);
+        System.out.println();
+        props.setProperty(SQLite.LIBRARY_PATH_PROPERTY, libraryPath);
+    }
+    
     protected static MutationConfig setupMutationConfig(SessionManager session) {
         return new MutationConfig.Builder()
         .setOuterBorder(0, 0)
@@ -256,6 +277,10 @@ public class Monalisa {
     }
 
     public static void main(String[] args) {
+        printVersionInfo();
+        if (SetupLibraryPath) {
+            setupLibraryPath();
+        }
         final Monalisa ml = new Monalisa(args);
         try {
             if (ml.params.isReady()) {
