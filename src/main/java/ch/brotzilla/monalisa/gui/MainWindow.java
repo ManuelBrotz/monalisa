@@ -28,7 +28,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.gui.StatusDisplay.Orientation;
 import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.io.SessionManager;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.GenomeRenderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
@@ -39,7 +39,7 @@ public class MainWindow extends JFrame {
     protected final SessionManager sessionManager;
     protected final Image inputImage, currentImage;
     protected final Image importanceMap;
-    protected final Renderer renderer;
+    protected final GenomeRenderer renderer;
 
     protected final JMenuBar menuBar;
 

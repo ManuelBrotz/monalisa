@@ -6,13 +6,13 @@ import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.GenomeRenderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 
 public class FitnessAnalyzer {
 
     protected final VectorizerConfig config;
-    protected final Renderer renderer;
+    protected final GenomeRenderer renderer;
     protected final int[] targetData, importanceMap;
     
     protected double computeFitness(Genome genome) {

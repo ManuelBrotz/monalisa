@@ -42,7 +42,7 @@ import ch.brotzilla.monalisa.evolution.strategies.ProgressiveEvolutionStrategy;
 import ch.brotzilla.monalisa.gui.MainWindow;
 import ch.brotzilla.monalisa.io.SessionManager;
 import ch.brotzilla.monalisa.rendering.CachingTailRenderer;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.GenomeRenderer;
 import ch.brotzilla.monalisa.utils.Params;
 import ch.brotzilla.monalisa.utils.UI;
 import ch.brotzilla.monalisa.vectorizer.Vectorizer;
@@ -98,7 +98,7 @@ public class Monalisa {
     protected static RendererFactory setupRendererFactory() {
         return new RendererFactory() {
             @Override
-            public Renderer createRenderer(VectorizerConfig config) {
+            public GenomeRenderer createRenderer(VectorizerConfig config) {
                 return new CachingTailRenderer(15, config.getWidth(), config.getHeight(), true);
             }
         };

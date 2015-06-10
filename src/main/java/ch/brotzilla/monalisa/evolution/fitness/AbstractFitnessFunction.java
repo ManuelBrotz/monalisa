@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.FitnessFunction;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.GenomeRenderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 
 public abstract class AbstractFitnessFunction implements FitnessFunction {
@@ -13,7 +13,7 @@ public abstract class AbstractFitnessFunction implements FitnessFunction {
     public double compute(VectorizerConfig config, Genome genome) {
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
-        final Renderer renderer = config.createRenderer();
+        final GenomeRenderer renderer = config.createRenderer();
         renderer.render(genome);
         if (renderer.getAutoUpdateBuffer()) {
             return compute(config, genome, renderer.getBuffer());

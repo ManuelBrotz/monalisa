@@ -8,7 +8,7 @@ import ch.brotzilla.monalisa.images.Image;
 
 import com.google.common.base.Preconditions;
 
-public class CachingRenderer extends Renderer {
+public class CachingRenderer extends GenomeRenderer {
 
     private final PolygonCache cache;
     

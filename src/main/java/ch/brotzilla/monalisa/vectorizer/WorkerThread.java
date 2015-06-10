@@ -6,7 +6,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.FitnessFunction;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.GenomeRenderer;
 import ch.brotzilla.util.MersenneTwister;
 
 public class WorkerThread extends BasicThread {
@@ -20,7 +20,7 @@ public class WorkerThread extends BasicThread {
         final VectorizerContext vc = c.getVectorizerContext();
         final MutationStrategy ms = c.getMutationStrategy();
         final GenomeFactory gf = c.getGenomeFactory();
-        final Renderer re = c.createRenderer();
+        final GenomeRenderer re = c.createRenderer();
         final FitnessFunction ff = c.getFitnessFunction(); 
         
         final MersenneTwister rng = new MersenneTwister(v.nextSeed());

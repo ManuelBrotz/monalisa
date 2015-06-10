@@ -9,7 +9,7 @@ import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.evolution.intf.MutationStrategy;
 import ch.brotzilla.monalisa.evolution.intf.RendererFactory;
 import ch.brotzilla.monalisa.evolution.strategies.MutationConfig;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.GenomeRenderer;
 
 public class VectorizerConfig {
 
@@ -75,8 +75,8 @@ public class VectorizerConfig {
         return fitnessFunction;
     }
 
-    public Renderer createRenderer() {
-        final Renderer result = getRendererFactory().createRenderer(this);
+    public GenomeRenderer createRenderer() {
+        final GenomeRenderer result = getRendererFactory().createRenderer(this);
         Preconditions.checkState(result != null, "The renderer factory must not return null");
         return result;
     }

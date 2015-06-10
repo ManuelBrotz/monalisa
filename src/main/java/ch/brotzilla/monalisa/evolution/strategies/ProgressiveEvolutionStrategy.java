@@ -5,7 +5,7 @@ import com.google.common.base.Preconditions;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.evolution.intf.AddPolygonStrategy;
 import ch.brotzilla.monalisa.evolution.intf.EvolutionStrategy;
-import ch.brotzilla.monalisa.rendering.Renderer;
+import ch.brotzilla.monalisa.rendering.GenomeRenderer;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.util.MersenneTwister;
 
@@ -13,7 +13,7 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
 
     protected final AddPolygonStrategy addPolygonStrategy;
     
-    protected Renderer renderer;
+    protected GenomeRenderer renderer;
     protected int minPolygonsToAccept;
     
     public ProgressiveEvolutionStrategy(AddPolygonStrategy addPolygonStrategy) {

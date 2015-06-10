@@ -9,7 +9,7 @@ import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.images.Image;
 import ch.brotzilla.monalisa.images.ImageType;
 
-public class CachingTailRenderer extends Renderer {
+public class CachingTailRenderer extends GenomeRenderer {
 
     protected final int numberOfGenesToRender;
     protected final Image cache;
