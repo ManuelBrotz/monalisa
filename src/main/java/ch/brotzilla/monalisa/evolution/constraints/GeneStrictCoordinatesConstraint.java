@@ -20,7 +20,7 @@ public class GeneStrictCoordinatesConstraint implements GeneConstraint {
         final int w = config.getWidth(), h = config.getHeight();
         for (int i = 0; i < len; i++) {
             final int px = x[i], py = y[i];
-            if (px < 0 || px >= w || py < 0 || py >= h) {
+            if (px < 0 || px > w || py < 0 || py > h) {
                 return false;
             }
         }

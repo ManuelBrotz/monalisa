@@ -44,7 +44,7 @@ public class GeneRelaxedCoordinatesConstraint implements GeneConstraint {
         int countOut = 0, countIn = 0;
         for (int i = 0; i < len; i++) {
             final int px = x[i], py = y[i];
-            if (px < 0 || px >= w || py < 0 || py >= h) {
+            if (px < 0 || px > w || py < 0 || py > h) {
                 ++countOut;
                 if (countOut > maxNumberOfPointsOutside) {
                     return false;

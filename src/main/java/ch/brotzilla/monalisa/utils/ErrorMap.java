@@ -8,13 +8,13 @@ import com.google.common.collect.Lists;
 
 import ch.brotzilla.monalisa.images.ImageData;
 
-public class DistanceMap {
+public class ErrorMap {
 
     private final ImageData targetImage;
     private final int blockSize;
     private final List<Block> blocks, blocksWrapper;
-    private final int[] distances;
-    private double maxDistance;
+    private final int[] errors;
+    private double maxError;
     
     private void allocateBlocks() {
         final int w = targetImage.getWidth(), h = targetImage.getHeight();
@@ -34,7 +34,7 @@ public class DistanceMap {
         }
     }
     
-    private void updateDistances(int[] image) {
+    private void updateErrors(int[] image) {
         Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
         Preconditions.checkArgument(image.length == targetImage.getLength(), "The length of the parameter 'image' has to be equal to " + targetImage.getLength());
         final int w = getWidth(), h = getHeight();
@@ -59,15 +59,15 @@ public class DistanceMap {
                 final int gd = gt - gi;
                 final int bd = bt - bi;
                 
-                distances[i] = ad * ad + rd * rd + gd * gd + bd * bd;
+                errors[i] = ad * ad + rd * rd + gd * gd + bd * bd;
             }
         }
     }
     
     public static class Block {
         
-        public final int x1, y1, x2, y2, count;
-        public double distance;
+        public final int x1, y1, x2, y2, w, h, count;
+        public double error;
         
         public Block(int x1, int y1, int x2, int y2) {
             Preconditions.checkArgument(x1 >= 0, "The parameter 'x1' has to be greater than or equal to zero");
@@ -78,32 +78,26 @@ public class DistanceMap {
             this.y1 = y1;
             this.x2 = x2;
             this.y2 = y2;
-            count = (x2 - x1 + 1) * (y2 - y1 + 1);
-        }
-        
-        public int getWidth() {
-            return x2 - x1 + 1;
-        }
-        
-        public int getHeight() {
-            return y2 - y1 + 1;
+            w = x2 - x1 + 1;
+            h = y2 - y1 + 1;
+            count = w * h;
         }
         
         @Override
         public String toString() {
-            return "{x1 = " + x1 + ", y1 = " + y1 + ", x2 = " + x2 + ", y2 = " + y2 + ", count = " + count + ", width = " + getWidth() + ", height = " + getHeight() + "}";
+            return "{x1 = " + x1 + ", y1 = " + y1 + ", x2 = " + x2 + ", y2 = " + y2 + ", distance = " + error + ", width = " + w + ", height = " + h + "}";
         }
         
     }
     
-    public DistanceMap(ImageData targetImage, int blockSize) {
+    public ErrorMap(ImageData targetImage, int blockSize) {
         Preconditions.checkNotNull(targetImage, "The parameter 'targetImage' must not be null");
         Preconditions.checkArgument(blockSize > 0, "The parameter 'blockSize' has to be greater than zero");
         this.targetImage = targetImage;
         this.blockSize = blockSize;
         this.blocks = Lists.newArrayList();
         this.blocksWrapper = Collections.unmodifiableList(blocks);
-        this.distances = new int[targetImage.getLength()];
+        this.errors = new int[targetImage.getLength()];
         allocateBlocks();
     }
     
@@ -119,31 +113,39 @@ public class DistanceMap {
         return targetImage.getHeight();
     }
     
+    public int getBlockSize() {
+        return blockSize;
+    }
+    
     public List<Block> getBlocks() {
         return blocksWrapper;
     }
     
-    public double getMaxDistance() {
-        return maxDistance;
+    public int[] getErrors() {
+        return errors;
+    }
+    
+    public double getMaxError() {
+        return maxError;
     }
     
     public void update(int[] image) {
         Preconditions.checkNotNull(image, "The parameter 'image' must not be null");
         Preconditions.checkArgument(image.length == targetImage.getLength(), "The length of the parameter 'image' has to be equal to " + targetImage.getLength());
-        updateDistances(image);
+        updateErrors(image);
         final int w = getWidth();
-        maxDistance = 0;
+        maxError = 0;
         for (final Block block : blocks) {
             double sum = 0;
             for (int y = block.y1; y <= block.y2; y++) {
                 for (int x = block.x1; x <= block.x2; x++) {
-                    sum += distances[y * w + x];
+                    sum += errors[y * w + x];
                 }
             }
-            final double distance = sum / block.count;
-            block.distance = distance;
-            if (distance > maxDistance) {
-                maxDistance = distance;
+            final double error = sum / block.count;
+            block.error = error;
+            if (error > maxError) {
+                maxError = error;
             }
         }
     }

@@ -103,4 +103,8 @@ public class Image {
     public final <T> T readData() {
         return (T) raster.getDataElements(0, 0, width, height, buffer);
     }
+    
+    public final void writeData() {
+        raster.setDataElements(0, 0, width, height, buffer);
+    }
 }

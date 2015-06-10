@@ -27,8 +27,11 @@ import ch.brotzilla.monalisa.db.Database;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
 import ch.brotzilla.monalisa.gui.StatusDisplay.Orientation;
 import ch.brotzilla.monalisa.images.Image;
+import ch.brotzilla.monalisa.images.ImageType;
 import ch.brotzilla.monalisa.io.SessionManager;
+import ch.brotzilla.monalisa.rendering.ErrorMapRenderer;
 import ch.brotzilla.monalisa.rendering.GenomeRenderer;
+import ch.brotzilla.monalisa.utils.ErrorMap;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 
@@ -40,12 +43,17 @@ public class MainWindow extends JFrame {
     protected final Image inputImage, currentImage;
     protected final Image importanceMap;
     protected final GenomeRenderer renderer;
+    
+    
+    protected final ErrorMap errorMap;
+    protected final Image errorMapImage;
+    protected final ErrorMapRenderer errorMapRenderer;
 
     protected final JMenuBar menuBar;
 
     protected final JTabbedPane tabbedPane;
-    protected final JScrollPane inputImageScrollPane, currentImageScrollPane, importanceMapScrollPane;
-    protected final ImageDisplay inputImageDisplay, currentImageDisplay, importanceMapDisplay;
+    protected final JScrollPane inputImageScrollPane, currentImageScrollPane, importanceMapScrollPane, errorMapScrollPane;
+    protected final ImageDisplay inputImageDisplay, currentImageDisplay, importanceMapDisplay, errorMapDisplay;
 
     protected final StatusDisplay statusDisplay;
 
@@ -159,6 +167,17 @@ public class MainWindow extends JFrame {
             this.importanceMapScrollPane = null;
         }
 
+        this.errorMap = new ErrorMap(sessionManager.getVectorizerContext().getTargetImage(), 16);
+        this.errorMapImage = new Image(ImageType.ARGB, sessionManager.getWidth(), sessionManager.getHeight());
+        this.errorMapDisplay = new ImageDisplay(errorMapImage);
+        this.errorMapScrollPane = new JScrollPane(errorMapDisplay);
+        this.errorMapRenderer = new ErrorMapRenderer(errorMapImage);
+        if (currentGenome != null) {
+            errorMap.update(renderer.getBuffer());
+            errorMapRenderer.renderMap(errorMap);
+        }
+        tabbedPane.addTab("Error Map", errorMapScrollPane);
+        
         add(tabbedPane, BorderLayout.CENTER);
 
         this.statusDisplay = new StatusDisplay(Orientation.Horizontal);
@@ -187,6 +206,9 @@ public class MainWindow extends JFrame {
             statusDisplay.submit(config, genome);
             renderer.render(genome);
             currentImageDisplay.repaint();
+            errorMap.update(renderer.getBuffer());
+            errorMapRenderer.renderMap(errorMap);
+            errorMapDisplay.repaint();
         }
     }
     
