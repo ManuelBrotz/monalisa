@@ -11,24 +11,32 @@ import ch.brotzilla.monalisa.images.ImageData;
 public class ErrorMap {
 
     private final ImageData targetImage;
-    private final int blockSize;
+    private final int[] blockSizes;
     private final List<Block> blocks, blocksWrapper;
     private final int[] errors;
-    private double maxError;
+    private double averageError, averageError2, maxError;
     
     private void allocateBlocks() {
+    	for (final int blockSize : blockSizes) {
+    		allocateBlocks(blockSize, 0);
+    		allocateBlocks(blockSize, blockSize / 2);
+    	}
+    }
+    
+    private void allocateBlocks(int blockSize, int delta) {
         final int w = targetImage.getWidth(), h = targetImage.getHeight();
-        int x = 0, y = 0;
+        int x = -delta, y = -delta;
         while (y < h) {
             final Block block = new Block(
-                    x, y, 
+                    x < 0 ? 0 : x, 
+                    y < 0 ? 0 : y, 
                     Math.min(x + blockSize - 1, w - 1),
                     Math.min(y + blockSize - 1, h - 1)
                     );
             blocks.add(block);
             x += blockSize;
             if (x >= w) {
-                x = 0;
+                x = -delta;
                 y += blockSize;
             }
         }
@@ -64,6 +72,17 @@ public class ErrorMap {
         }
     }
     
+    private double computeAverageError2(double averageError) {
+        int count = 0;
+        double result = 0;
+        for (final Block block : blocks) {
+            if (block.error <= averageError) continue;
+            count++;
+            result += block.error;
+        }
+        return count > 0 ? result / count : 0;
+    }
+    
     public static class Block {
         
         public final int x1, y1, x2, y2, w, h, count;
@@ -90,11 +109,19 @@ public class ErrorMap {
         
     }
     
-    public ErrorMap(ImageData targetImage, int blockSize) {
+    public ErrorMap(ImageData targetImage, Integer... blockSizes) {
         Preconditions.checkNotNull(targetImage, "The parameter 'targetImage' must not be null");
-        Preconditions.checkArgument(blockSize > 0, "The parameter 'blockSize' has to be greater than zero");
+        Preconditions.checkNotNull(blockSizes, "The parameter 'blockSizes' must not be null");
+        for (int i = 0; i < blockSizes.length; i++) {
+        	Preconditions.checkNotNull(blockSizes[i], "The parameter 'blockSizes[" + i + "] must not be null");
+        	Preconditions.checkArgument(blockSizes[i] > 0, "The parameter 'blockSizes[" + i + "] has to be greater than zero");
+        	Preconditions.checkArgument(blockSizes[i] % 2 == 0, "The parameter 'blockSizes[" + i + "] has to be even");
+        }
         this.targetImage = targetImage;
-        this.blockSize = blockSize;
+        this.blockSizes = new int[blockSizes.length];
+        for (int i = 0; i < blockSizes.length; i++) {
+        	this.blockSizes[i] = blockSizes[i];
+        }
         this.blocks = Lists.newArrayList();
         this.blocksWrapper = Collections.unmodifiableList(blocks);
         this.errors = new int[targetImage.getLength()];
@@ -113,8 +140,12 @@ public class ErrorMap {
         return targetImage.getHeight();
     }
     
-    public int getBlockSize() {
-        return blockSize;
+    public int[] getBlockSizes() {
+        final int[] result = new int[blockSizes.length];
+        for (int i = 0; i < result.length; i++) {
+        	result[i] = blockSizes[i];
+        }
+        return result;
     }
     
     public List<Block> getBlocks() {
@@ -123,6 +154,14 @@ public class ErrorMap {
     
     public int[] getErrors() {
         return errors;
+    }
+    
+    public double getAverageError() {
+        return averageError;
+    }
+    
+    public double getAverageError2() {
+        return averageError2;
     }
     
     public double getMaxError() {
@@ -134,6 +173,7 @@ public class ErrorMap {
         Preconditions.checkArgument(image.length == targetImage.getLength(), "The length of the parameter 'image' has to be equal to " + targetImage.getLength());
         updateErrors(image);
         final int w = getWidth();
+        averageError = 0;
         maxError = 0;
         for (final Block block : blocks) {
             double sum = 0;
@@ -144,10 +184,13 @@ public class ErrorMap {
             }
             final double error = sum / block.count;
             block.error = error;
+            averageError += error;
             if (error > maxError) {
                 maxError = error;
             }
         }
+        averageError = blocks.size() > 0 ? averageError / blocks.size() : 0;
+        averageError2 = computeAverageError2(averageError);
     }
     
 }

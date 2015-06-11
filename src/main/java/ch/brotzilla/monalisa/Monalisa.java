@@ -55,7 +55,9 @@ import com.google.common.base.Preconditions;
 
 public class Monalisa {
 
-    public final static boolean SetupLibraryPath = false;
+    public final static boolean SetupLibraryPath = true;
+    public final static String LibraryPath = "C:/Users/mbrotz/.m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x64/0.282";
+//    public final static String LibraryPath = "sqlite4java/";
     public final static String Version = "Monalisa v0.5";
     public final static String Author = "2015, by Manuel Brotz, manu.brotz@gmx.ch";
     
@@ -75,7 +77,7 @@ public class Monalisa {
     
     protected static void setupLibraryPath() {
         final Properties props = System.getProperties();
-        final String libraryPath = new File("sqlite4java/").getAbsolutePath() + "/";
+        final String libraryPath = new File(LibraryPath).getAbsolutePath() + "/";
         System.out.println("System property '" + SQLite.LIBRARY_PATH_PROPERTY + "' has been set to:");
         System.out.println(libraryPath);
         System.out.println();

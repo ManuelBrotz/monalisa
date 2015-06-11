@@ -167,7 +167,7 @@ public class MainWindow extends JFrame {
             this.importanceMapScrollPane = null;
         }
 
-        this.errorMap = new ErrorMap(sessionManager.getVectorizerContext().getTargetImage(), 16);
+        this.errorMap = new ErrorMap(sessionManager.getVectorizerContext().getTargetImage(), 8, 12, 16, 24, 32);
         this.errorMapImage = new Image(ImageType.ARGB, sessionManager.getWidth(), sessionManager.getHeight());
         this.errorMapDisplay = new ImageDisplay(errorMapImage);
         this.errorMapScrollPane = new JScrollPane(errorMapDisplay);
