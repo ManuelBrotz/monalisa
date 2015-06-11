@@ -19,11 +19,12 @@ public class Gene {
     private static final HashFunction hashFunction = Hashing.goodFastHash(32);
 
     public final int[] x, y, color;
+    public RectConstraint constraint;
     
     private int hash = 0;
     private boolean hashed = false;
 
-    public Gene(int[] x, int[] y, int[] color, boolean copy) {
+    public Gene(int[] x, int[] y, int[] color, RectConstraint constraint, boolean copy) {
         Preconditions.checkNotNull(x, "The parameter 'x' must not be null");
         Preconditions.checkArgument(x.length >= 3, "The parameter 'x' must be of length 3 or greater");
         Preconditions.checkNotNull(y, "The parameter 'y' must not be null");
@@ -42,6 +43,11 @@ public class Gene {
             this.y = y;
             this.color = color;
         }
+        this.constraint = constraint;
+    }
+    
+    public Gene(int[] x, int[] y, int[] color, boolean copy) {
+        this(x, y, color, null, copy);
     }
     
     public Gene(int[] x, int[] y, int[] color) {
@@ -91,6 +97,21 @@ public class Gene {
     public void render(Graphics2D graphics) {
         graphics.setColor(new Color(color[1], color[2], color[3], color[0]));
         graphics.fillPolygon(x, y, x.length);
+    }
+    
+    public void applyConstraint() {
+        if (constraint != null) {
+            int x1 = constraint.getX();
+            int x2 = x1 + constraint.getWidth();
+            int y1 = constraint.getY();
+            int y2 = y1 + constraint.getHeight();
+            for (int i = 0; i < x.length; i++) {
+                if (x[i] < x1) {x[i] = x1;}
+                if (x[i] > x2) {x[i] = x2;}
+                if (y[i] < y1) {y[i] = y1;}
+                if (y[i] > y2) {y[i] = y2;}
+            }
+        }
     }
     
     public BoundingBox computeBoundingBox() {
@@ -155,12 +176,19 @@ public class Gene {
     public static Gene deserialize(DataInputStream in) throws IOException {
         Preconditions.checkNotNull(in, "The parameter 'in' must not be null");
         final byte version = in.readByte();
-        Preconditions.checkArgument(version == 0, "Unable to deserialize gene, version not supported");
+        Preconditions.checkArgument(version >= 0 && version <= 1, "Unable to deserialize gene, version not supported");
         final int[] color = new int[4];
         color[0] = in.readByte() & 0xFF;
         color[1] = in.readByte() & 0xFF;
         color[2] = in.readByte() & 0xFF;
         color[3] = in.readByte() & 0xFF;
+        final RectConstraint constraint;
+        if (version > 0 && in.readBoolean()) {
+            final int x = in.readShort(), y = in.readShort(), width = in.readShort(), height = in.readShort();
+            constraint = new RectConstraint(x, y, width, height);
+        } else {
+            constraint = null;
+        }
         final int length = in.readByte() & 0xFF;
         Preconditions.checkArgument(length >= 3, "Unable to deserialize gene, too few coordinates");
         final int[] x = new int[length], y = new int[length];
@@ -168,17 +196,24 @@ public class Gene {
             x[i] = in.readShort();
             y[i] = in.readShort();
         }
-        return new Gene(x, y, color, false);
+        return new Gene(x, y, color, constraint, false);
     }
     
     public static void serialize(Gene gene, DataOutputStream out) throws IOException {
         Preconditions.checkNotNull(gene, "The parameter 'gene' must not be null");
         Preconditions.checkNotNull(out, "The parameter 'out' must not be null");
-        out.writeByte(0); // version of serialization format
+        out.writeByte(1); // version of serialization format
         out.writeByte(gene.color[0]);
         out.writeByte(gene.color[1]);
         out.writeByte(gene.color[2]);
         out.writeByte(gene.color[3]);
+        out.writeBoolean(gene.constraint != null);
+        if (gene.constraint != null) {
+            out.writeShort(gene.constraint.getX());
+            out.writeShort(gene.constraint.getY());
+            out.writeShort(gene.constraint.getWidth());
+            out.writeShort(gene.constraint.getHeight());
+        }
         final int length = gene.x.length;
         Preconditions.checkState(length <= 255, "Unable to serialize gene, too many coordinates");
         out.writeByte(length);
@@ -188,4 +223,5 @@ public class Gene {
             out.writeShort(gene.y[i]);
         }
     }
+    
 }

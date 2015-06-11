@@ -55,7 +55,7 @@ import com.google.common.base.Preconditions;
 
 public class Monalisa {
 
-    public final static boolean SetupLibraryPath = true;
+    public final static boolean SetupLibraryPath = false;
     public final static String LibraryPath = "C:/Users/mbrotz/.m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x64/0.282";
 //    public final static String LibraryPath = "sqlite4java/";
     public final static String Version = "Monalisa v0.5";
