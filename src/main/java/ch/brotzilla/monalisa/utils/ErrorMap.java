@@ -1,12 +1,14 @@
 package ch.brotzilla.monalisa.utils;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import ch.brotzilla.monalisa.images.ImageData;
+import ch.brotzilla.util.MersenneTwister;
 
 public class ErrorMap {
 
@@ -191,6 +193,68 @@ public class ErrorMap {
         }
         averageError = blocks.size() > 0 ? averageError / blocks.size() : 0;
         averageError2 = computeAverageError2(averageError);
+    }
+    
+    public List<Block> selectRandomBlocks(int count, double minError, MersenneTwister rng) {
+        Preconditions.checkArgument(count > 0, "The parameter 'count' has to be greater than zero");
+        Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        final Candidates candidates = selectCandidates(minError);
+        
+    }
+    
+    private Candidates selectCandidates(double minError) {
+        Preconditions.checkArgument(minError >= 0, "The parameter 'minError' has to be greater than or equal to zero");
+        final List<Block> result = Lists.newArrayList();
+        double totalError = 0;
+        for (final Block block : blocks) {
+            if (block.error > minError) {
+                result.add(block);
+                totalError += block.error;
+            }
+        }
+        if (result.size() > 0) {
+            Collections.sort(result, new BlockComparator());
+            return new Candidates(result, totalError);
+        }
+        return null;
+    }
+    
+    private static class Candidates {
+        
+        public final Block[] candidates;
+        public final double[] normalized;
+        
+        public Candidates(List<Block> candidates, double totalError) {
+            Preconditions.checkNotNull(candidates, "The parameter 'candidates' must not be null");
+            Preconditions.checkArgument(candidates.size() > 0, "The parameter 'candidates' must not be empty");
+            Preconditions.checkArgument(totalError > 0, "The parameter 'totalError' has to be greater than zero");
+            final int size = candidates.size();
+            this.candidates = new Block[size];
+            this.normalized = new double[size];
+            for (int i = 0; i < size; i++) {
+                final Block block = candidates.get(i);
+                this.candidates[i] = block;
+                this.normalized[i] = block.error / totalError;
+            }
+        }
+        
+    }
+    
+    private static class BlockComparator implements Comparator<Block> {
+
+        @Override
+        public int compare(Block a, Block b) {
+            Preconditions.checkNotNull(a, "The parameter 'a' must not be null");
+            Preconditions.checkNotNull(b, "The parameter 'b' must not be null");
+            if (a.error < b.error) {
+                return -1;
+            }
+            if (a.error > b.error) {
+                return 1;
+            }
+            return 0;
+        }
+        
     }
     
 }
