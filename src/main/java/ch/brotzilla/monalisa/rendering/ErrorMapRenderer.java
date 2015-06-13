@@ -31,9 +31,9 @@ public class ErrorMapRenderer extends Renderer {
             for (int y = block.y1; y <= block.y2; y++) {
                 for (int x = block.x1; x <= block.x2; x++) {
                     final int i = y * w + x;
-                    final int bufferValue = (buffer[i] >> 16) & 0x000000FF;
+                    final int bufferValue = buffer[i] & 0x000000FF;
                     if (bufferValue < value) {
-                        buffer[i] = 0xFF000000 | value << 16;
+                        buffer[i] = 0xFF000000 | value << 16 | value << 8 | value;
                     }
                 }
             }
