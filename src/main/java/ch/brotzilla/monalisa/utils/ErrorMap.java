@@ -195,11 +195,25 @@ public class ErrorMap {
         averageError2 = computeAverageError2(averageError);
     }
     
-    public List<Block> selectRandomBlocks(int count, double minError, MersenneTwister rng) {
+    public Block[] selectRandomBlocks(int count, double minError, MersenneTwister rng) {
         Preconditions.checkArgument(count > 0, "The parameter 'count' has to be greater than zero");
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
+        final Block[] result = new Block[count];
         final Candidates candidates = selectCandidates(minError);
-        
+        if (candidates != null) {
+            final double pointerSize = rng.nextDouble() / count;
+            final double[] slots = candidates.slots;
+            int slot = 0;
+            for (int i = 0; i < count; i++) {
+                final double pointer = pointerSize * (i + 1);
+                while (slots[slot] <= pointer) {
+                    ++slot;
+                }
+                result[i] = candidates.blocks[slot];
+            }
+            return result;
+        }
+        return null;
     }
     
     private Candidates selectCandidates(double minError) {
@@ -221,20 +235,20 @@ public class ErrorMap {
     
     private static class Candidates {
         
-        public final Block[] candidates;
-        public final double[] normalized;
+        public final Block[] blocks;
+        public final double[] slots;
         
         public Candidates(List<Block> candidates, double totalError) {
             Preconditions.checkNotNull(candidates, "The parameter 'candidates' must not be null");
             Preconditions.checkArgument(candidates.size() > 0, "The parameter 'candidates' must not be empty");
             Preconditions.checkArgument(totalError > 0, "The parameter 'totalError' has to be greater than zero");
             final int size = candidates.size();
-            this.candidates = new Block[size];
-            this.normalized = new double[size];
+            this.blocks = new Block[size];
+            this.slots = new double[size];
             for (int i = 0; i < size; i++) {
                 final Block block = candidates.get(i);
-                this.candidates[i] = block;
-                this.normalized[i] = block.error / totalError;
+                this.blocks[i] = block;
+                this.slots[i] = block.error / totalError;
             }
         }
         

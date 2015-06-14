@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import ch.brotzilla.monalisa.evolution.constraints.MutationConstraints;
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.evolution.genes.RectConstraint;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
 import ch.brotzilla.monalisa.utils.Utils;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
@@ -31,11 +32,11 @@ public class BasicGenomeFactory implements GenomeFactory {
     }
     
     @Override
-    public Gene createGene(MersenneTwister rng, VectorizerConfig config) {
+    public Gene createGene(MersenneTwister rng, VectorizerConfig config, RectConstraint constraint) {
         final MutationConstraints c = config.getConstraints();
-        Gene result = Utils.createRandomGene(rng, config);
+        Gene result = Utils.createRandomGene(rng, config, constraint);
         while (!c.satisfied(config, result)) {
-            result = Utils.createRandomGene(rng, config);
+            result = Utils.createRandomGene(rng, config, constraint);
         }
         return result;
     }
@@ -43,9 +44,9 @@ public class BasicGenomeFactory implements GenomeFactory {
     @Override
     public Genome createGenome(MersenneTwister rng, VectorizerConfig config) {
         final MutationConstraints c = config.getConstraints();
-        Genome result = new Genome(Utils.createRandomGenes(rng, config, minGenes, maxGenes, this));
+        Genome result = new Genome(Utils.createRandomGenes(rng, config, minGenes, maxGenes, this, null));
         while (!c.satisfied(config, result)) {
-            result = new Genome(Utils.createRandomGenes(rng, config, minGenes, maxGenes, this));
+            result = new Genome(Utils.createRandomGenes(rng, config, minGenes, maxGenes, this, null));
         }
         return result;
     }

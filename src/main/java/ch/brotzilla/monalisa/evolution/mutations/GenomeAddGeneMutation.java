@@ -14,7 +14,7 @@ public class GenomeAddGeneMutation extends BasicMutation implements GenomeMutati
 
     @Override
     public Genome apply(MersenneTwister rng, VectorizerConfig config, Genome input) {
-        return Utils.appendGene(input, rng, config);
+        return Utils.appendGene(input, rng, config, null);
     }
 
 }

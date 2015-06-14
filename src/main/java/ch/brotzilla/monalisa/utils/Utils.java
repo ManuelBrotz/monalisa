@@ -11,8 +11,8 @@ import javax.imageio.ImageIO;
 
 import ch.brotzilla.monalisa.evolution.genes.Gene;
 import ch.brotzilla.monalisa.evolution.genes.Genome;
+import ch.brotzilla.monalisa.evolution.genes.RectConstraint;
 import ch.brotzilla.monalisa.evolution.intf.GenomeFactory;
-import ch.brotzilla.monalisa.evolution.strategies.MutationConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerConfig;
 import ch.brotzilla.monalisa.vectorizer.VectorizerContext;
 import ch.brotzilla.util.Geometry;
@@ -105,30 +105,29 @@ public class Utils {
         return new BoundingBox(xmin, ymin, xmax, ymax);
     }
     
-    public static Gene createRandomGene(MersenneTwister rng, VectorizerConfig config) {
+    public static Gene createRandomGene(MersenneTwister rng, VectorizerConfig config, RectConstraint constraint) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
-        final MutationConfig mc = config.getMutationConfig();
         final VectorizerContext vc = config.getVectorizerContext();
-        final int width = config.getWidth(), height = config.getHeight(), xborder = mc.getOuterBorderX(), yborder = mc.getOuterBorderY();
-        final int bwidth = width + 2 * xborder, bheight = height + 2 * yborder;
+        final int width = (constraint != null ? constraint.getWidth() : config.getWidth());
+        final int height = (constraint != null ? constraint.getHeight() : config.getHeight());
         final int[] inputData = vc.getTargetImageData(), x = new int[3], y = new int[3];
-        x[0] = rng.nextInt(bwidth) - xborder;
-        x[1] = rng.nextInt(bwidth) - xborder;
-        x[2] = rng.nextInt(bwidth) - xborder;
-        y[0] = rng.nextInt(bheight) - yborder;
-        y[1] = rng.nextInt(bheight) - yborder;
-        y[2] = rng.nextInt(bheight) - yborder;
+        x[0] = rng.nextInt(width);
+        x[1] = rng.nextInt(width);
+        x[2] = rng.nextInt(width);
+        y[0] = rng.nextInt(height);
+        y[1] = rng.nextInt(height);
+        y[2] = rng.nextInt(height);
         final Point c = Utils.computeCentroid(x, y, null);
         if (c.x >= 0 && c.x < width && c.y >= 0 && c.y < height) {
             final int color = inputData[c.y * width + c.x];
             final int alpha = rng.nextInt(256) << 24;
             return new Gene(x, y, (color & 0x00FFFFFF) | alpha);
         }
-        return createRandomGene(rng, config);
+        return createRandomGene(rng, config, constraint);
     }
 
-    public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerConfig config, int minGenes, int maxGenes, GenomeFactory genomeFactory) {
+    public static Gene[] createRandomGenes(MersenneTwister rng, VectorizerConfig config, int minGenes, int maxGenes, GenomeFactory genomeFactory, RectConstraint constraint) {
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
         Preconditions.checkArgument(minGenes > 0, "The parameter 'minGenes' must be grather than zero");
@@ -144,16 +143,16 @@ public class Utils {
         Preconditions.checkState(length <= maxGenes);
         final Gene[] genes = new Gene[length];
         for (int i = 0; i < length; i++) {
-            genes[i] = genomeFactory.createGene(rng, config);
+            genes[i] = genomeFactory.createGene(rng, config, constraint);
         }
         return genes;
     }
     
-    public static Genome appendGene(Genome genome, MersenneTwister rng, VectorizerConfig config) {
+    public static Genome appendGene(Genome genome, MersenneTwister rng, VectorizerConfig config, RectConstraint constraint) {
         Preconditions.checkNotNull(genome, "The parameter 'genome' must not be null");
         Preconditions.checkNotNull(rng, "The parameter 'rng' must not be null");
         Preconditions.checkNotNull(config, "The parameter 'config' must not be null");
-        final Gene gene = config.getGenomeFactory().createGene(rng, config);
+        final Gene gene = config.getGenomeFactory().createGene(rng, config, constraint);
         final Gene[] inputGenes = genome.genes;
         final Gene[] newGenes = new Gene[inputGenes.length + 1];
         System.arraycopy(inputGenes, 0, newGenes, 0, inputGenes.length);

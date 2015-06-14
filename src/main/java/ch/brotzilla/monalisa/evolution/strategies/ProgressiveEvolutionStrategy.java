@@ -27,6 +27,11 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
     
     @Override
     public Genome apply(MersenneTwister rng, VectorizerConfig config, Genome input, boolean isImprovement) {
+        if (renderer == null) {
+            renderer = config.createRenderer();
+            Preconditions.checkState(renderer.getAutoUpdateBuffer(), "The property 'getAutoUpdateBuffer()' of the renderer has to be true");
+        }
+
         if (!isImprovement) {
             return input;
         }
@@ -40,15 +45,8 @@ public class ProgressiveEvolutionStrategy implements EvolutionStrategy {
         if (result != input) {
             minPolygonsToAccept = result.countPolygons();
             result.overrideFitness = true;
-            if (renderer == null) {
-                renderer = config.createRenderer();
-            }
             renderer.render(result);
-            if (renderer.getAutoUpdateBuffer()) {
-                result.fitness = config.getFitnessFunction().compute(config, result, renderer.getBuffer());
-            } else {
-                result.fitness = config.getFitnessFunction().compute(config, result, renderer.readData());
-            }
+            result.fitness = config.getFitnessFunction().compute(config, result, renderer.getBuffer());
         }
         
         return result;

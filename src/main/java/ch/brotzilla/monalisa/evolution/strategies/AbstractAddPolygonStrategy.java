@@ -39,7 +39,7 @@ public abstract class AbstractAddPolygonStrategy implements AddPolygonStrategy {
             timeToNextPolygon = computeTimeToNextPolygon(rng, config, input);
             System.out.println("New polygon added.");
             System.out.println("New Polygon will be added in " + timeToNextPolygon + " ms.");
-            return Utils.appendGene(input, rng, config);
+            return Utils.appendGene(input, rng, config, null);
         }
         return input;
     }

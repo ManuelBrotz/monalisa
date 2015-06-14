@@ -99,21 +99,6 @@ public class Gene {
         graphics.fillPolygon(x, y, x.length);
     }
     
-    public void applyConstraint() {
-        if (constraint != null) {
-            int x1 = constraint.getX();
-            int x2 = x1 + constraint.getWidth();
-            int y1 = constraint.getY();
-            int y2 = y1 + constraint.getHeight();
-            for (int i = 0; i < x.length; i++) {
-                if (x[i] < x1) {x[i] = x1;}
-                if (x[i] > x2) {x[i] = x2;}
-                if (y[i] < y1) {y[i] = y1;}
-                if (y[i] > y2) {y[i] = y2;}
-            }
-        }
-    }
-    
     public BoundingBox computeBoundingBox() {
         int xmin = Integer.MAX_VALUE, xmax = Integer.MIN_VALUE;
         int ymin = Integer.MAX_VALUE, ymax = Integer.MIN_VALUE;
